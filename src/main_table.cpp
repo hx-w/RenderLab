@@ -35,10 +35,7 @@ int main() {
     handleInput("static/face-3.txt", face3);
     handleInput("static/face-4.txt", face4);
 
-    printf("\n����ļ�ΪͬĿ¼�µ�table.csv���������ͬ���Ƶ��ļ����Ḳ�����ݣ�\n");
-    printf("\n�������stepΪ������face1�н�uv�ֱ���[0.0, 1.0]��������㣬���Ըõ�Ϊ��׼����face2����ͬ���������������\n�� ����Ϊ0.1��uv����ֱ����11�Σ���121�����");
-    printf("\n������ϵͳ��������ʵ�ʵļ��������ƫ����粽��Ϊ0.05ʱ��uv����Ӧ�ֱ����21�Σ���ʵ�ʿ���ֻ��20��\n");
-    printf("\n[���벽��step] ");
+    printf("\n[step] ");
     double step = 0.01;
     scanf("%lf", &step);
     cout << endl;
@@ -82,7 +79,6 @@ int main() {
             double f3minDistance = getNearestSuperPoint(face3pnts, pivot, f3nearest);
             SuperPoint f4nearest;
             double f4minDistance = getNearestSuperPoint(face4pnts, pivot, f4nearest);
-            // д���ļ�
             double minDistance = min(f2minDistance, min(f3minDistance, f4minDistance));
             string minFace = "face2";
             if ((f3minDistance + EPS) < f2minDistance) {
@@ -117,18 +113,20 @@ int main() {
     double total_sec = double(etime - stime) / CLOCKS_PER_SEC;
     int cost_min = floor(total_sec / 60);
     double cost_sec = total_sec - cost_min * 60;
-    cout << endl << endl << "[��ʱ] " << cost_min << "min " << cost_sec << "s" << endl;
+    cout << endl << endl << "[time cost] " << cost_min << "min " << cost_sec << "s" << endl;
 
-    cout << "\n��С������ͳ��" << endl;
+    cout << "\nsummary" << endl;
 
     for (auto& iter : minFaceCount) {
         if (iter.second == 0) continue;
-        cout << iter.first << ": " << iter.second << "��" << endl;
+        cout << iter.first << ": " << iter.second << "次" << endl;
     }
     cout << endl;
 
     ofile.close();
 
+#ifdef __WIN32__
     system("pause");
+#endif
     return 0;
 }

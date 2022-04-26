@@ -93,6 +93,8 @@ int main() {
     cout << "[point]: " << minSp.pnt.x << ", " << minSp.pnt.y << ", " << minSp.pnt.z << endl;
     cout << "[face]: " << minFace << endl << endl;
 
+#ifdef __WIN32__
     system("pause");
+#endif
     return 0;
 }

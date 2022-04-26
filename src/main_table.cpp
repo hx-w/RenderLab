@@ -1,8 +1,9 @@
-#include <fstream>
 #include <ctime>
 #include <map>
 #include "utils.hpp"
 using namespace std;
+
+NURBS_Surface face1, face2, face3, face4;
 
 void preprocess(NURBS_Surface& face, vector<SuperPoint>& spnts, double step) {
     for (double fv = 0.0; fv <= 1.0; fv += step) {

@@ -4,6 +4,8 @@ using namespace std;
 
 #define ESP 1e-6
 
+NURBS_Surface face1, face2, face3, face4;
+
 int main() {
     handleInput("static/face-1.txt", face1);
     handleInput("static/face-2.txt", face2);

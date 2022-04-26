@@ -5,8 +5,6 @@
 
 using namespace std;
 
-NURBS_Surface face1, face2, face3, face4;
-
 static void handleInput(const string& filename, NURBS_Surface& face) {
     FILE *infile = fopen(filename.c_str(), "r");
     double x, y, z;

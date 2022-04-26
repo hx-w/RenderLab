@@ -60,35 +60,35 @@ struct SuperPoint {
 struct NURBS_Surface {
     NURBS_Surface() {}
     ~NURBS_Surface() {}
-    // u·½Ïòµã¸öÊý-1, v·½Ïòµã¸öÊý-1, u½×Êý, v½×Êý
+    // uï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½-1, vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½-1, uï¿½ï¿½ï¿½ï¿½, vï¿½ï¿½ï¿½ï¿½
     int maxU, maxV, uOrder, vOrder;
-    vector<vector<double> > weight; // È¨ÖØ
+    vector<vector<double> > weight; // È¨ï¿½ï¿½
     vector<vector<Point> > pnts;
-    vector<vector<double> > T_u; // u ½ÚµãÊ¸Á¿
-    vector<vector<double> > T_v; // v ½ÚµãÊ¸Á¿
+    vector<vector<double> > T_u; // u ï¿½Úµï¿½Ê¸ï¿½ï¿½
+    vector<vector<double> > T_v; // v ï¿½Úµï¿½Ê¸ï¿½ï¿½
 };
 
 NURBS_Surface face1, face2, face3, face4;
 
 
-void GetKnotVector(NURBS_Surface& face, vector<double>& T, int nCount, int num,int order, bool bU)//¹þµÂÀû-¼ÖµÂËã·¨»ñÈ¡½ÚµãÊ¸Á¿Êý×é
+void GetKnotVector(NURBS_Surface& face, vector<double>& T, int nCount, int num,int order, bool bU)//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½-ï¿½Öµï¿½ï¿½ã·¨ï¿½ï¿½È¡ï¿½Úµï¿½Ê¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 {
     T.clear();
     for (int i = 0; i <= order + num + 1; ++i) {
         if (i <= order) T.push_back(0.0);
         else if (i >= num + 1 && i <= num + order + 1) T.push_back(1.0);
         else if (i >= order + 1 && i <= num) {
-            // ¼ÆËãnum-order¸öÄÚ½Úµã
+            // ï¿½ï¿½ï¿½ï¿½num-orderï¿½ï¿½ï¿½Ú½Úµï¿½
             double sum = 0.0;
             for(int j = order + 1; j <= i; ++j) { 
-                double numerator = 0.0;//¼ÆËã·Ö×Ó
+                double numerator = 0.0;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                 for (int loop = j - order; loop <= j - 1; ++loop) {
-                    if(bU)//Ñ¡Ôñ¼ÆËã½ÚµãÊ¸Á¿U»¹ÊÇ¼ÆËã½ÚµãÊ¸Á¿V
+                    if(bU)//Ñ¡ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½Ê¸ï¿½ï¿½Uï¿½ï¿½ï¿½Ç¼ï¿½ï¿½ï¿½Úµï¿½Ê¸ï¿½ï¿½V
                         numerator += (face.pnts[nCount][loop].x-face.pnts[nCount][loop-1].x)*(face.pnts[nCount][loop].x-face.pnts[nCount][loop-1].x)+(face.pnts[nCount][loop].y-face.pnts[nCount][loop-1].y)*(face.pnts[nCount][loop].y-face.pnts[nCount][loop-1].y);
                     else
                         numerator += (face.pnts[loop][nCount].x-face.pnts[loop-1][nCount].x)*(face.pnts[loop][nCount].x-face.pnts[loop-1][nCount].x)+(face.pnts[loop][nCount].y-face.pnts[loop-1][nCount].y)*(face.pnts[loop][nCount].y-face.pnts[loop-1][nCount].y);
                 }
-                double denominator = 0.0;//¼ÆËã·ÖÄ¸
+                double denominator = 0.0;//ï¿½ï¿½ï¿½ï¿½ï¿½Ä¸
                 for (int loop1 = order + 1; loop1 <= num + 1; ++loop1) {
                     for(int loop2 = loop1 - order; loop2 <= loop1 - 1; ++loop2) {
                         if(bU)
@@ -107,7 +107,7 @@ void GetKnotVector(NURBS_Surface& face, vector<double>& T, int nCount, int num,i
     }
 }
 
-double BasisFunctionValue(double t, int i, int order, const vector<double>& T) //¼ÆËãBÑùÌõ»ùº¯Êý
+double BasisFunctionValue(double t, int i, int order, const vector<double>& T) //ï¿½ï¿½ï¿½ï¿½Bï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 {
 	double value1, value2, value;
 	if (order == 0) {
@@ -121,21 +121,21 @@ double BasisFunctionValue(double t, int i, int order, const vector<double>& T) /
 			return 0.0;
         }
 		else {
-			double coffcient1, coffcient2;//Í¹×éºÏÏµÊý1£¬Í¹×éºÏÏµÊý2
-			double denominator = 0.0;//·ÖÄ¸
-			denominator = T[i + order] - T[i];//µÝÍÆ¹«Ê½µÚÒ»Ïî·ÖÄ¸
-			if(denominator == 0.0)//Ô¼¶¨0/0
+			double coffcient1, coffcient2;//Í¹ï¿½ï¿½ï¿½Ïµï¿½ï¿½1ï¿½ï¿½Í¹ï¿½ï¿½ï¿½Ïµï¿½ï¿½2
+			double denominator = 0.0;//ï¿½ï¿½Ä¸
+			denominator = T[i + order] - T[i];//ï¿½ï¿½ï¿½Æ¹ï¿½Ê½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½Ä¸
+			if(denominator == 0.0)//Ô¼ï¿½ï¿½0/0
 				coffcient1 = 0.0;
 			else
 				coffcient1=(t - T[i])/denominator;
-			denominator=T[i + order + 1] - T[i + 1]; //µÝÍÆ¹«Ê½µÚ¶þÏî·ÖÄ¸
-			if(0.0 == denominator)//Ô¼¶¨0/0
+			denominator=T[i + order + 1] - T[i + 1]; //ï¿½ï¿½ï¿½Æ¹ï¿½Ê½ï¿½Ú¶ï¿½ï¿½ï¿½ï¿½Ä¸
+			if(0.0 == denominator)//Ô¼ï¿½ï¿½0/0
 				coffcient2 = 0.0;
 			else
 				coffcient2 = (T[i + order + 1] - t) / denominator;
-			value1 = coffcient1 * BasisFunctionValue(t, i, order - 1, T);//µÝÍÆ¹«Ê½µÚÒ»ÏîµÄÖµ
-			value2 = coffcient2 * BasisFunctionValue(t, i + 1, order - 1, T);//µÝÍÆ¹«Ê½µÚ¶þÏîµÄÖµ
-			value = value1 + value2;//»ùº¯ÊýµÄÖµ
+			value1 = coffcient1 * BasisFunctionValue(t, i, order - 1, T);//ï¿½ï¿½ï¿½Æ¹ï¿½Ê½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½Öµ
+			value2 = coffcient2 * BasisFunctionValue(t, i + 1, order - 1, T);//ï¿½ï¿½ï¿½Æ¹ï¿½Ê½ï¿½Ú¶ï¿½ï¿½ï¿½ï¿½Öµ
+			value = value1 + value2;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµ
 		}
 	}
 	return value;
@@ -200,7 +200,7 @@ double getDistance(const Point& p1, const Point& p2) {
                 (p2.z - p1.z) * (p2.z - p1.z));
 }
 
-// Ô¤´¦Àí ¼ÆËãuvµãÕó
+// Ô¤ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½uvï¿½ï¿½ï¿½ï¿½
 void preprocess(NURBS_Surface& face, vector<SuperPoint>& spnts, double step) {
     for (double fv = 0.0; fv <= 1.0; fv += step) {
         for (double fu = 0.0; fu <= 1.0; fu += step) {
@@ -226,15 +226,15 @@ double getNearestSuperPoint(vector<SuperPoint>& spnts, const Point& pnt, SuperPo
 #define EPS 1e-6
 
 int main() {
-    handleInput("face-1.txt", face1);
-    handleInput("face-2.txt", face2);
-    handleInput("face-3.txt", face3);
-    handleInput("face-4.txt", face4);
+    handleInput("static/face-1.txt", face1);
+    handleInput("static/face-2.txt", face2);
+    handleInput("static/face-3.txt", face3);
+    handleInput("static/face-4.txt", face4);
 
-    printf("\nÊä³öÎÄ¼þÎªÍ¬Ä¿Â¼ÏÂµÄtable.csv£¬Èç¹ûÓÐÏàÍ¬Ãû³ÆµÄÎÄ¼þ½«»á¸²¸ÇÄÚÈÝ£¡\n");
-    printf("\n³ÌÐò»áÒÔstepÎª²½³¤ÔÚface1ÖÐ½«uv·Ö±ðÔÚ[0.0, 1.0]Çø¼ä±éÀúµã£¬²¢ÒÔ¸ÃµãÎª»ù×¼£¬ÔÚface2ÖÐÒÔÍ¬Ñù²½³¤ËÑË÷×î½üµã\nÀý ²½³¤Îª0.1£¬uv·½Ïò·Ö±ð±éÀú11´Î£¬¹²121ÖÖ×éºÏ");
-    printf("\nµ«ÓÉÓÚÏµÍ³¸¡µãÊýÎó²î£¬Êµ¼ÊµÄ¼ÆËã´ÎÊýÓÐÆ«²î£¬ÀýÈç²½³¤Îª0.05Ê±£¬uv·½ÏòÓ¦·Ö±ð±éÀú21´Î£¬µ«Êµ¼Ê¿ÉÄÜÖ»ÓÐ20´Î\n");
-    printf("\n[ÊäÈë²½³¤step] ");
+    printf("\nï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ÎªÍ¬Ä¿Â¼ï¿½Âµï¿½table.csvï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¬ï¿½ï¿½ï¿½Æµï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½á¸²ï¿½ï¿½ï¿½ï¿½ï¿½Ý£ï¿½\n");
+    printf("\nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½stepÎªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½face1ï¿½Ð½ï¿½uvï¿½Ö±ï¿½ï¿½ï¿½[0.0, 1.0]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ã£¬ï¿½ï¿½ï¿½Ô¸Ãµï¿½Îªï¿½ï¿½×¼ï¿½ï¿½ï¿½ï¿½face2ï¿½ï¿½ï¿½ï¿½Í¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½\nï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Îª0.1ï¿½ï¿½uvï¿½ï¿½ï¿½ï¿½Ö±ï¿½ï¿½ï¿½ï¿½11ï¿½Î£ï¿½ï¿½ï¿½121ï¿½ï¿½ï¿½ï¿½ï¿½");
+    printf("\nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÏµÍ³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½î£¬Êµï¿½ÊµÄ¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ«ï¿½î£¬ï¿½ï¿½ï¿½ç²½ï¿½ï¿½Îª0.05Ê±ï¿½ï¿½uvï¿½ï¿½ï¿½ï¿½Ó¦ï¿½Ö±ï¿½ï¿½ï¿½ï¿½21ï¿½Î£ï¿½ï¿½ï¿½Êµï¿½Ê¿ï¿½ï¿½ï¿½Ö»ï¿½ï¿½20ï¿½ï¿½\n");
+    printf("\n[ï¿½ï¿½ï¿½ë²½ï¿½ï¿½step] ");
     double step = 0.01;
     scanf("%lf", &step);
     cout << endl;
@@ -247,7 +247,7 @@ int main() {
     clock_t stime, etime;
     stime = clock();
     
-    // Ô¤ÏÈ¼ÇÂ¼face2, face3, face4ÖÐµÄµãÕó
+    // Ô¤ï¿½È¼ï¿½Â¼face2, face3, face4ï¿½ÐµÄµï¿½ï¿½ï¿½
     vector<SuperPoint> face2pnts;
     preprocess(face2, face2pnts, step);
     vector<SuperPoint> face3pnts;
@@ -255,7 +255,7 @@ int main() {
     vector<SuperPoint> face4pnts;
     preprocess(face4, face4pnts, step);
 
-    const int savepoint = 500; // ¼ÆËã500´Î±£´æÒ»´ÎÊý¾Ý ±ÜÃâÄÚ´æÒç³ö
+    const int savepoint = 500; // ï¿½ï¿½ï¿½ï¿½500ï¿½Î±ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ú´ï¿½ï¿½ï¿½ï¿½
 
     map<string, int> minFaceCount {
         {"face2", 0},
@@ -266,12 +266,12 @@ int main() {
         for (double f1u = 0.0; f1u <= 1.0; f1u += step) {
             int count = (f1v / step) * times + (f1u / step) + 1;
             if (count % 500 == 0) {
-                // ±£´æÊý¾Ý
+                // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                 ofile.close();
                 ofile.open("table.csv", ios::app);
             }
             printf("\r[processed] %.3lf%%", 100.0 * count / (times * times));
-            // ±éÀúÇúÃæ1ÖÐµÄµã
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½1ï¿½ÐµÄµï¿½
             Point pivot = getPntByUV(face1, f1v, f1u);
             SuperPoint f2nearest;
             double f2minDistance = getNearestSuperPoint(face2pnts, pivot, f2nearest);
@@ -279,7 +279,7 @@ int main() {
             double f3minDistance = getNearestSuperPoint(face3pnts, pivot, f3nearest);
             SuperPoint f4nearest;
             double f4minDistance = getNearestSuperPoint(face4pnts, pivot, f4nearest);
-            // Ð´ÈëÎÄ¼þ
+            // Ð´ï¿½ï¿½ï¿½Ä¼ï¿½
             double minDistance = min(f2minDistance, min(f3minDistance, f4minDistance));
             string minFace = "face2";
             if ((f3minDistance + EPS) < f2minDistance) {
@@ -314,13 +314,13 @@ int main() {
     double total_sec = double(etime - stime) / CLOCKS_PER_SEC;
     int cost_min = floor(total_sec / 60);
     double cost_sec = total_sec - cost_min * 60;
-    cout << endl << endl << "[ºÄÊ±] " << cost_min << "min " << cost_sec << "s" << endl;
+    cout << endl << endl << "[ï¿½ï¿½Ê±] " << cost_min << "min " << cost_sec << "s" << endl;
 
-    cout << "\n×îÐ¡¾àÀëÃæÍ³¼Æ" << endl;
+    cout << "\nï¿½ï¿½Ð¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í³ï¿½ï¿½" << endl;
 
     for (auto& iter : minFaceCount) {
         if (iter.second == 0) continue;
-        cout << iter.first << ": " << iter.second << "´Î" << endl;
+        cout << iter.first << ": " << iter.second << "ï¿½ï¿½" << endl;
     }
     cout << endl;
 

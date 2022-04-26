@@ -1,4 +1,6 @@
 *.csv
+main
+main_table
 CMakeLists.txt.user
 CMakeCache.txt
 CMakeFiles

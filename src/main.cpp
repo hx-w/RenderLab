@@ -53,12 +53,11 @@ struct SuperPoint {
 struct NURBS_Surface {
     NURBS_Surface() {}
     ~NURBS_Surface() {}
-    // u方向点个数-1, v方向点个数-1, u阶数, v阶数
     int maxU, maxV, uOrder, vOrder;
-    vector<vector<double> > weight; // 权重
+    vector<vector<double> > weight;
     vector<vector<Point> > pnts;
-    vector<vector<double> > T_u; // u 节点矢量
-    vector<vector<double> > T_v; // v 节点矢量
+    vector<vector<double> > T_u; // u vector
+    vector<vector<double> > T_v; // v vector
 };
 
 NURBS_Surface face1, face2, face3, face4;
@@ -71,17 +70,16 @@ void GetKnotVector(NURBS_Surface& face, vector<double>& T, int nCount, int num,i
         if (i <= order) T.push_back(0.0);
         else if (i >= num + 1 && i <= num + order + 1) T.push_back(1.0);
         else if (i >= order + 1 && i <= num) {
-            // 计算num-order个内节点
             double sum = 0.0;
             for(int j = order + 1; j <= i; ++j) { 
-                double numerator = 0.0;//计算分子
+                double numerator = 0.0;
                 for (int loop = j - order; loop <= j - 1; ++loop) {
-                    if(bU)//选择计算节点矢量U还是计算节点矢量V
+                    if(bU)
                         numerator += (face.pnts[nCount][loop].x-face.pnts[nCount][loop-1].x)*(face.pnts[nCount][loop].x-face.pnts[nCount][loop-1].x)+(face.pnts[nCount][loop].y-face.pnts[nCount][loop-1].y)*(face.pnts[nCount][loop].y-face.pnts[nCount][loop-1].y);
                     else
                         numerator += (face.pnts[loop][nCount].x-face.pnts[loop-1][nCount].x)*(face.pnts[loop][nCount].x-face.pnts[loop-1][nCount].x)+(face.pnts[loop][nCount].y-face.pnts[loop-1][nCount].y)*(face.pnts[loop][nCount].y-face.pnts[loop-1][nCount].y);
                 }
-                double denominator = 0.0;//计算分母
+                double denominator = 0.0;
                 for (int loop1 = order + 1; loop1 <= num + 1; ++loop1) {
                     for(int loop2 = loop1 - order; loop2 <= loop1 - 1; ++loop2) {
                         if(bU)
@@ -196,10 +194,10 @@ double getDistance(const Point& p1, const Point& p2) {
 #define ESP 1e-6
 
 int main() {
-    handleInput("face-1.txt", face1);
-    handleInput("face-2.txt", face2);
-    handleInput("face-3.txt", face3);
-    handleInput("face-4.txt", face4);
+    handleInput("static/face-1.txt", face1);
+    handleInput("static/face-2.txt", face2);
+    handleInput("static/face-3.txt", face3);
+    handleInput("static/face-4.txt", face4);
 
     printf("\n输入曲面-1的u v(空格分隔): ");
     double u, v = 0.0;

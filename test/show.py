@@ -26,7 +26,7 @@ def read_data(filename, offset: int, mindis=False, header=True) -> list:
     return pnt
 
 MAXROW = 1
-MAXCOL = 2
+MAXCOL = 3
 def plotSub(index: int, color: str, title: str, points: list):
     ax = plt.subplot(MAXROW, MAXCOL, index, projection='3d')
     ax.scatter(points[0], points[1], points[2], c=color, s=1)
@@ -48,11 +48,16 @@ def plotMindis(index: int):
     plotSub(index, 'g', 'mindis', read_data('table.csv', 7, True))
     plotSub(index, 'y', 'mindis', read_data('table.csv', 19, True))
 
+def plotEdge(index: int):
+    plotSub(index, 'r', 'edge', read_data('edge.csv', 0))
+
 plotFace(1, 'face-1')
 plotFace(1, 'face-2')
 plotFace(1, 'face-3')
 plotFace(1, 'face-4')
 
 plotMindis(2)
+
+plotEdge(3)
 
 plt.show()

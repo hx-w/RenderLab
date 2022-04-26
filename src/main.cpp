@@ -1,195 +1,6 @@
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <string>
-#include <cmath>
+#include "nurbs_lib.hpp"
+#include "utils.hpp"
 using namespace std;
-
-struct Point {
-    Point(double x = 0, double y = 0, double z = 0) : x(x), y(y), z(z) {}
-    ~Point() {}
-    Point(const Point& p): x(p.x), y(p.y), z(p.z) {}
-
-    bool operator==(const Point& p) {
-        return p.x == x && p.y == y && p.z == z;
-    }
-
-    Point operator+(const Point& p) const {
-        return Point(x + p.x, y + p.y, z + p.z);
-    }
-
-    Point operator*(const double& num) const {
-        return Point(x * num, y * num, z * num);
-    }
-
-    Point* operator+=(const Point& p) {
-        x += p.x; y += p.y; z += p.z;
-        return this;
-    }
-
-    Point* operator/=(const double& num) {
-        x /= num; y /= num; z /= num;
-        return this;
-    }
-
-    double x, y, z;
-};
-
-struct SuperPoint {
-    SuperPoint() {}
-    SuperPoint(Point pnt, double u, double v): pnt(pnt), u(u), v(v) {}
-    ~SuperPoint() {}
-    SuperPoint(const SuperPoint& sp): pnt(sp.pnt), u(sp.u), v(sp.v) {}
-    SuperPoint operator=(const SuperPoint& sp) {
-        pnt = sp.pnt, u = sp.u, v = sp.v;
-        return *this;
-    }
-
-    Point pnt;
-    double u;
-    double v;
-};
-
-struct NURBS_Surface {
-    NURBS_Surface() {}
-    ~NURBS_Surface() {}
-    int maxU, maxV, uOrder, vOrder;
-    vector<vector<double> > weight;
-    vector<vector<Point> > pnts;
-    vector<vector<double> > T_u; // u vector
-    vector<vector<double> > T_v; // v vector
-};
-
-NURBS_Surface face1, face2, face3, face4;
-
-
-void GetKnotVector(NURBS_Surface& face, vector<double>& T, int nCount, int num,int order, bool bU)//¹þµÂÀû-¼ÖµÂËã·¨»ñÈ¡½ÚµãÊ¸Á¿Êý×é
-{
-    T.clear();
-    for (int i = 0; i <= order + num + 1; ++i) {
-        if (i <= order) T.push_back(0.0);
-        else if (i >= num + 1 && i <= num + order + 1) T.push_back(1.0);
-        else if (i >= order + 1 && i <= num) {
-            double sum = 0.0;
-            for(int j = order + 1; j <= i; ++j) { 
-                double numerator = 0.0;
-                for (int loop = j - order; loop <= j - 1; ++loop) {
-                    if(bU)
-                        numerator += (face.pnts[nCount][loop].x-face.pnts[nCount][loop-1].x)*(face.pnts[nCount][loop].x-face.pnts[nCount][loop-1].x)+(face.pnts[nCount][loop].y-face.pnts[nCount][loop-1].y)*(face.pnts[nCount][loop].y-face.pnts[nCount][loop-1].y);
-                    else
-                        numerator += (face.pnts[loop][nCount].x-face.pnts[loop-1][nCount].x)*(face.pnts[loop][nCount].x-face.pnts[loop-1][nCount].x)+(face.pnts[loop][nCount].y-face.pnts[loop-1][nCount].y)*(face.pnts[loop][nCount].y-face.pnts[loop-1][nCount].y);
-                }
-                double denominator = 0.0;
-                for (int loop1 = order + 1; loop1 <= num + 1; ++loop1) {
-                    for(int loop2 = loop1 - order; loop2 <= loop1 - 1; ++loop2) {
-                        if(bU)
-                            denominator+=(face.pnts[nCount][loop2].x-face.pnts[nCount][loop2-1].x)*(face.pnts[nCount][loop2].x-face.pnts[nCount][loop2-1].x)+(face.pnts[nCount][loop2].y-face.pnts[nCount][loop2-1].y)*(face.pnts[nCount][loop2].y-face.pnts[nCount][loop2-1].y);
-                        else
-                            denominator+=(face.pnts[loop2][nCount].x-face.pnts[loop2-1][nCount].x)*(face.pnts[loop2][nCount].x-face.pnts[loop2-1][nCount].x)+(face.pnts[loop2][nCount].y-face.pnts[loop2-1][nCount].y)*(face.pnts[loop2][nCount].y-face.pnts[loop2-1][nCount].y);
-                    }
-                } 
-                sum += numerator / denominator;			
-            }
-            T.push_back(sum);
-        }
-        else {
-            cout << "error" << endl;
-        }
-    }
-}
-
-double BasisFunctionValue(double t, int i, int order, const vector<double>& T) //¼ÆËãBÑùÌõ»ùº¯Êý
-{
-	double value1, value2, value;
-	if (order == 0) {
-		if(t >= T[i] && t < T[i + 1])
-			return 1.0;
-		else
-			return 0.0;
-	}
-	if (order > 0) {
-		if(t < T[i] || t > T[i + order + 1]) {
-			return 0.0;
-        }
-		else {
-			double coffcient1, coffcient2;//Í¹×éºÏÏµÊý1£¬Í¹×éºÏÏµÊý2
-			double denominator = 0.0;//·ÖÄ¸
-			denominator = T[i + order] - T[i];//µÝÍÆ¹«Ê½µÚÒ»Ïî·ÖÄ¸
-			if(denominator == 0.0)//Ô¼¶¨0/0
-				coffcient1 = 0.0;
-			else
-				coffcient1=(t - T[i])/denominator;
-			denominator=T[i + order + 1] - T[i + 1]; //µÝÍÆ¹«Ê½µÚ¶þÏî·ÖÄ¸
-			if(0.0 == denominator)//Ô¼¶¨0/0
-				coffcient2 = 0.0;
-			else
-				coffcient2 = (T[i + order + 1] - t) / denominator;
-			value1 = coffcient1 * BasisFunctionValue(t, i, order - 1, T);//µÝÍÆ¹«Ê½µÚÒ»ÏîµÄÖµ
-			value2 = coffcient2 * BasisFunctionValue(t, i + 1, order - 1, T);//µÝÍÆ¹«Ê½µÚ¶þÏîµÄÖµ
-			value = value1 + value2;//»ùº¯ÊýµÄÖµ
-		}
-	}
-	return value;
-}
-
-void handleInput(const string& filename, NURBS_Surface& face) {
-    FILE *infile = fopen(filename.c_str(), "r");
-    double x, y, z;
-    fscanf(infile, "%d %d %d %d", &face.maxV, &face.maxU, &face.uOrder, &face.vOrder);
-    // read weights
-    for (int i = 0; i < face.maxV + 1; ++i) {
-        vector<double> temp;
-        for (int j = 0; j < face.maxU + 1; ++j) {
-            fscanf(infile, "%lf", &x);
-            // infile >> x;
-            temp.push_back(x);
-        }
-        face.weight.push_back(temp);
-    }
-    // read pnts
-    for (int i = 0; i < face.maxV + 1; ++i) {
-        vector<Point> temp;
-        for (int j = 0; j < face.maxU + 1; ++j) {
-            fscanf(infile, "%lf %lf %lf", &x, &y, &z);
-            temp.push_back(Point(x, y, z));
-        }
-        face.pnts.push_back(temp);
-    }
-    fclose(infile);
-}
-
-const Point getPntByUV(NURBS_Surface& face, double v, double u) {
-    // face1
-    face.T_u.clear();
-    face.T_v.clear();
-    for (int i = 0; i < face.maxV + 1; ++i) {
-        face.T_u.push_back(vector<double>());
-        GetKnotVector(face, face.T_u[i], i, face.maxU, face.uOrder, true);
-    }
-    for (int i = 0; i < face.maxU + 1; ++i) {
-        face.T_v.push_back(vector<double>());
-        GetKnotVector(face, face.T_v[i], i, face.maxV, face.vOrder, false);
-    }
-    double weight = 0.0;    
-    Point pnt(0, 0, 0);
-
-    for (int i = 0; i < face.maxV + 1; ++i) {
-        for (int j = 0; j < face.maxU + 1; ++j) {
-            double BValueU = BasisFunctionValue(u, j, face.uOrder, face.T_u[i]);
-            double BValueV = BasisFunctionValue(v, i, face.vOrder, face.T_v[j]);
-            pnt += face.pnts[i][j] * face.weight[i][j] * BValueU * BValueV;
-            weight += face.weight[i][j] * BValueU * BValueV;
-        }
-    }
-    pnt /= weight;
-    return pnt;
-}
-
-double getDistance(const Point& p1, const Point& p2) {
-    return sqrt((p2.x - p1.x) * (p2.x - p1.x) + \
-                (p2.y - p1.y) * (p2.y - p1.y) + \
-                (p2.z - p1.z) * (p2.z - p1.z));
-}
 
 #define ESP 1e-6
 
@@ -199,10 +10,10 @@ int main() {
     handleInput("static/face-3.txt", face3);
     handleInput("static/face-4.txt", face4);
 
-    printf("\nÊäÈëÇúÃæ-1µÄu v(¿Õ¸ñ·Ö¸ô): ");
+    printf("\nè¾“å…¥æ›²é¢-1çš„u v(ç©ºæ ¼åˆ†éš”): ");
     double u, v = 0.0;
     scanf("%lf %lf", &u, &v);
-    printf("²½³¤step: ");
+    printf("æ­¥é•¿step: ");
     double step = 0.01;
     scanf("%lf", &step);
     cout << endl;
@@ -243,39 +54,39 @@ int main() {
     string minFace;
     if (minDis == f2minDis) {
         minSp = f2minSp;
-        minFace = "ÇúÃæ-2";
+        minFace = "æ›²é¢-2";
     } else if (minDis == f3minDis) {
         minSp = f3minSp;
-        minFace = "ÇúÃæ-3";
+        minFace = "æ›²é¢-3";
     } else {
         minSp = f4minSp;
-        minFace = "ÇúÃæ-4";
+        minFace = "æ›²é¢-4";
     }
     
-    cout << "ÇúÃæ-1Ä¿±êµã" << endl;
+    cout << "æ›²é¢-1ç›®æ ‡ç‚¹" << endl;
     cout << "[u, v]: " << u << ", " << v << endl;
     cout << "[point]: " << pivot.x << ", " << pivot.y << ", " << pivot.z << endl;
     cout << "-----------------" << endl;
 
-    cout << "ÇúÃæ-2×î½üµã" << endl;
+    cout << "æ›²é¢-2æœ€è¿‘ç‚¹" << endl;
     cout << "[distance]: " << f2minDis << endl;
     cout << "[u, v]: " << f2minSp.u << ", " << f2minSp.v << endl;
     cout << "[point]: " << f2minSp.pnt.x << ", " << f2minSp.pnt.y << ", " << f2minSp.pnt.z << endl;
     cout << "-----------------" << endl;
 
-    cout << "ÇúÃæ-3×î½üµã" << endl;
+    cout << "æ›²é¢-3æœ€è¿‘ç‚¹" << endl;
     cout << "[distance]: " << f3minDis << endl;
     cout << "[u, v]: " << f3minSp.u << ", " << f3minSp.v << endl;
     cout << "[point]: " << f3minSp.pnt.x << ", " << f3minSp.pnt.y << ", " << f3minSp.pnt.z << endl;
     cout << "-----------------" << endl;
 
-    cout << "ÇúÃæ-4×î½üµã" << endl;
+    cout << "æ›²é¢-4æœ€è¿‘ç‚¹" << endl;
     cout << "[distance]: " << f4minDis << endl;
     cout << "[u, v]: " << f4minSp.u << ", " << f4minSp.v << endl;
     cout << "[point]: " << f4minSp.pnt.x << ", " << f4minSp.pnt.y << ", " << f4minSp.pnt.z << endl;
     cout << "-----------------" << endl;
 
-    cout << "¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý" << endl << "×î½üµã" << endl;
+    cout << "â†“â†“â†“â†“â†“â†“â†“â†“â†“â†“â†“â†“â†“â†“â†“â†“â†“" << endl << "æœ€è¿‘ç‚¹" << endl;
     cout << "[distance]: " << minDis << endl;
     cout << "[u, v]: " << minSp.u << ", " << minSp.v << endl;
     cout << "[point]: " << minSp.pnt.x << ", " << minSp.pnt.y << ", " << minSp.pnt.z << endl;

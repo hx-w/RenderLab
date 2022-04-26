@@ -71,7 +71,7 @@ int main() {
                 ofile.open("table.csv", ios::app);
             }
             printf("\r[processed] %.3lf%%", 100.0 * count / (times * times));
-            // ��������1�еĵ�
+            // foreach face
             Point pivot = getPntByUV(face1, f1v, f1u);
             SuperPoint f2nearest;
             double f2minDistance = getNearestSuperPoint(face2pnts, pivot, f2nearest);

@@ -2,28 +2,57 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-data = [[], [], []] # x y z
-
-def read_data(filename):
+# offset:
+#   face-1: 2
+#   face-2: 7
+#   face-3: 13
+#   face-4: 19
+def read_data(filename, offset: int, mindis=False, header=True) -> list:
+    pnt = [[], [], []]
+    dm = {
+        'face1': 2, 'face2': 7, 'face3': 13, 'face4': 19
+    }
     with open(filename, 'r') as f:
-        first = True
         for line in f:
-            if first:
-                first = False
+            if header:
+                header = False
                 continue
             elements = line.split(',')
-            headidx = 7
-            data[0].append(float(elements[headidx].strip('"')))
-            data[1].append(float(elements[headidx+1].strip('"')))
-            data[2].append(float(elements[headidx+2].strip('"')))
+            if mindis and dm[elements[23].strip('"')] != offset:
+                continue
+            pnt[0].append(float(elements[offset].strip('"')))
+            pnt[1].append(float(elements[offset+1].strip('"')))
+            pnt[2].append(float(elements[offset+2].strip('"')))
+    return pnt
 
-read_data('table.csv')
-x, y, z = data[0], data[1], data[2]
-ax = plt.subplot('111', projection='3d')  # 创建一个三维的绘图工程
-#  将数据点分成三部分画，在颜色上有区分度
-ax.scatter(x, y, z, c='y')  # 绘制数据点
+MAXROW = 1
+MAXCOL = 2
+def plotSub(index: int, color: str, title: str, points: list):
+    ax = plt.subplot(MAXROW, MAXCOL, index, projection='3d')
+    ax.scatter(points[0], points[1], points[2], c=color, s=1)
+    ax.set_zlabel('Z')
+    ax.set_ylabel('Y')
+    ax.set_xlabel('X')
+    plt.title(title)
 
-ax.set_zlabel('Z')  # 坐标轴
-ax.set_ylabel('Y')
-ax.set_xlabel('X')
+def plotFace(index: int, title: str):
+    dm = {
+        'face-1': [2, 'r'],
+        'face-2': [7, 'g'],
+        'face-3': [13, 'b'],
+        'face-4': [19, 'y']
+    }
+    plotSub(index, dm[title][1], title, read_data('table.csv', dm[title][0]))
+
+def plotMindis(index: int):
+    plotSub(index, 'g', 'mindis', read_data('table.csv', 7, True))
+    plotSub(index, 'y', 'mindis', read_data('table.csv', 19, True))
+
+plotFace(1, 'face-1')
+plotFace(1, 'face-2')
+plotFace(1, 'face-3')
+plotFace(1, 'face-4')
+
+plotMindis(2)
+
 plt.show()

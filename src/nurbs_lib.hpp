@@ -32,6 +32,11 @@ struct Point {
         return this;
     }
 
+    friend ostream &operator<<(ostream& output, const Point& pnt ) { 
+        output << "(" << pnt.x << " " << pnt.y << " " << pnt.z << ")";
+        return output;            
+    }
+
     double x, y, z;
 };
 

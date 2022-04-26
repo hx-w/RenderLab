@@ -1,4 +1,3 @@
-#include "nurbs_lib.hpp"
 #include "utils.hpp"
 using namespace std;
 

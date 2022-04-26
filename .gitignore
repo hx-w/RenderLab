@@ -1,6 +1,8 @@
 *.csv
 main
 main_table
+main_test
+main_test.cpp
 CMakeLists.txt.user
 CMakeCache.txt
 CMakeFiles

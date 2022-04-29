@@ -5,10 +5,10 @@ using namespace std;
 
 NURBS_Surface face1, face2, face3, face4;
 
-void preprocess(NURBS_Surface& face, vector<SuperPoint>& spnts, double step) {
-    for (double fv = 0.0; fv <= 1.0; fv += step) {
-        for (double fu = 0.0; fu <= 1.0; fu += step) {
-            Point pnt = getPntByUV(face, fv, fu);
+void preprocess(NURBS_Surface& face, vector<SuperPoint>& spnts, int max_iter) {
+    for (int fv = 0; fv < max_iter; ++fv) {
+        for (int fu = 0; fu < max_iter; ++fu) {
+            Point pnt = getPntByUV(face, double(fv) / max_iter, double(fu) / max_iter);
             spnts.emplace_back(SuperPoint(pnt, fu, fv));
         }
     }
@@ -27,25 +27,25 @@ double getNearestSuperPoint(const vector<SuperPoint>& spnts, const Point& pnt, S
     return minDistance;
 }
 
-void getEdgeSet(vector<SuperPoint>& edge_set, double step, const vector<SuperPoint>& face2pnts, const vector<SuperPoint>& face3pnts) {
-    edge_set.clear();
-    for (double f1v = 0.0; f1v <= 1.0; f1v += step) {
-        for (double f1u = 0.0; f1u <= 1.0; f1u += step) {
-            Point pivot = getPntByUV(face1, f1v, f1u);
+void getEdgeSet(EdgePointSet& edge_set, int max_iter, const vector<SuperPoint>& face2pnts, const vector<SuperPoint>& face3pnts) {
+    for (int f1v = 0; f1v < max_iter; ++f1v) {
+        for (int f1u = 0; f1u < max_iter; ++f1u) {
+            Point pivot = getPntByUV(face1, double(f1v) / max_iter, double(f1u) / max_iter);
             SuperPoint f2nearest;
             double f2minDistance = getNearestSuperPoint(face2pnts, pivot, f2nearest);
             SuperPoint f3nearest;
             double f3minDistance = getNearestSuperPoint(face3pnts, pivot, f3nearest);
             if (f3minDistance <= f2minDistance) {
-                edge_set.emplace_back(SuperPoint(pivot, f1u, f1v));
+                edge_set.add(SuperPoint(pivot, f1u, f1v));
             }
         }
     }
+    edge_set.gen_edge();
     ofstream ofile;
     ofile.open("edge.csv", ios::out);
     ofile << "x,y,z" << endl;
-    for (auto& spnt : edge_set) {
-        ofile << spnt.x << "," << spnt.y << "," << spnt.z << endl;
+    for (auto& idx : edge_set.true_edge_idx) {
+        ofile << edge_set.pnts[idx].x << "," << edge_set.pnts[idx].y << "," << edge_set.pnts[idx].z << endl;
     }
     ofile.close();
 }
@@ -58,11 +58,10 @@ int main() {
     handleInput("static/face-3.txt", face3);
     handleInput("static/face-4.txt", face4);
 
-    printf("\n[step] ");
-    double step = 0.01;
-    scanf("%lf", &step);
+    printf("\n[max_iter] ");
+    int max_iter = 100;
+    scanf("%d", &max_iter);
     cout << endl;
-    const int times = floor(1.0 / step) + 1;
 
     ofstream ofile;
     ofile.open("table.csv", ios::out);
@@ -72,16 +71,16 @@ int main() {
     stime = clock();
     
     vector<SuperPoint> face2pnts;
-    preprocess(face2, face2pnts, step);
+    preprocess(face2, face2pnts, max_iter);
     vector<SuperPoint> face3pnts;
-    preprocess(face3, face3pnts, step);
+    preprocess(face3, face3pnts, max_iter);
     vector<SuperPoint> face4pnts;
-    preprocess(face4, face4pnts, step);
+    preprocess(face4, face4pnts, max_iter);
 
     const int savepoint = 500;
 
-    vector<SuperPoint> edge_set; // for face1
-    getEdgeSet(edge_set, step, face2pnts, face3pnts);
+    EdgePointSet edge_set; // for face1
+    getEdgeSet(edge_set, max_iter, face2pnts, face3pnts);
 
     map<string, int> minFaceCount {
         {"face2", 0},
@@ -89,16 +88,16 @@ int main() {
         {"face4", 0}
     };
 
-    for (double f1v = 0.0; f1v <= 1.0; f1v += step) {
-        for (double f1u = 0.0; f1u <= 1.0; f1u += step) {
-            int count = (f1v / step) * times + (f1u / step) + 1;
+    for (int f1v = 0; f1v < max_iter; ++f1v) {
+        for (int f1u = 0; f1u < max_iter; ++f1u) {
+            int count = f1v * max_iter + f1u + 1;
             if (count % 500 == 0) {
                 ofile.close();
                 ofile.open("table.csv", ios::app);
             }
-            printf("\r[processed] %.3lf%%", 100.0 * count / (times * times));
+            printf("\r[processed] %.3lf%%", 100.0 * count / (max_iter * max_iter));
             // foreach face
-            Point pivot = getPntByUV(face1, f1v, f1u);
+            Point pivot = getPntByUV(face1, double(f1v) / max_iter, double(f1u) / max_iter);
             SuperPoint f2nearest;
             double f2minDistance = getNearestSuperPoint(face2pnts, pivot, f2nearest);
             SuperPoint f3nearest;
@@ -121,7 +120,7 @@ int main() {
             }
             minFaceCount[minFace] ++;
 
-            ofile << "\"" << f1u << "," << f1v << "\"," \
+            ofile << "\"" << double(f1u) / max_iter << "," << double(f1v) / max_iter << "\"," \
                   << "\"" << pivot.x << "," << pivot.y << "," << pivot.z << "\"," \
                   << "\"" << f2nearest.u << "," << f2nearest.v << "\"," \
                   << "\"" << f2nearest.x << "," << f2nearest.y << "," << f2nearest.z << "\"," \

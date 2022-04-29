@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <cmath>
+#include <set>
 using namespace std;
 
 struct Point {
@@ -42,7 +43,7 @@ struct Point {
 
 struct SuperPoint: public Point {
     SuperPoint() {}
-    SuperPoint(Point pnt, double u, double v): u(u), v(v) {
+    SuperPoint(Point pnt, int u, int v): u(u), v(v) {
         x = pnt.x, y = pnt.y, z = pnt.z;
     }
     ~SuperPoint() {}
@@ -57,8 +58,41 @@ struct SuperPoint: public Point {
         return int(u == sp.u) + int(v == sp.v);
     }
 
-    double u;
-    double v;
+    int u;
+    int v;
+};
+
+struct EdgePointSet {
+    EdgePointSet() {}
+    ~EdgePointSet() {}
+
+    void add(SuperPoint sp) {
+        pnts.push_back(sp);
+        uidx.insert(sp.u);
+        vidx.insert(sp.v);   
+    }
+
+    bool is_in_set(const SuperPoint& sp) {
+        return find(pnts.begin(), pnts.end(), sp) != pnts.end();
+    }
+
+    bool is_edge(const SuperPoint& sp) {
+        return (uidx.find(sp.u) != uidx.end() && vidx.find(sp.v) != vidx.end());
+    }
+
+    void gen_edge() {
+        int len = pnts.size();
+        for (int idx = 0; idx < len; ++idx) {
+            if (is_edge(pnts[idx])) {
+                true_edge_idx.push_back(idx);
+            }
+        }
+    }
+
+    set<double> uidx;
+    set<double> vidx;
+    vector<SuperPoint> pnts;
+    vector<int> true_edge_idx;
 };
 
 struct NURBS_Surface {

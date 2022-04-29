@@ -27,7 +27,26 @@ double getNearestSuperPoint(const vector<SuperPoint>& spnts, const Point& pnt, S
     return minDistance;
 }
 
-void getEdgeSet(EdgePointSet& edge_set, int max_iter, const vector<SuperPoint>& face2pnts, const vector<SuperPoint>& face3pnts) {
+void genEdgeSetNorm(EdgePointSet& edge_set, NURBS_Surface& face) {
+    int len = edge_set.pnts.size();
+    for (int i = 0; i < len; ++i) {
+        if (edge_set.is_edge(edge_set.pnts.at(i))) {
+            edge_set.true_edge_idx.push_back(i);
+            auto pl = getPntByUV(face, double(edge_set.pnts.at(i).v - 1) / edge_set.max_iter, double(edge_set.pnts.at(i).u) / edge_set.max_iter);
+            auto pr = getPntByUV(face, double(edge_set.pnts.at(i).v + 1) / edge_set.max_iter, double(edge_set.pnts.at(i).u) / edge_set.max_iter);
+            auto pt = getPntByUV(face, double(edge_set.pnts.at(i).v) / edge_set.max_iter, double(edge_set.pnts.at(i).u + 1) / edge_set.max_iter);
+            auto pd = getPntByUV(face, double(edge_set.pnts.at(i).v) / edge_set.max_iter, double(edge_set.pnts.at(i).u - 1) / edge_set.max_iter);
+            auto nlt = calcNormal(pl, pt, edge_set.pnts.at(1));
+            auto nrt = calcNormal(pr, pt, edge_set.pnts.at(1));
+            auto nld = calcNormal(pl, pd, edge_set.pnts.at(1));
+            auto nrd = calcNormal(pr, pd, edge_set.pnts.at(1));
+            auto nava = (nlt + nrt + nld + nrd) / 4;
+            edge_set.norms.push_back(nava);
+        }
+    }
+}
+
+void getEdgeSet(EdgePointSet& edge_set, int max_iter, const vector<SuperPoint>& face2pnts, const vector<SuperPoint>& face3pnts, NURBS_Surface& face) {
     for (int f1v = 0; f1v < max_iter; ++f1v) {
         for (int f1u = 0; f1u < max_iter; ++f1u) {
             Point pivot = getPntByUV(face1, double(f1v) / max_iter, double(f1u) / max_iter);
@@ -40,7 +59,7 @@ void getEdgeSet(EdgePointSet& edge_set, int max_iter, const vector<SuperPoint>& 
             }
         }
     }
-    edge_set.gen_edge();
+    genEdgeSetNorm(edge_set, face);
     ofstream ofile;
     ofile.open("edge.csv", ios::out);
     ofile << "x,y,z" << endl;
@@ -79,8 +98,8 @@ int main() {
 
     const int savepoint = 500;
 
-    EdgePointSet edge_set; // for face1
-    getEdgeSet(edge_set, max_iter, face2pnts, face3pnts);
+    EdgePointSet edge_set(max_iter); // for face1
+    getEdgeSet(edge_set, max_iter, face2pnts, face3pnts, face1);
 
     map<string, int> minFaceCount {
         {"face2", 0},
@@ -106,18 +125,20 @@ int main() {
             double f4minDistance = getNearestSuperPoint(face4pnts, pivot, f4nearest);
             double minDistance = min(f2minDistance, min(f3minDistance, f4minDistance));
             string minFace = "face2";
-            if (f3minDistance == f2minDistance) {
-                // edge_set.emplace_back(SuperPoint(pivot, f1u, f1v));
-                minFace = "face4";
-                // if ((f4minDistance - EPS) < f3minDistance) {
-                //     minFace = "face4";
-                // }
-                // else {
-                //     cout << f2minDistance << " " << f3minDistance << endl;
-                // }
-            } else if ((f4minDistance - EPS) < f2minDistance) {
-                minFace = "face4";
+            // 判断pivot是否在edge_set中
+            if (edge_set.is_in_set(f1u, f1v)) {
+                Point norm;
+                for (int idx = 0; idx < edge_set.true_edge_idx.size(); ++idx) {
+                    if (edge_set.pnts[edge_set.true_edge_idx[idx]].u == f1u && edge_set.pnts[edge_set.true_edge_idx[idx]].v == f1v) {
+                        norm = edge_set.norms[idx];
+                    }
+                    else { // 找合适的法线向量
+                    
+                    }
+                }
             }
+
+
             minFaceCount[minFace] ++;
 
             ofile << "\"" << double(f1u) / max_iter << "," << double(f1v) / max_iter << "\"," \

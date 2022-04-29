@@ -23,6 +23,10 @@ struct Point {
         return Point(x * num, y * num, z * num);
     }
 
+    Point operator/(const double& num) const {
+        return Point(x / num, y / num, z / num);
+    }
+
     Point* operator+=(const Point& p) {
         x += p.x; y += p.y; z += p.z;
         return this;
@@ -63,7 +67,7 @@ struct SuperPoint: public Point {
 };
 
 struct EdgePointSet {
-    EdgePointSet() {}
+    EdgePointSet(int max_iter): max_iter(max_iter) {}
     ~EdgePointSet() {}
 
     void add(SuperPoint sp) {
@@ -72,27 +76,32 @@ struct EdgePointSet {
         vidx.insert(sp.v);   
     }
 
-    bool is_in_set(const SuperPoint& sp) {
-        return find(pnts.begin(), pnts.end(), sp) != pnts.end();
+    bool is_in_set(int u, int v) {
+        for (auto& p : pnts) {
+            if (p.u == u && p.v == v)
+                return true;
+        }
+        return false;
     }
 
     bool is_edge(const SuperPoint& sp) {
-        return (uidx.find(sp.u) != uidx.end() && vidx.find(sp.v) != vidx.end());
-    }
-
-    void gen_edge() {
-        int len = pnts.size();
-        for (int idx = 0; idx < len; ++idx) {
-            if (is_edge(pnts[idx])) {
-                true_edge_idx.push_back(idx);
-            }
-        }
+        return \
+        sp.u != 0 && sp.v != 0 && sp.u != max_iter - 1 && sp.v != max_iter - 1 &&
+        !(
+            is_in_set(sp.u, sp.v) &&
+            is_in_set(sp.u + 1, sp.v) &&
+            is_in_set(sp.u, sp.v + 1) &&
+            is_in_set(sp.u - 1, sp.v) &&
+            is_in_set(sp.u, sp.v - 1)
+        );
     }
 
     set<double> uidx;
     set<double> vidx;
     vector<SuperPoint> pnts;
     vector<int> true_edge_idx;
+    vector<Point> norms;
+    int max_iter;
 };
 
 struct NURBS_Surface {
@@ -172,4 +181,28 @@ static double BasisFunctionValue(double t, int i, int order, const vector<double
 		}
 	}
 	return value;
+}
+
+Point calcNormal(const Point& ver1, const Point& ver2, const Point& ver3)
+{
+	double temp1[3], temp2[3], normal[3];
+	double length = 0.0;
+	temp1[0] = ver2.x - ver1.x;
+	temp1[1] = ver2.y - ver1.y;
+	temp1[2] = ver2.z - ver1.z;
+	temp2[0] = ver3.x - ver2.x;
+	temp2[1] = ver3.y - ver2.y;
+	temp2[2] = ver3.z - ver2.z;
+	//计算法线
+	normal[0] = temp1[1] * temp2[2] - temp1[2] * temp2[1];
+	normal[1] = -(temp1[0] * temp2[2] - temp1[2] * temp2[0]);
+	normal[2] = temp1[0] * temp2[1] - temp1[1] * temp2[0];
+	//法线单位化
+	length = sqrt(normal[0] * normal[0] + normal[1] * normal[1] + normal[2] * normal[2]);
+	if (length == 0.0f) { length = 1.0f; }
+	normal[0] /= length;
+	normal[1] /= length;
+	normal[2] /= length;
+	Point e_normal(normal[0], normal[1], normal[2]);
+	return e_normal;
 }

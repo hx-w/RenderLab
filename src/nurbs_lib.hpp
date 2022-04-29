@@ -40,20 +40,23 @@ struct Point {
     double x, y, z;
 };
 
-struct SuperPoint {
+struct SuperPoint: public Point {
     SuperPoint() {}
-    SuperPoint(Point pnt, double u, double v): pnt(pnt), u(u), v(v) {}
+    SuperPoint(Point pnt, double u, double v): u(u), v(v) {
+        x = pnt.x, y = pnt.y, z = pnt.z;
+    }
     ~SuperPoint() {}
-    SuperPoint(const SuperPoint& sp): pnt(sp.pnt), u(sp.u), v(sp.v) {}
+    SuperPoint(const SuperPoint& sp): u(sp.u), v(sp.v) {
+        x = sp.x, y = sp.y, z = sp.z;
+    }
     SuperPoint operator=(const SuperPoint& sp) {
-        pnt = sp.pnt, u = sp.u, v = sp.v;
+        x = sp.x, y = sp.y, z = sp.z, u = sp.u, v = sp.v;
         return *this;
     }
     int samelike(const SuperPoint& sp) {
         return int(u == sp.u) + int(v == sp.v);
     }
 
-    Point pnt;
     double u;
     double v;
 };

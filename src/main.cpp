@@ -72,25 +72,25 @@ int main() {
     cout << "曲面-2最近点" << endl;
     cout << "[distance]: " << f2minDis << endl;
     cout << "[u, v]: " << f2minSp.u << ", " << f2minSp.v << endl;
-    cout << "[point]: " << f2minSp.pnt.x << ", " << f2minSp.pnt.y << ", " << f2minSp.pnt.z << endl;
+    cout << "[point]: " << f2minSp.x << ", " << f2minSp.y << ", " << f2minSp.z << endl;
     cout << "-----------------" << endl;
 
     cout << "曲面-3最近点" << endl;
     cout << "[distance]: " << f3minDis << endl;
     cout << "[u, v]: " << f3minSp.u << ", " << f3minSp.v << endl;
-    cout << "[point]: " << f3minSp.pnt.x << ", " << f3minSp.pnt.y << ", " << f3minSp.pnt.z << endl;
+    cout << "[point]: " << f3minSp.x << ", " << f3minSp.y << ", " << f3minSp.z << endl;
     cout << "-----------------" << endl;
 
     cout << "曲面-4最近点" << endl;
     cout << "[distance]: " << f4minDis << endl;
     cout << "[u, v]: " << f4minSp.u << ", " << f4minSp.v << endl;
-    cout << "[point]: " << f4minSp.pnt.x << ", " << f4minSp.pnt.y << ", " << f4minSp.pnt.z << endl;
+    cout << "[point]: " << f4minSp.x << ", " << f4minSp.y << ", " << f4minSp.z << endl;
     cout << "-----------------" << endl;
 
     cout << "↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓" << endl << "最近点" << endl;
     cout << "[distance]: " << minDis << endl;
     cout << "[u, v]: " << minSp.u << ", " << minSp.v << endl;
-    cout << "[point]: " << minSp.pnt.x << ", " << minSp.pnt.y << ", " << minSp.pnt.z << endl;
+    cout << "[point]: " << minSp.x << ", " << minSp.y << ", " << minSp.z << endl;
     cout << "[face]: " << minFace << endl << endl;
 
 #ifdef __WIN32__

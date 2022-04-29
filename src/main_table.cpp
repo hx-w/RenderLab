@@ -16,9 +16,9 @@ void preprocess(NURBS_Surface& face, vector<SuperPoint>& spnts, double step) {
 
 double getNearestSuperPoint(const vector<SuperPoint>& spnts, const Point& pnt, SuperPoint& nearest) {
     nearest = spnts[0];
-    double minDistance = getDistance(pnt, nearest.pnt);
+    double minDistance = getDistance(pnt, nearest);
     for (auto& spnt : spnts) {
-        double distance = getDistance(pnt, spnt.pnt);
+        double distance = getDistance(pnt, spnt);
         if (distance < minDistance) {
             minDistance = distance;
             nearest = spnt;
@@ -45,7 +45,7 @@ void getEdgeSet(vector<SuperPoint>& edge_set, double step, const vector<SuperPoi
     ofile.open("edge.csv", ios::out);
     ofile << "x,y,z" << endl;
     for (auto& spnt : edge_set) {
-        ofile << spnt.pnt.x << "," << spnt.pnt.y << "," << spnt.pnt.z << endl;
+        ofile << spnt.x << "," << spnt.y << "," << spnt.z << endl;
     }
     ofile.close();
 }
@@ -124,13 +124,13 @@ int main() {
             ofile << "\"" << f1u << "," << f1v << "\"," \
                   << "\"" << pivot.x << "," << pivot.y << "," << pivot.z << "\"," \
                   << "\"" << f2nearest.u << "," << f2nearest.v << "\"," \
-                  << "\"" << f2nearest.pnt.x << "," << f2nearest.pnt.y << "," << f2nearest.pnt.z << "\"," \
+                  << "\"" << f2nearest.x << "," << f2nearest.y << "," << f2nearest.z << "\"," \
                   << f2minDistance << "," \
                   << "\"" << f3nearest.u << "," << f3nearest.v << "\"," \
-                  << "\"" << f3nearest.pnt.x << "," << f3nearest.pnt.y << "," << f3nearest.pnt.z << "\"," \
+                  << "\"" << f3nearest.x << "," << f3nearest.y << "," << f3nearest.z << "\"," \
                   << f3minDistance << "," \
                   << "\"" << f4nearest.u << "," << f4nearest.v << "\"," \
-                  << "\"" << f4nearest.pnt.x << "," << f4nearest.pnt.y << "," << f4nearest.pnt.z << "\"," \
+                  << "\"" << f4nearest.x << "," << f4nearest.y << "," << f4nearest.z << "\"," \
                   << f4minDistance << "," \
                   << "\"" << minFace << "\"," \
                   << minDistance << endl;

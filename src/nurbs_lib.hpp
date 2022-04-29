@@ -49,6 +49,9 @@ struct SuperPoint {
         pnt = sp.pnt, u = sp.u, v = sp.v;
         return *this;
     }
+    int samelike(const SuperPoint& sp) {
+        return int(u == sp.u) + int(v == sp.v);
+    }
 
     Point pnt;
     double u;

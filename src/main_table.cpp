@@ -14,7 +14,7 @@ void preprocess(NURBS_Surface& face, vector<SuperPoint>& spnts, double step) {
     }
 }
 
-double getNearestSuperPoint(vector<SuperPoint>& spnts, const Point& pnt, SuperPoint& nearest) {
+double getNearestSuperPoint(const vector<SuperPoint>& spnts, const Point& pnt, SuperPoint& nearest) {
     nearest = spnts[0];
     double minDistance = getDistance(pnt, nearest.pnt);
     for (auto& spnt : spnts) {
@@ -25,6 +25,29 @@ double getNearestSuperPoint(vector<SuperPoint>& spnts, const Point& pnt, SuperPo
         }
     }
     return minDistance;
+}
+
+void getEdgeSet(vector<SuperPoint>& edge_set, double step, const vector<SuperPoint>& face2pnts, const vector<SuperPoint>& face3pnts) {
+    edge_set.clear();
+    for (double f1v = 0.0; f1v <= 1.0; f1v += step) {
+        for (double f1u = 0.0; f1u <= 1.0; f1u += step) {
+            Point pivot = getPntByUV(face1, f1v, f1u);
+            SuperPoint f2nearest;
+            double f2minDistance = getNearestSuperPoint(face2pnts, pivot, f2nearest);
+            SuperPoint f3nearest;
+            double f3minDistance = getNearestSuperPoint(face3pnts, pivot, f3nearest);
+            if (f3minDistance <= f2minDistance) {
+                edge_set.emplace_back(SuperPoint(pivot, f1u, f1v));
+            }
+        }
+    }
+    ofstream ofile;
+    ofile.open("edge.csv", ios::out);
+    ofile << "x,y,z" << endl;
+    for (auto& spnt : edge_set) {
+        ofile << spnt.pnt.x << "," << spnt.pnt.y << "," << spnt.pnt.z << endl;
+    }
+    ofile.close();
 }
 
 #define EPS 1e-8
@@ -48,7 +71,6 @@ int main() {
     clock_t stime, etime;
     stime = clock();
     
-    // Ԥ�ȼ�¼face2, face3, face4�еĵ���
     vector<SuperPoint> face2pnts;
     preprocess(face2, face2pnts, step);
     vector<SuperPoint> face3pnts;
@@ -58,13 +80,15 @@ int main() {
 
     const int savepoint = 500;
 
-    vector<Point> edge_set; // for face1
+    vector<SuperPoint> edge_set; // for face1
+    getEdgeSet(edge_set, step, face2pnts, face3pnts);
 
     map<string, int> minFaceCount {
         {"face2", 0},
         {"face3", 0},
         {"face4", 0}
     };
+
     for (double f1v = 0.0; f1v <= 1.0; f1v += step) {
         for (double f1u = 0.0; f1u <= 1.0; f1u += step) {
             int count = (f1v / step) * times + (f1u / step) + 1;
@@ -84,7 +108,7 @@ int main() {
             double minDistance = min(f2minDistance, min(f3minDistance, f4minDistance));
             string minFace = "face2";
             if (f3minDistance == f2minDistance) {
-                edge_set.emplace_back(pivot);
+                // edge_set.emplace_back(SuperPoint(pivot, f1u, f1v));
                 minFace = "face4";
                 // if ((f4minDistance - EPS) < f3minDistance) {
                 //     minFace = "face4";
@@ -127,14 +151,6 @@ int main() {
     cout << endl;
 
     ofile.close();
-
-    ofile.open("edge.csv", ios::out);
-    ofile << "x,y,z" << endl;
-    for (auto& pnt : edge_set) {
-        ofile << pnt.x << "," << pnt.y << "," << pnt.z << endl;
-    }
-    ofile.close();
-
 #ifdef __WIN32__
     system("pause");
 #endif

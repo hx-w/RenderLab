@@ -4,8 +4,10 @@
 #include <cassert>
 #include <ostream>
 #include <fstream>
+#include <string>
 
 namespace ToothSpace {
+    using std::string;
     class Printer {
     public:
         Printer() = default;
@@ -21,10 +23,25 @@ namespace ToothSpace {
             }
         }
 
-        void to_csv(const char* sep=" ", ...);
+        template <class ...Args>
+        void to_csv(const Args&... args) {
+            _stream(m_ofs, ",", true, args...);
+        }
 
     private:
-        void _stream(std::ostream& ofs, const char* sep, ...);
+        template <class T, class ...Args>
+        void _stream(std::ostream& ofs, const string& sep, bool first, T head, Args... args) {
+            if constexpr(sizeof...(args) > 0) {
+                if (!first) {
+                    ofs << sep;
+                }
+                ofs << head << sep;
+                _stream(ofs, sep, false, args...);
+            }
+            else {
+                ofs << head << std::endl;
+            }
+        }
 
     private:
         std::ofstream m_ofs;

@@ -10,13 +10,6 @@
 
 typedef double Scalar;
 
-#ifndef min
-#define min(a, b) ((a) < (b) ? (a) : (b))
-#endif
-#ifndef max
-#define max(a, b) ((a) > (b) ? (a) : (b))
-#endif
-
 inline bool almostZero(Scalar x) { return (x < 1e-60 && x > -1e-60); }
 inline bool almostEqual(Scalar x, Scalar y) { return almostZero(x - y); }
 

@@ -42,6 +42,8 @@ void genEdgeSetNorm(EdgePointSet& edge_set, NURBS_Surface& face) {
             auto nrd = calcNormal(pr, pd, edge_set.pnts.at(1));
             auto nava = (nlt + nrt + nld + nrd) / 4;
             edge_set.norms.push_back(nava);
+            edge_set.edge_u_idx[edge_set.pnts.at(i).u].push_back(i);
+            edge_set.edge_v_idx[edge_set.pnts.at(i).v].push_back(i);
         }
     }
 }
@@ -127,14 +129,26 @@ int main() {
             string minFace = "face2";
             // 判断pivot是否在edge_set中
             if (edge_set.is_in_set(f1u, f1v)) {
+                minFace = "face4";
                 Point norm;
+                bool is_edge = false;
                 for (int idx = 0; idx < edge_set.true_edge_idx.size(); ++idx) {
                     if (edge_set.pnts[edge_set.true_edge_idx[idx]].u == f1u && edge_set.pnts[edge_set.true_edge_idx[idx]].v == f1v) {
                         norm = edge_set.norms[idx];
+                        is_edge = true;
+                        break;
                     }
-                    else { // 找合适的法线向量
-                    
+                }
+                if (!is_edge) {
+                    // 代选法线列表
+                    vector<int> waiting;
+                    for (auto idx : edge_set.edge_u_idx[f1u]) {
+                        waiting.push_back(idx);
                     }
+                    for (auto idx : edge_set.edge_v_idx[f1v]) {
+                        waiting.push_back(idx);
+                    }
+                    cout << waiting.size() << endl;
                 }
             }
 

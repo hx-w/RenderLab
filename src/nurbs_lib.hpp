@@ -101,6 +101,9 @@ struct EdgePointSet {
     vector<SuperPoint> pnts;
     vector<int> true_edge_idx;
     vector<Point> norms;
+
+    map<int, vector<int>> edge_u_idx;
+    map<int, vector<int>> edge_v_idx;
     int max_iter;
 };
 

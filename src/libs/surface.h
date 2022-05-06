@@ -18,6 +18,7 @@ public:
     ~Surface();
 
     Point get_point_by_uv(Scalar u, Scalar v) const;
+    Direction get_normal_by_uv(Scalar u, Scalar v, Scalar delta=0.005) const;
 private:
     void read_file(const std::string& filename);
     void calc_knot_vector(int index, bool is_u);
@@ -29,7 +30,7 @@ private:
     ) const;
 private:
     UV m_order;
-    UV m_degree;
+    UV m_degree;   // uv 两个方向控制点的个数
     Matrix_point m_control_points;
     Matrix_double m_weights;
     Matrix_double m_u_knots;

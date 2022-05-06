@@ -1,4 +1,5 @@
 #include "surface.h"
+#include "line.h"
 #include <cstdio>
 
 using namespace std;
@@ -148,4 +149,23 @@ Point Surface::get_point_by_uv(Scalar u, Scalar v) const {
     }
     pnt /= weight;
     return pnt;
+}
+
+Direction Surface::get_normal_by_uv(Scalar u, Scalar v, Scalar delta) const {
+    Point pmid = get_point_by_uv(u, v);
+    Point pl = get_point_by_uv(u - delta, v);
+    Point pr = get_point_by_uv(u + delta, v);
+    Point pu = get_point_by_uv(u, v - delta);
+    Point pd = get_point_by_uv(u, v + delta);
+
+#ifdef SIMPLE_NORMAL
+    return (pr - pl).cross(pd - pu).normalize();
+#else
+    return (
+        get_normal(pmid, pl, pu) + \
+        get_normal(pmid, pu, pr) + \
+        get_normal(pmid, pr, pd) + \
+        get_normal(pmid, pd, pl)
+    ).normalize();
+#endif
 }

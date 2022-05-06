@@ -127,6 +127,7 @@ private:
 };
 
 typedef Coords<Scalar> Point;
+typedef Coords<Scalar> Direction;
 typedef Coords<int> Locate;
 
 #endif

@@ -20,28 +20,27 @@ typedef double Scalar;
 inline bool almostZero(Scalar x) { return (x < 1e-60 && x > -1e-60); }
 inline bool almostEqual(Scalar x, Scalar y) { return almostZero(x - y); }
 
+template <typename T>
 class Coords {
 public:
     Coords() { pt[0] = pt[1] = pt[2] = 0.0; }
-    Coords(Scalar x, Scalar y, Scalar z) { pt[0] = x; pt[1] = y; pt[2] = z; }
-    Coords(double num) { pt[0] = pt[1] = pt[2] = num; }
-    Coords(float num) { pt[0] = pt[1] = pt[2] = num; }
+    Coords(T x, T y, T z) { pt[0] = x; pt[1] = y; pt[2] = z; }
+    Coords(T num) { pt[0] = pt[1] = pt[2] = num; }
     Coords(const Coords& c) { pt[0] = c.pt[0]; pt[1] = c.pt[1]; pt[2] = c.pt[2]; }
-    Coords(const double* p) { pt[0] = p[0]; pt[1] = p[1]; pt[2] = p[2]; }
-    Coords(const float* p) { pt[0] = p[0]; pt[1] = p[1]; pt[2] = p[2]; }
+    Coords(const T* p) { pt[0] = p[0]; pt[1] = p[1]; pt[2] = p[2]; }
     ~Coords() = default;
 
     Coords& operator=(const Coords& c) {
         pt[0] = c.pt[0]; pt[1] = c.pt[1]; pt[2] = c.pt[2];
         return *this;
     }
-    operator double*() { return pt; }
-    Scalar x() const { return pt[0]; }
-    Scalar y() const { return pt[1]; }
-    Scalar z() const { return pt[2]; }
+    operator T*() { return pt; }
+    T x() const { return pt[0]; }
+    T y() const { return pt[1]; }
+    T z() const { return pt[2]; }
 
-    Scalar& operator[] (int i) { return ((Scalar&)((Scalar*)this)[i]); }
-    const Scalar& operator[] (int i) const { return ((Scalar&)((Scalar*)this)[i]); }
+    T& operator[] (int i) { return ((T&)((T*)this)[i]); }
+    const T& operator[] (int i) const { return ((T&)((T*)this)[i]); }
 
     Coords operator+(const Coords& c) const {
         return Coords(pt[0] + c.pt[0], pt[1] + c.pt[1], pt[2] + c.pt[2]);
@@ -55,10 +54,10 @@ public:
     Coords operator/(const Coords& c) const {
         return Coords(pt[0] / c.pt[0], pt[1] / c.pt[1], pt[2] / c.pt[2]);
     }
-    Coords operator*(const Scalar num) const {
+    Coords operator*(const T num) const {
         return Coords(pt[0] * num, pt[1] * num, pt[2] * num);
     }
-    Coords operator/(const Scalar num) const {
+    Coords operator/(const T num) const {
         return Coords(pt[0] / num, pt[1] / num, pt[2] / num);
     }
     Coords operator-() const {
@@ -80,11 +79,11 @@ public:
         pt[0] /= c.pt[0]; pt[1] /= c.pt[1]; pt[2] /= c.pt[2];
         return *this;
     }
-    Coords& operator*= (const Scalar num) {
+    Coords& operator*= (const T num) {
         pt[0] *= num; pt[1] *= num; pt[2] *= num;
         return *this;
     }
-    Coords& operator/= (const Scalar num) {
+    Coords& operator/= (const T num) {
         pt[0] /= num; pt[1] /= num; pt[2] /= num;
         return *this;
     }
@@ -102,10 +101,10 @@ public:
     Scalar mag2() const { return pt[0] * pt[0] + pt[1] * pt[1] + pt[2] * pt[2]; }
     Scalar mag() const { return sqrt(mag2()); }
 
-    Scalar dist2(const Coords& c) const {
+    T dist2(const Coords& c) const {
         return (pt[0] - c.pt[0]) * (pt[0] - c.pt[0]) + (pt[1] - c.pt[1]) * (pt[1] - c.pt[1]) + (pt[2] - c.pt[2]) * (pt[2] - c.pt[2]);
     }
-    Scalar dist(const Coords& c) const {
+    T dist(const Coords& c) const {
         return sqrt(dist2(c));
     }
 
@@ -124,7 +123,10 @@ public:
     int hash() const;
 
 private:
-    Scalar pt[3];
+    T pt[3];
 };
+
+typedef Coords<Scalar> Point;
+typedef Coords<int> Locate;
 
 #endif

@@ -1,17 +1,24 @@
 #include "coords.h"
 
-int Coords::hash() const {
+#include <iostream>
+using namespace std;
+template <typename T>
+int Coords<T>::hash() const {
     int hid = 0;
-    for (unsigned int i = 0; i < sizeof(Coords) / sizeof(int); ++i) {
+    for (unsigned int i = 0; i < sizeof(Coords<T>) / sizeof(int); ++i) {
         hid = hid ^ ((const int*)this)[i];
     }
     return hid;
 }
 
-Coords Coords::normalize() const {
-    Scalar m = mag();
+template <typename T>
+Coords<T> Coords<T>::normalize() const {
+    T m = mag();
     if (almostZero(m)) {
-        return Coords(0.0, 0.0, 0.0);
+        return Coords(0, 0, 0);
     }
     return *this / mag();
 }
+
+template class Coords<Scalar>;
+template class Coords<int>;

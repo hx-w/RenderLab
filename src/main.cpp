@@ -4,7 +4,7 @@
 using namespace std;
 
 int main() {
-    Coords pt(1.2, 2.0, 3.0);
+    Locate pt(1, 10, 3);
     cout << pt.hash() << endl;
     return 0;
 }

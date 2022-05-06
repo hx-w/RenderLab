@@ -168,4 +168,5 @@ Direction Surface::get_normal_by_uv(Scalar u, Scalar v, Scalar delta) const {
         get_normal(pmid, pd, pl)
     ).normalize();
 #endif
+
 }

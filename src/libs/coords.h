@@ -35,6 +35,10 @@ public:
         return *this;
     }
     operator T*() { return pt; }
+    T& _x() { return pt[0]; }
+    T& _y() { return pt[1]; }
+    T& _z() { return pt[2]; }
+
     T x() const { return pt[0]; }
     T y() const { return pt[1]; }
     T z() const { return pt[2]; }
@@ -111,8 +115,15 @@ public:
     Coords cross(const Coords& c) const {
         return Coords(pt[1] * c.pt[2] - pt[2] * c.pt[1], pt[2] * c.pt[0] - pt[0] * c.pt[2], pt[0] * c.pt[1] - pt[1] * c.pt[0]);
     }
-    Coords dot(const Coords& c) const {
+    T dot(const Coords& c) const {
         return pt[0] * c.pt[0] + pt[1] * c.pt[1] + pt[2] * c.pt[2];
+    }
+
+    static Coords cross(const Coords& a, const Coords& b) {
+        return a.cross(b);
+    }
+    static T dot(const Coords& a, const Coords& b) {
+        return a.dot(b);
     }
 
     Coords abs() const {

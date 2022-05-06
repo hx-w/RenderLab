@@ -18,5 +18,6 @@ Coords<T> Coords<T>::normalize() const {
     return *this / mag();
 }
 
+
 template class Coords<Scalar>;
 template class Coords<int>;

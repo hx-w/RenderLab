@@ -1,7 +1,5 @@
 #include "coords.h"
 
-#include <iostream>
-using namespace std;
 template <typename T>
 int Coords<T>::hash() const {
     int hid = 0;

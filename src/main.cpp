@@ -1,10 +1,10 @@
 #include <iostream>
-#include <coords.h>
+#include <surface.h>
 
 using namespace std;
 
 int main() {
-    Locate pt(1, 10, 3);
-    cout << pt.hash() << endl;
+    Surface a("static/face-1.txt");
+    cout << a.get_point_by_uv(0.98, 0.98) << "?" << endl;
     return 0;
 }

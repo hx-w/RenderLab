@@ -6,11 +6,11 @@ using namespace std;
 Surface::Surface(const string& filename) {
     read_file(filename);
     // calc knot vector
-    for (int i = 0; i < m_degree.second + 1; ++i) {
+    for (int i = 0; i < m_degree.first + 1; ++i) {
         m_u_knots.push_back(vector<Scalar>());
         calc_knot_vector(i, true);
     }
-    for (int i = 0; i < m_degree.first + 1; ++i) {
+    for (int i = 0; i < m_degree.second + 1; ++i) {
         m_v_knots.push_back(vector<Scalar>());
         calc_knot_vector(i, false);
     }
@@ -30,20 +30,20 @@ void Surface::read_file(const string& filename) {
         exit(1);
     }
     double x, y, z;
-    fscanf(infile, "%d %d %d %d", &m_degree.second, &m_degree.first, &m_order.first, &m_order.second);
+    fscanf(infile, "%d %d %d %d", &m_degree.first, &m_degree.second, &m_order.first, &m_order.second);
     // read weights
-    for (int i = 0; i < m_degree.second + 1; ++i) {
+    for (int i = 0; i < m_degree.first + 1; ++i) {
         vector<Scalar> temp;
-        for (int j = 0; j < m_degree.first + 1; ++j) {
+        for (int j = 0; j < m_degree.second + 1; ++j) {
             fscanf(infile, "%lf", &x);
             temp.push_back(x);
         }
         m_weights.push_back(temp);
     }
     // read pnts
-    for (int i = 0; i < m_degree.second + 1; ++i) {
+    for (int i = 0; i < m_degree.first + 1; ++i) {
         vector<Point> temp;
-        for (int j = 0; j < m_degree.first + 1; ++j) {
+        for (int j = 0; j < m_degree.second + 1; ++j) {
             fscanf(infile, "%lf %lf %lf", &x, &y, &z);
             temp.push_back(Point(x, y, z));
         }
@@ -55,7 +55,7 @@ void Surface::read_file(const string& filename) {
 
 void Surface::calc_knot_vector(int index, bool is_u) {
     vector<Scalar>& knots = is_u ? m_u_knots[index] : m_v_knots[index];
-    const int degree = is_u ? m_degree.first : m_degree.second;
+    const int degree = is_u ? m_degree.second : m_degree.first;
     const int order = is_u ? m_order.first : m_order.second;
     knots.clear();
 
@@ -135,8 +135,8 @@ Scalar Surface::basis_function_value(
 Point Surface::get_point_by_uv(Scalar u, Scalar v) const {
     Scalar weight = 0.0;
     Point pnt(0.0, 0.0, 0.0);
-    for (int i = 0; i < m_degree.second + 1; ++i) {
-        for (int j = 0; j < m_degree.first + 1; ++j) {
+    for (int i = 0; i < m_degree.first + 1; ++i) {
+        for (int j = 0; j < m_degree.second + 1; ++j) {
             Scalar basis_u = basis_function_value(u, j, m_order.first, m_u_knots[i]);
             Scalar basis_v = basis_function_value(v, i, m_order.second, m_v_knots[j]);
             pnt += m_control_points[i][j] * m_weights[i][j] * basis_u * basis_v;

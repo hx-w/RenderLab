@@ -2,34 +2,56 @@
 #define NURBS_H
 
 /**
- * 离散NURBS曲面
+ * 离散NURBSFace曲面
  */
-
 #include "surface.h"
 
+using std::vector;
+
+// UVPoint 需要在NURBSFace环境下使用才有意义
 class UVPoint: public Point {
 public:
     UVPoint() = default;
+    UVPoint(Scalar x, Scalar y, Scalar z, Scalar u, Scalar v):
+        Point(x, y, z), m_uv(UV(u, v)) {}
+    UVPoint(const Point& p, Scalar u, Scalar v):
+        Point(p), m_uv(UV(u, v)) {}
+    
+    int u() const { return m_uv.first; }
+    int v() const { return m_uv.second; }
+    int& _u() { return m_uv.first; }
+    int& _v() { return m_uv.second; }
+
+    bool operator== (const UVPoint& p) const {
+        return Point::operator==(p) && m_uv == p.m_uv;
+    }
 
 private:
-    UV uv;
+    UV m_uv;  // iuv
 };
 
-class NURBS {
+class NURBSFace {
 public:
-    NURBS() = delete;
-    NURBS(const Surface& surface) = delete;
-    NURBS(const std::string& filename, int scale):
+    NURBSFace() = delete;
+    NURBSFace(const Surface& surface) = delete;
+    NURBSFace(const std::string& filename, int scale):
         m_surface(filename), m_scale(scale) {};
-    ~NURBS() = default;
+    ~NURBSFace();
 
     Point get_point_by_uv(int iu, int iv) const;
 
     void cache_points();
 
 private:
+    void _pfree();
+    inline Scalar _itof(int i) const { return i * 1.0 / m_scale; }
+
+private:
     Surface m_surface;
     int m_scale;  // uv都是整数，需要设置尺度
+    
+    bool m_is_cached = false;
+    vector<vector<UVPoint>> m_points; // uv缓存点
 };
 
 #endif

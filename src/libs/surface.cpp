@@ -18,10 +18,10 @@ Surface::Surface(const string& filename) {
 }
 
 Surface::~Surface() {
-    m_control_points.clear();
-    m_weights.clear();
-    m_u_knots.clear();
-    m_v_knots.clear();
+    Matrix_point().swap(m_control_points);
+    Matrix_double().swap(m_weights);
+    Matrix_double().swap(m_u_knots);
+    Matrix_double().swap(m_v_knots);
 }
 
 void Surface::read_file(const string& filename) {
@@ -145,10 +145,10 @@ Point Surface::get_point_by_uv(Scalar u, Scalar v) const {
         }
     }
     if (almostZero(weight)) {
-        return Point(0.0, 0.0, 0.0);
+        return move(Point(0.0, 0.0, 0.0));
     }
     pnt /= weight;
-    return pnt;
+    return move(pnt);
 }
 
 Direction Surface::get_normal_by_uv(Scalar u, Scalar v, Scalar delta) const {
@@ -159,14 +159,13 @@ Direction Surface::get_normal_by_uv(Scalar u, Scalar v, Scalar delta) const {
     Point pd = get_point_by_uv(u, v + delta);
 
 #ifdef SIMPLE_NORMAL
-    return (pr - pl).cross(pd - pu).normalize();
+    return move((pr - pl).cross(pd - pu).normalize());
 #else
-    return (
+    return move((
         get_normal(pmid, pl, pu) + \
         get_normal(pmid, pu, pr) + \
         get_normal(pmid, pr, pd) + \
         get_normal(pmid, pd, pl)
-    ).normalize();
+    ).normalize());
 #endif
-
 }

@@ -2,9 +2,10 @@
 #define PRINTER_H
 
 #include <cassert>
+#include <string>
 #include <ostream>
 #include <fstream>
-#include <string>
+#include <iostream>
 
 namespace ToothSpace {
     using std::string;
@@ -28,14 +29,19 @@ namespace ToothSpace {
             _stream(m_ofs, ",", true, args...);
         }
 
+        template <class ...Args>
+        void to_console(const Args&... args) {
+            _stream(std::cout, ", ", true, args...);
+        }
+
     private:
         template <class T, class ...Args>
         void _stream(std::ostream& ofs, const string& sep, bool first, T head, Args... args) {
+            if (!first) {
+                ofs << sep;
+            }
             if constexpr(sizeof...(args) > 0) {
-                if (!first) {
-                    ofs << sep;
-                }
-                ofs << head << sep;
+                ofs << head;
                 _stream(ofs, sep, false, args...);
             }
             else {

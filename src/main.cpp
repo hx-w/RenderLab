@@ -14,7 +14,8 @@ int main() {
 
     auto printer = Printer("test.csv");
 
-    printer.to_csv("1", "2", "3");
+    printer.to_csv("1", 12, "2", "3");
+    printer.to_console("ddd", 123);
 
     return 0;
 }

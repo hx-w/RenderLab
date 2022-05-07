@@ -1,4 +1,4 @@
-#ifndef TOOTH_ENGINE_H
+﻿#ifndef TOOTH_ENGINE_H
 #define TOOTH_ENGINE_H
 
 #include <mutex>

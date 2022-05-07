@@ -1,5 +1,6 @@
-#include "nurbs.h"
-#include <climits>
+﻿#include "nurbs.h"
+#include "line.h"
+
 using namespace std;
 
 NURBSFace::~NURBSFace() {

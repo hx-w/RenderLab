@@ -1,4 +1,4 @@
-#ifndef COORDS_H
+﻿#ifndef COORDS_H
 #define COORDS_H
 
 #include <cmath>

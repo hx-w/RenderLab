@@ -1,4 +1,4 @@
-#include "coords.h"
+﻿#include "coords.h"
 
 template <typename T>
 int Coords<T>::hash() const {

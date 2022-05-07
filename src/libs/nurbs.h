@@ -1,4 +1,4 @@
-#ifndef NURBS_H
+﻿#ifndef NURBS_H
 #define NURBS_H
 
 /**
@@ -6,6 +6,10 @@
  */
 #include "surface.h"
 #include "../libs/line.h"
+
+#ifndef __FLT_MAX__
+#define __FLT_MAX__ 3.40282346638528860e+38F
+#endif
 
 using std::vector;
 

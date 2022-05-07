@@ -1,4 +1,4 @@
-#include "line.h"
+﻿#include "line.h"
 
 Direction get_normal(const Point& p1, const Point& p2, const Point& p3) {
     Direction d1 = p2 - p1;
@@ -12,8 +12,7 @@ bool get_intersection(const Ray& ray, const Point& p1, const Point& p2, const Po
     Direction P = ray.get_direction().cross(E2);
 
     Scalar det = E1.dot(P);
-
-    // 保证det > 0
+    
     Direction T;
     if (det > 0.0) {
         T = ray.get_origin() - p1;

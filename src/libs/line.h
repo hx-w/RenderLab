@@ -1,4 +1,4 @@
-#ifndef LINE_H
+﻿#ifndef LINE_H
 #define LINE_H
 
 #include "coords.h"

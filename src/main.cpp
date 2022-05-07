@@ -1,22 +1,19 @@
 ﻿#include <iostream>
-#include <nurbs.h>
 #include <engine.h>
-#include <printer.h>
+#include <renderer.h>
 
 using namespace std;
 using namespace ToothSpace;
+using namespace RenderSpace;
 
 int main() {
-    int scale = 100;
-    Printer::to_console("[scale] ");
-    cin >> scale;
+    int scale = 20;
     auto service = ToothEngine::get_instance()->create_service(".\\static", scale);
 
     service->refresh_edge();
     service->calculate_table("test.csv");
 
-#ifdef _WIN32
-    system("pause");
-#endif
-    return 0;
+    Renderer renderer(800, 600);
+
+    return renderer.exec();
 }

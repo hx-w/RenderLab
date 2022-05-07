@@ -1,6 +1,7 @@
 add_subdirectory(libs)
 add_subdirectory(tooth)
-list(APPEND LIBS NURBS_LIB TOOTH_ENGINE)
+add_subdirectory(render)
+list(APPEND LIBS NURBS_LIB TOOTH_ENGINE XRENDER)
 
 add_executable(${PROJECT_NAME} main.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBS}) 

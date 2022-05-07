@@ -14,5 +14,8 @@ int main() {
     service->refresh_edge();
     service->calculate_table("test.csv");
 
+#ifdef __WIN32__
+    system("pause");
+#endif
     return 0;
 }

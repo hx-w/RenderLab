@@ -6,10 +6,11 @@
 using namespace std;
 using namespace ToothSpace;
 
-
-
 int main() {
-    auto service = ToothEngine::get_instance()->create_service("static", 100);
+    int scale = 100;
+    Printer::to_console("[scale] ");
+    cin >> scale;
+    auto service = ToothEngine::get_instance()->create_service("static", scale);
 
     service->refresh_edge();
     service->calculate_table("test.csv");

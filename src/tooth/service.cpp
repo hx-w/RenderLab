@@ -43,7 +43,7 @@ namespace ToothSpace {
                 Scalar f2dist = m_faces[1].get_nearest_point(f1pnt, _t);
                 Scalar f3dist = m_faces[2].get_nearest_point(f1pnt, _t);
                 if (f3dist < f2dist || almostEqual(f3dist, f2dist)) {
-                    f1pnt._type() = PointType::IN_EDGE;
+                    f1pnt._type() = PointType::ON_EDGE;
                 }
                 else {
                     f1pnt._type() = PointType::DEFAULT;
@@ -54,17 +54,17 @@ namespace ToothSpace {
         for (int iu = 1; iu < m_scale - 1; ++iu) {
             for (int iv = 1; iv < m_scale - 1; ++iv) {
                 UVPoint& f1pnt = m_faces[0]._cached_point(iu, iv);
-                if (f1pnt._type() != PointType::IN_EDGE) {
+                if (f1pnt._type() != PointType::ON_EDGE) {
                     continue;
                 }
-                // f1pnt 不在uv边缘，且四周存在DEFAULT，则设为ON_EDGE
+                // f1pnt 不在uv边缘，且四周存在DEFAULT，则设为IN_EDGE
                 if (
                     m_faces[0]._cached_point(iu - 1, iv).type() != PointType::DEFAULT &&
                     m_faces[0]._cached_point(iu + 1, iv).type() != PointType::DEFAULT &&
                     m_faces[0]._cached_point(iu, iv - 1).type() != PointType::DEFAULT &&
                     m_faces[0]._cached_point(iu, iv + 1).type() != PointType::DEFAULT
                 ) {
-                    f1pnt._type() = PointType::ON_EDGE;
+                    f1pnt._type() = PointType::IN_EDGE;
                 }
             }
         }
@@ -108,12 +108,12 @@ namespace ToothSpace {
         }
         // 默认取face2最近距离点
         else if (pivot.type() == PointType::DEFAULT) {
-            tface = "face2";
+            tface = "DEFAULT";
             dist = m_faces[1].get_nearest_point(pivot, tpnt);
         }
         // 边缘线上的点，取face4与边缘点法线的交点
         else if (pivot.type() == PointType::ON_EDGE) {
-            tface = "face4";
+            tface = "ON_EDGE";
             Direction _norm = m_faces[0].get_norm_by_uv(iu, iv);
             // 与face4 求交
             bool rb = m_faces[3].get_intersection_by_ray(Ray(static_cast<Point>(pivot), _norm), tpnt);
@@ -122,12 +122,13 @@ namespace ToothSpace {
             }
             else { // 在face1 边缘线上，但法线与face4无交
                 pivot._type() = PointType::SPECIAL;
+                tface = "SPECIAL";
                 dist = m_faces[3].get_nearest_point(pivot, tpnt);
             }
         }
         // 属于边缘点，但不在边缘线上，需要找到所有可选的边缘线上的法线进行求交
         else if (pivot.type() == PointType::IN_EDGE) {
-            tface = "face4";
+            tface = "IN_EDGE";
             Direction _norm;
             // 将周围边缘线上点的法线累加起来
             auto func = [this, &_norm](int u, int v) mutable {
@@ -152,6 +153,7 @@ namespace ToothSpace {
             // 如果法线不存在
             if (_norm == Direction()) {
                 // 求face4最近点
+                tface = "SPECIAL";
                 pivot._type() = PointType::SPECIAL;
                 dist = m_faces[3].get_nearest_point(pivot, tpnt);
             }
@@ -161,6 +163,7 @@ namespace ToothSpace {
                     dist = pivot.dist(tpnt);
                 }
                 else { // 在face1 边缘，但法线与face4无交
+                    tface = "SPECIAL";
                     pivot._type() = PointType::SPECIAL;
                     dist = m_faces[3].get_nearest_point(pivot, tpnt);
                 }

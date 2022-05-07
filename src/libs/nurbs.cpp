@@ -1,5 +1,4 @@
 #include "nurbs.h"
-
 using namespace std;
 
 NURBSFace::~NURBSFace() {
@@ -9,6 +8,14 @@ NURBSFace::~NURBSFace() {
 void NURBSFace::_pfree() {
     m_is_cached = false;
     vector<vector<UVPoint>>().swap(m_points);
+}
+
+void NURBSFace::init(const string& filename, int scale, bool pre_cache) {
+    m_surface.init(filename);
+    m_scale = scale;
+    if (pre_cache) {
+        cache_points();
+    }
 }
 
 Point NURBSFace::get_point_by_uv(int iu, int iv) const {

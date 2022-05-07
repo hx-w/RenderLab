@@ -32,19 +32,23 @@ private:
 
 class NURBSFace {
 public:
-    NURBSFace() = delete;
+    NURBSFace() = default;
     NURBSFace(const Surface& surface) = delete;
-    NURBSFace(const std::string& filename, int scale):
-        m_surface(filename), m_scale(scale) {};
+    NURBSFace(const std::string& filename, int scale, bool pre_cache=false) {
+        init(filename, scale, pre_cache);
+    };
     ~NURBSFace();
 
+    void init(const std::string& filename, int scale, bool pre_cache=false);
     Point get_point_by_uv(int iu, int iv) const;
 
     void cache_points();
 
 private:
     void _pfree();
-    inline Scalar _itof(int i) const { return i * 1.0 / m_scale; }
+    inline Scalar _itof(int i) const {
+        return i * 1.0 / m_scale;
+    }
 
 private:
     Surface m_surface;

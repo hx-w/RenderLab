@@ -2,7 +2,8 @@
 #define TOOTH_ENGINE_H
 
 #include <mutex>
-#include "../libs/nurbs.h"
+#include <set>
+#include "service.h"
 
 namespace ToothSpace {
     // singleton
@@ -12,10 +13,17 @@ namespace ToothSpace {
         static void destroy();
         ToothEngine(const ToothEngine&) = delete;
         ToothEngine& operator=(const ToothEngine&) = delete;
-        ~ToothEngine() = default;
+        ~ToothEngine() { terminate(); };
+
+        ToothService* create_service(const std::string& dir, int scale=100);
+        void destroy_service(ToothService*);
 
     private:
         ToothEngine() = default;
+        void terminate();
+
+    private:
+        std::set<ToothService*> m_services;
 
     private:
         static ToothEngine* m_instance;

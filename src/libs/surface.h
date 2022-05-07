@@ -13,9 +13,11 @@ typedef vector<vector<Point>> Matrix_point;
 // nurbs surface
 class Surface {
 public:
-    Surface() = delete;
+    Surface() = default;
     Surface(const std::string& filename);
     ~Surface();
+
+    void init(const std::string& filename);
 
     Point get_point_by_uv(Scalar u, Scalar v) const;
     Direction get_normal_by_uv(Scalar u, Scalar v, Scalar delta=0.005) const;
@@ -24,6 +26,8 @@ public:
 
 private:
     void read_file(const std::string& filename);
+    void _pfree();
+
     void calc_knot_vector(int index, bool is_u);
     Scalar basis_function_value(
         Scalar uv_value,

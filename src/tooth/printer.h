@@ -30,13 +30,13 @@ namespace ToothSpace {
         }
 
         template <class ...Args>
-        void to_console(const Args&... args) {
+        static void to_console(const Args&... args) {
             _stream(std::cout, ", ", true, args...);
         }
 
     private:
         template <class T, class ...Args>
-        void _stream(std::ostream& ofs, const string& sep, bool first, T head, Args... args) {
+        static void _stream(std::ostream& ofs, const string& sep, bool first, T head, Args... args) {
             if (!first) {
                 ofs << sep;
             }

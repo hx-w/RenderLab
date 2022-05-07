@@ -5,6 +5,14 @@
 using namespace std;
 
 Surface::Surface(const string& filename) {
+    init(filename);
+}
+
+Surface::~Surface() {
+    _pfree();
+}
+
+void Surface::init(const string& filename) {
     read_file(filename);
     // calc knot vector
     for (int i = 0; i < m_degree.first + 1; ++i) {
@@ -17,7 +25,7 @@ Surface::Surface(const string& filename) {
     }
 }
 
-Surface::~Surface() {
+void Surface::_pfree() {
     Matrix_point().swap(m_control_points);
     Matrix_double().swap(m_weights);
     Matrix_double().swap(m_u_knots);
@@ -25,6 +33,7 @@ Surface::~Surface() {
 }
 
 void Surface::read_file(const string& filename) {
+    _pfree();
     FILE *infile = NULL;
     if ((infile = fopen(filename.c_str(), "r")) == NULL) {
         printf("Error: cannot open file %s\n", filename.c_str());

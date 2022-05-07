@@ -162,10 +162,11 @@ Point Surface::get_point_by_uv(Scalar u, Scalar v) const {
 
 Direction Surface::get_normal_by_uv(Scalar u, Scalar v, Scalar delta) const {
     Point pmid = get_point_by_uv(u, v);
-    Point pl = get_point_by_uv(u - delta, v);
-    Point pr = get_point_by_uv(u + delta, v);
-    Point pu = get_point_by_uv(u, v - delta);
-    Point pd = get_point_by_uv(u, v + delta);
+    Point pl = u - delta < 0.0 ? pmid : get_point_by_uv(u - delta, v);
+    Point pr = u + delta > 1.0 ? pmid : get_point_by_uv(u + delta, v);
+    Point pu = v - delta < 0.0 ? pmid : get_point_by_uv(u, v - delta);
+    Point pd = v + delta > 1.0 ? pmid : get_point_by_uv(u, v + delta);
+
 
 #ifdef SIMPLE_NORMAL
     return move((pr - pl).cross(pd - pu).normalize());

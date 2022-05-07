@@ -26,6 +26,7 @@ namespace ToothSpace {
         void _reset();
 
     private:
+        int m_scale;
         FaceList m_faces;
         ToothEngine& m_engine;
     };

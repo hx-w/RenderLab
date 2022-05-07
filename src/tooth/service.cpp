@@ -22,10 +22,14 @@ namespace ToothSpace {
     void ToothService::_init(const string& dir, int scale) {
         _reset();
         m_scale = scale;
-        m_faces.emplace_back(NURBSFace(dir + "/face-1.txt", scale, true));
-        m_faces.emplace_back(NURBSFace(dir + "/face-2.txt", scale, true));
-        m_faces.emplace_back(NURBSFace(dir + "/face-3.txt", scale, true));
-        m_faces.emplace_back(NURBSFace(dir + "/face-4.txt", scale, true));
+        string sep = "/";
+#ifdef _WIN32
+        sep = "\\";
+#endif
+        m_faces.emplace_back(NURBSFace(dir + sep + "face-1.txt", scale, true));
+        m_faces.emplace_back(NURBSFace(dir + sep + "face-2.txt", scale, true));
+        m_faces.emplace_back(NURBSFace(dir + sep + "face-3.txt", scale, true));
+        m_faces.emplace_back(NURBSFace(dir + sep + "face-4.txt", scale, true));
     }
 
     void ToothService::_reset() {

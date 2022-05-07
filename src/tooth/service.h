@@ -38,6 +38,9 @@ namespace ToothSpace {
             return std::move(std::string(buffer));
         }
 
+        // 对算表的不同情况进行处理
+        void _table_handler(UVPoint& pivot, Scalar& dist, Point& tpnt, std::string& tface);
+
     private:
         int m_scale;
         FaceList m_faces;

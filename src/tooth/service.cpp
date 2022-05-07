@@ -1,5 +1,6 @@
 #include "service.h"
 #include "printer.h"
+#include <functional>
 
 using namespace std;
 
@@ -77,51 +78,97 @@ namespace ToothSpace {
             "target face"
         );
 
+        // 原点 目标点 距离 目标面名称
+        UVPoint pivot;
+        Point tpnt;
+        Scalar dist = 0.0;
+        string tface = "";
+
         for (int iu = 0; iu < m_scale; ++iu) {
             for (int iv = 0; iv < m_scale; ++iv) {
-                UVPoint pivot = m_faces[0]._cached_point(iu, iv);
-                Point tpnt;
-                Scalar dist = 0.0;
-                string tface = "";
-                if (pivot.type() == PointType::UNKNOWN) {
-                    // todo
-                    continue;
-                }
-                // 默认取face2最近距离点
-                else if (pivot.type() == PointType::DEFAULT) {
-                    tface = "face2";
-                    dist = m_faces[1].get_nearest_point(pivot, tpnt);
-                }
-                // 边缘线上的点，取face4与边缘点法线的交点
-                else if (pivot.type() == PointType::ON_EDGE) {
-                    tface = "face4";
-                    Direction _norm = m_faces[0].get_norm_by_uv(iu, iv);
-                    // 与face4 求交
-                    bool rb = m_faces[3].get_intersection_by_ray(Ray(static_cast<Point>(pivot), _norm), tpnt);
-                    if (rb) {
-                        dist = pivot.dist(tpnt);
-                    }
-                    else { // 在face1 边缘线上，但法线与face4无交
-                        pivot._type() = PointType::SPECIAL;
-                        dist = m_faces[3].get_nearest_point(pivot, tpnt);
-                    }
-                }
-                // 属于边缘点，但不在边缘线上，需要找到所有可选的边缘线上的法线进行求交
-                else if (pivot.type() == PointType::IN_EDGE) {
+                pivot = m_faces[0]._cached_point(iu, iv);
 
-                }
-                else {
-                    // error type
-                    Printer::to_console("error: invalid point type");
-                }
+                _table_handler(pivot, dist, tpnt, tface);
+
                 saver.to_csv(
-                    fmt_str("\"%.2lf,%.2lf\"", iu, iv),
+                    fmt_str("\"%.2lf,%.2lf\"", iu * 1.0 / m_scale, iv * 1.0 / m_scale),
                     fmt_str("\"%lf,%lf,%lf\"", pivot.x(), pivot.y(), pivot.z()),
                     fmt_str("\"%lf,%lf,%lf\"", tpnt.x(), tpnt.y(), tpnt.z()),
-                    dist,
-                    tface
+                    dist, tface
                 );
             }
+        }
+    }
+
+    void ToothService::_table_handler(UVPoint& pivot, Scalar& dist, Point& tpnt, string& tface) {
+        const int iu = pivot.u();
+        const int iv = pivot.v();
+        if (pivot.type() == PointType::UNKNOWN) {
+            // todo
+        }
+        // 默认取face2最近距离点
+        else if (pivot.type() == PointType::DEFAULT) {
+            tface = "face2";
+            dist = m_faces[1].get_nearest_point(pivot, tpnt);
+        }
+        // 边缘线上的点，取face4与边缘点法线的交点
+        else if (pivot.type() == PointType::ON_EDGE) {
+            tface = "face4";
+            Direction _norm = m_faces[0].get_norm_by_uv(iu, iv);
+            // 与face4 求交
+            bool rb = m_faces[3].get_intersection_by_ray(Ray(static_cast<Point>(pivot), _norm), tpnt);
+            if (rb) {
+                dist = pivot.dist(tpnt);
+            }
+            else { // 在face1 边缘线上，但法线与face4无交
+                pivot._type() = PointType::SPECIAL;
+                dist = m_faces[3].get_nearest_point(pivot, tpnt);
+            }
+        }
+        // 属于边缘点，但不在边缘线上，需要找到所有可选的边缘线上的法线进行求交
+        else if (pivot.type() == PointType::IN_EDGE) {
+            tface = "face4";
+            Direction _norm;
+            // 将周围边缘线上点的法线累加起来
+            auto func = [this, &_norm](int u, int v) mutable {
+                if (this->m_faces[0]._cached_point(u, v)._type() == PointType::ON_EDGE) {
+                    _norm += m_faces[0].get_norm_by_uv(u, v);
+                }
+            };
+            // 沿四个方向找点
+            for (int _up = 1; iu - _up >= 0; ++_up) {
+                func(iu - _up, iv);
+            }
+            for (int _down = 1; iu + _down < m_scale; ++_down) {
+                func(iu + _down, iv);
+            }
+            for (int _left = 1; iv - _left >= 0; ++_left) {
+                func(iu, iv - _left);
+            }
+            for (int _right = 1; iv + _right < m_scale; ++_right) {
+                func(iu, iv + _right);
+            }
+            _norm.normalize();
+            // 如果法线不存在
+            if (_norm == Direction()) {
+                // 求face4最近点
+                pivot._type() = PointType::SPECIAL;
+                dist = m_faces[3].get_nearest_point(pivot, tpnt);
+            }
+            else {
+                bool rb = m_faces[3].get_intersection_by_ray(Ray(static_cast<Point>(pivot), _norm), tpnt);
+                if (rb) {
+                    dist = pivot.dist(tpnt);
+                }
+                else { // 在face1 边缘，但法线与face4无交
+                    pivot._type() = PointType::SPECIAL;
+                    dist = m_faces[3].get_nearest_point(pivot, tpnt);
+                }
+            }
+        }
+        else {
+            // error type
+            Printer::to_console("error: invalid point type");
         }
     }
 }

@@ -44,6 +44,8 @@ public:
 
     void cache_points();
 
+    Point get_nearest_point(const Point& pnt) const;
+
 private:
     void _pfree();
     inline Scalar _itof(int i) const {

@@ -7,6 +7,7 @@
 
 namespace ToothSpace {
     // singleton
+    // 包括所有service的资源管理
     class ToothEngine {
     public:
         static ToothEngine* get_instance();

@@ -1,4 +1,5 @@
 #include "nurbs.h"
+#include <climits>
 using namespace std;
 
 NURBSFace::~NURBSFace() {
@@ -23,6 +24,24 @@ Point NURBSFace::get_point_by_uv(int iu, int iv) const {
         return m_points[iu][iv];
     }
     return move(m_surface.get_point_by_uv(_itof(iu), _itof(iv)));
+}
+
+Point NURBSFace::get_nearest_point(const Point& pnt) const {
+    Point ret;
+    Scalar min_dist = __FLT_MAX__;
+    UV uv_max = m_surface.get_degree();
+    for (int iu = 0; iu < uv_max.first; ++iu) {
+        for (int iv = 0; iv < uv_max.second; ++iv) {
+            Point cpnt = m_is_cached ? \
+                static_cast<Point>(m_points[iu][iv]): get_point_by_uv(iu, iv);
+            Scalar c_dist = cpnt.dist2(pnt);
+            if (c_dist < min_dist) {
+                c_dist = min_dist;
+                ret = cpnt;
+            }
+        }
+    }
+    return ret;
 }
 
 void NURBSFace::cache_points() {

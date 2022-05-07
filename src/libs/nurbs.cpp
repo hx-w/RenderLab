@@ -65,3 +65,30 @@ UVPoint& NURBSFace::_cached_point(int iu, int iv) {
     }
     return m_points.at(iu).at(iv);
 }
+
+bool NURBSFace::get_intersection_by_ray(const Ray& ray, Point& ipnt) const {
+    /**
+     *  [0, 0]  [0, 1] ... [0, m_scale-1]
+     *  [1, 0]  [1, 1] ... [1, m_scale-1]
+     *  将四边形分解成左上/右下两个三角形
+     */
+    for (int iu = 1; iu < m_scale; ++iu) {
+        for (int iv = 1; iv < m_scale; ++iv) {
+            if (get_intersection(
+                ray,
+                get_point_by_uv(iu - 1, iv - 1),
+                get_point_by_uv(iu, iv - 1),
+                get_point_by_uv(iu - 1, iv),
+                ipnt
+            )) { return true; }
+            if (get_intersection(
+                ray,
+                get_point_by_uv(iu, iv),
+                get_point_by_uv(iu, iv - 1),
+                get_point_by_uv(iu - 1, iv),
+                ipnt
+            )) { return true; }
+        }
+    }
+    return false;
+}

@@ -44,6 +44,9 @@ namespace ToothSpace {
                 if (f3dist < f2dist || almostEqual(f3dist, f2dist)) {
                     f1pnt._type() = PointType::IN_EDGE;
                 }
+                else {
+                    f1pnt._type() = PointType::DEFAULT;
+                }
             }
         }
         // 去除uv边缘
@@ -62,6 +65,62 @@ namespace ToothSpace {
                 ) {
                     f1pnt._type() = PointType::ON_EDGE;
                 }
+            }
+        }
+    }
+
+    void ToothService::calculate_table(const string& target) {
+        Printer saver(target);
+        saver.to_csv(
+            "source uv", "source xyz", 
+            "target xyz", "target L",
+            "target face"
+        );
+
+        for (int iu = 0; iu < m_scale; ++iu) {
+            for (int iv = 0; iv < m_scale; ++iv) {
+                UVPoint pivot = m_faces[0]._cached_point(iu, iv);
+                Point tpnt;
+                Scalar dist = 0.0;
+                string tface = "";
+                if (pivot.type() == PointType::UNKNOWN) {
+                    // todo
+                    continue;
+                }
+                // 默认取face2最近距离点
+                else if (pivot.type() == PointType::DEFAULT) {
+                    tface = "face2";
+                    dist = m_faces[1].get_nearest_point(pivot, tpnt);
+                }
+                // 边缘线上的点，取face4与边缘点法线的交点
+                else if (pivot.type() == PointType::ON_EDGE) {
+                    tface = "face4";
+                    Direction _norm = m_faces[0].get_norm_by_uv(iu, iv);
+                    // 与face4 求交
+                    bool rb = m_faces[3].get_intersection_by_ray(Ray(static_cast<Point>(pivot), _norm), tpnt);
+                    if (rb) {
+                        dist = pivot.dist(tpnt);
+                    }
+                    else { // 在face1 边缘线上，但法线与face4无交
+                        pivot._type() = PointType::SPECIAL;
+                        dist = m_faces[3].get_nearest_point(pivot, tpnt);
+                    }
+                }
+                // 属于边缘点，但不在边缘线上，需要找到所有可选的边缘线上的法线进行求交
+                else if (pivot.type() == PointType::IN_EDGE) {
+
+                }
+                else {
+                    // error type
+                    Printer::to_console("error: invalid point type");
+                }
+                saver.to_csv(
+                    fmt_str("\"%.2lf,%.2lf\"", iu, iv),
+                    fmt_str("\"%lf,%lf,%lf\"", pivot.x(), pivot.y(), pivot.z()),
+                    fmt_str("\"%lf,%lf,%lf\"", tpnt.x(), tpnt.y(), tpnt.z()),
+                    dist,
+                    tface
+                );
             }
         }
     }

@@ -5,13 +5,16 @@
  * 离散NURBSFace曲面
  */
 #include "surface.h"
+#include "../libs/line.h"
 
 using std::vector;
 
 enum class PointType {
+    UNKNOWN,
     DEFAULT,
     ON_EDGE,
-    IN_EDGE
+    IN_EDGE,
+    SPECIAL // 在边缘，但与face4无交
 };
 
 // UVPoint 需要在NURBSFace环境下使用才有意义
@@ -19,7 +22,7 @@ class UVPoint: public Point {
 public:
     UVPoint() = default;
     UVPoint(Scalar x, Scalar y, Scalar z, Scalar u, Scalar v):
-        Point(x, y, z), m_uv(UV(u, v)), m_type(PointType::DEFAULT) {}
+        Point(x, y, z), m_uv(UV(u, v)), m_type(PointType::UNKNOWN) {}
     UVPoint(const Point& p, Scalar u, Scalar v):
         Point(p), m_uv(UV(u, v)) {}
     
@@ -56,6 +59,9 @@ public:
     Point get_point_by_uv(int iu, int iv) const;
     Direction get_norm_by_uv(int iu, int iv) const;
     Scalar get_nearest_point(const Point& pnt, Point& ret) const;
+
+    // 求射线与NURBS的交点
+    bool get_intersection_by_ray(const Ray& ray, Point& ipnt) const;
 
     UVPoint& _cached_point(int iu, int iv);
 private:

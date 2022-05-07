@@ -12,6 +12,7 @@ int main() {
     auto service = ToothEngine::get_instance()->create_service("static", 100);
 
     service->refresh_edge();
+    service->calculate_table("test.csv");
 
     return 0;
 }

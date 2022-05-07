@@ -14,7 +14,7 @@ namespace ToothSpace {
         Printer() = default;
         Printer(const Printer&) = delete;
         Printer& operator=(const Printer&) = delete;
-        Printer(const char* filename) {
+        Printer(const string& filename): m_filename(filename) {
             m_ofs.open(filename);
             assert(m_ofs.is_open());
         };
@@ -28,6 +28,8 @@ namespace ToothSpace {
         void to_csv(const Args&... args) {
             _stream(m_ofs, ",", true, args...);
         }
+
+        void save_buffer();
 
         template <class ...Args>
         static void to_console(const Args&... args) {
@@ -50,6 +52,7 @@ namespace ToothSpace {
         }
 
     private:
+        std::string m_filename;
         std::ofstream m_ofs;
     };
 }

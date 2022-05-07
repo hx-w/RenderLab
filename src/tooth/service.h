@@ -22,6 +22,9 @@ namespace ToothSpace {
         ~ToothService();
 
         void _init(const std::string& dir, int scale);
+    
+        // 对face1，计算边缘点，更新点种类
+        void refresh_edge();
     private:
         void _reset();
 

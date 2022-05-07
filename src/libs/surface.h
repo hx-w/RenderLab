@@ -22,8 +22,6 @@ public:
     Point get_point_by_uv(Scalar u, Scalar v) const;
     Direction get_normal_by_uv(Scalar u, Scalar v, Scalar delta=0.005) const;
 
-    UV get_degree() const { return m_degree; }
-
 private:
     void read_file(const std::string& filename);
     void _pfree();

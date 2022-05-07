@@ -21,38 +21,47 @@ void NURBSFace::init(const string& filename, int scale, bool pre_cache) {
 
 Point NURBSFace::get_point_by_uv(int iu, int iv) const {
     if (m_is_cached) {
-        return m_points[iu][iv];
+        return m_points.at(iu).at(iv);
     }
     return move(m_surface.get_point_by_uv(_itof(iu), _itof(iv)));
 }
 
-Point NURBSFace::get_nearest_point(const Point& pnt) const {
-    Point ret;
+Direction NURBSFace::get_norm_by_uv(int iu, int iv) const {
+    return move(m_surface.get_normal_by_uv(_itof(iu), _itof(iv), 1.0/m_scale));
+}
+
+Scalar NURBSFace::get_nearest_point(const Point& pnt, Point& ret) const {
     Scalar min_dist = __FLT_MAX__;
-    UV uv_max = m_surface.get_degree();
-    for (int iu = 0; iu < uv_max.first; ++iu) {
-        for (int iv = 0; iv < uv_max.second; ++iv) {
+    for (int iu = 0; iu < m_scale; ++iu) {
+        for (int iv = 0; iv < m_scale; ++iv) {
             Point cpnt = m_is_cached ? \
-                static_cast<Point>(m_points[iu][iv]): get_point_by_uv(iu, iv);
-            Scalar c_dist = cpnt.dist2(pnt);
+                static_cast<Point>(m_points.at(iu).at(iv)):\
+                get_point_by_uv(iu, iv);
+            Scalar c_dist = cpnt.dist(pnt);
             if (c_dist < min_dist) {
-                c_dist = min_dist;
+                min_dist = c_dist;
                 ret = cpnt;
             }
         }
     }
-    return ret;
+    return min_dist;
 }
 
 void NURBSFace::cache_points() {
     _pfree();
-    UV uv_max = m_surface.get_degree();
-    m_points.resize(uv_max.first);
-    for (int iu = 0; iu < uv_max.first; ++iu) {
-        m_points[iu].resize(uv_max.second);
-        for (int iv = 0; iv < uv_max.second; ++iv) {
+    m_points.resize(m_scale);
+    for (int iu = 0; iu < m_scale; ++iu) {
+        m_points[iu].resize(m_scale);
+        for (int iv = 0; iv < m_scale; ++iv) {
             m_points[iu][iv] = UVPoint(get_point_by_uv(iu, iv), iu, iv);
         }
     }
     m_is_cached = true;
+}
+
+UVPoint& NURBSFace::_cached_point(int iu, int iv) {
+    if (!m_is_cached) {
+        cache_points();
+    }
+    return m_points.at(iu).at(iv);
 }

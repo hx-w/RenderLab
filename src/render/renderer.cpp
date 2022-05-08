@@ -1,10 +1,14 @@
-#include "shader.hpp"
 #include "renderer.h"
 
 #include <iostream>
 
 namespace RenderSpace {
     Renderer::Renderer(unsigned int _width, unsigned int _height) {
+        m_win_widget.init(_width, _height);
+        setup();
+    }
+
+    void Renderer::setup() {
         glfwInit();
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -23,9 +27,8 @@ namespace RenderSpace {
             return;
         }
         glfwMakeContextCurrent(m_window);
-        glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
-        m_win_widget.init(_width, _height);
         glfwSetWindowUserPointer(m_window, &m_win_widget);
 
         glfwSetCursorPosCallback(m_window, [](GLFWwindow* w, double xpos, double ypos) {
@@ -43,21 +46,14 @@ namespace RenderSpace {
             std::cout << "Failed to initialize GLAD" << std::endl;
             return;
         }
-    }
-
-    Renderer::~Renderer() {
-        glfwTerminate();
-    }
-
-    int Renderer::exec() {
+    
         // configure global opengl state
         // -----------------------------
         glEnable(GL_DEPTH_TEST);
 
         // build and compile our shader zprogram
         // ------------------------------------
-        Shader ourShader;
-        ourShader.fromCode(
+        m_shader.fromCode(
             (
                 "#version 330 core\n"
                 "layout (location = 0) in vec3 aPos;\n"
@@ -76,6 +72,13 @@ namespace RenderSpace {
                 "}\n"
             )
         );
+    } 
+
+    Renderer::~Renderer() {
+        glfwTerminate();
+    }
+
+    int Renderer::exec() {
         // set up vertex data (and buffer(s)) and configure vertex attributes
         // ------------------------------------------------------------------
         float vertices[] = {
@@ -83,13 +86,12 @@ namespace RenderSpace {
             -0.5f,  0.5f,  0.5f,
             -0.5f,  0.5f, -0.5f,
         };
-        unsigned int VBO, VAO;
-        glGenVertexArrays(1, &VAO);
-        glGenBuffers(1, &VBO);
+        glGenVertexArrays(1, &m_vao);
+        glGenBuffers(1, &m_vbo);
 
-        glBindVertexArray(VAO);
+        glBindVertexArray(m_vao);
 
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
         // position attribute
@@ -116,20 +118,20 @@ namespace RenderSpace {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 
             // activate shader
-            ourShader.use();
+            m_shader.use();
 
             // pass projection matrix to shader (note that in this case it could change every frame)
             glm::mat4 projection = glm::perspective(glm::radians(m_win_widget.fov), (float)m_win_widget.m_scr_width / (float)m_win_widget.m_scr_height, 0.1f, 100.0f);
-            ourShader.setMat4("projection", projection);
+            m_shader.setMat4("projection", projection);
 
             // camera/view transformation
             glm::mat4 view = glm::lookAt(m_win_widget.cameraPos, m_win_widget.cameraPos + m_win_widget.cameraFront, m_win_widget.cameraUp);
-            ourShader.setMat4("view", view);
+            m_shader.setMat4("view", view);
 
             // render elements
-            glBindVertexArray(VAO);
+            glBindVertexArray(m_vao);
             glm::mat4 model = glm::mat4(1.0f);
-            ourShader.setMat4("model", model);
+            m_shader.setMat4("model", model);
             glPointSize(3.0f);
             glDrawArrays(GL_POINTS, 0, 3);
 
@@ -141,8 +143,8 @@ namespace RenderSpace {
 
         // optional: de-allocate all resources once they've outlived their purpose:
         // ------------------------------------------------------------------------
-        glDeleteVertexArrays(1, &VAO);
-        glDeleteBuffers(1, &VBO);
+        glDeleteVertexArrays(1, &m_vao);
+        glDeleteBuffers(1, &m_vbo);
 
         // glfw: terminate, clearing all previously allocated GLFW resources.
         // ------------------------------------------------------------------

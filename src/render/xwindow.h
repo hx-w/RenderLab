@@ -7,21 +7,20 @@
 #include "./libs/GLFW/glfw3.h"
 
 namespace RenderSpace {
-    class RenderWindow {
+    class RenderWindowWidget {
     public:
-        RenderWindow() = default;
-        RenderWindow(unsigned int width, unsigned int height);
-        ~RenderWindow();
+        RenderWindowWidget() = default;
+        RenderWindowWidget(unsigned int width, unsigned int height);
+        ~RenderWindowWidget();
 
         void init(unsigned int width, unsigned int height);
     public:
         void framebuffer_size_callback(GLFWwindow* window, int width, int height);
         void mouse_callback(GLFWwindow* window, double xpos, double ypos);
         void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-        void processInput();
+        void processInput(GLFWwindow* window);
 
     public:
-        GLFWwindow* m_window;
         unsigned int m_scr_width = 800;
         unsigned int m_scr_height = 600;
 

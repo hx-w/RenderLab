@@ -5,63 +5,38 @@
 using namespace std;
 
 namespace RenderSpace {
-    RenderWindow::RenderWindow(unsigned int width, unsigned int height) {
+    RenderWindowWidget::RenderWindowWidget(unsigned int width, unsigned int height) {
         init(width, height);
     }
 
-    void RenderWindow::init(unsigned int width, unsigned int height) {
+    void RenderWindowWidget::init(unsigned int width, unsigned int height) {
         m_scr_width = width;
         m_scr_height = height;
-        glfwInit();
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-#ifdef __APPLE__
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
-
-        // glfw m_window creation
-        // --------------------
-        m_window = glfwCreateWindow(m_scr_width, m_scr_height, "XRender", NULL, NULL);
-        if (m_window == NULL)
-        {
-            std::cout << "Failed to create GLFW m_window" << std::endl;
-            glfwTerminate();
-            return;
-        }
-        glfwMakeContextCurrent(m_window);
-        glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     }
 
-    RenderWindow::~RenderWindow() {
-        if (m_window != NULL) {
-            // delete m_window;
-        }
-        glfwTerminate();
-
+    RenderWindowWidget::~RenderWindowWidget() {
     }
 
 
     // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
     // ---------------------------------------------------------------------------------------------------------
-    void RenderWindow::processInput() {
-        if (glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-            glfwSetWindowShouldClose(m_window, true);
+    void RenderWindowWidget::processInput(GLFWwindow* window) {
+        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+            glfwSetWindowShouldClose(window, true);
         float cameraSpeed = static_cast<float>(2.5 * deltaTime);
-        if (glfwGetKey(m_window, GLFW_KEY_W) == GLFW_PRESS)
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
             cameraPos += cameraSpeed * cameraFront;
-        if (glfwGetKey(m_window, GLFW_KEY_S) == GLFW_PRESS)
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
             cameraPos -= cameraSpeed * cameraFront;
-        if (glfwGetKey(m_window, GLFW_KEY_A) == GLFW_PRESS)
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
             cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-        if (glfwGetKey(m_window, GLFW_KEY_D) == GLFW_PRESS)
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
             cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
     }
 
     // glfw: whenever the window size changed (by OS or user resize) this callback function executes
     // ---------------------------------------------------------------------------------------------
-    void RenderWindow::framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+    void RenderWindowWidget::framebuffer_size_callback(GLFWwindow* window, int width, int height) {
         // make sure the viewport matches the new window dimensions; note that width and 
         // height will be significantly larger than specified on retina displays.
         glViewport(0, 0, width, height);
@@ -71,7 +46,7 @@ namespace RenderSpace {
 
     // glfw: whenever the mouse moves, this callback is called
     // -------------------------------------------------------
-    void RenderWindow::mouse_callback(GLFWwindow* window, double xposIn, double yposIn) {
+    void RenderWindowWidget::mouse_callback(GLFWwindow* window, double xposIn, double yposIn) {
         float xpos = static_cast<float>(xposIn);
         float ypos = static_cast<float>(yposIn);
 
@@ -108,7 +83,7 @@ namespace RenderSpace {
 
     // glfw: whenever the mouse scroll wheel scrolls, this callback is called
     // ----------------------------------------------------------------------
-    void RenderWindow::scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+    void RenderWindowWidget::scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
         fov -= (float)yoffset;
         if (fov < 1.0f)
             fov = 1.0f;

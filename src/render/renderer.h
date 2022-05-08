@@ -10,8 +10,10 @@ namespace RenderSpace {
         ~Renderer();
 
         int exec();
+    
     private:
-        RenderWindow m_win;
+        RenderWindowWidget m_win_widget;
+        GLFWwindow* m_window;
     };
 }
 

@@ -1,3 +1,4 @@
+rm -rf build
 cmake -S . -B build/
 cmake --build build/
-mv build/main* ./
+mv build/src/main ./

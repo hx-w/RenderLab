@@ -2,8 +2,11 @@
 
 #include <iostream>
 
+using namespace fundamental;
+
 namespace RenderSpace {
     Renderer::Renderer(unsigned int _width, unsigned int _height) {
+        m_autobus = std::make_unique<fundamental::AutoBus>();
         m_win_widget.init(_width, _height);
         setup();
     }

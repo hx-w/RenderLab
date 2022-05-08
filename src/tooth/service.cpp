@@ -3,12 +3,18 @@
 #include <functional>
 
 using namespace std;
+using namespace fundamental;
 
 namespace ToothSpace {
     ToothService::ToothService(
         ToothEngine& engine,
         const string& dir, int scale
     ) noexcept : m_engine(engine) {
+        m_autobus = make_unique<AutoBus>();
+
+        m_autobus->registerMethod<void(int)>("tooth_service", [&](int hello) {
+            Printer::to_console("[tooth_service] " + to_string(hello));
+        });
         _init(dir, scale);
     }
 

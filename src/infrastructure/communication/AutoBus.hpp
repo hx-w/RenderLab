@@ -78,7 +78,7 @@ namespace fundamental {
 
             auto eventTable = ContextHub::getInstance()->getEventTable<type>();
             for (auto& [signal, id] : m_eventSet) {
-                eventTable->unsubscribe(id);
+                eventTable->unsubscribe(signal, id);
             }
         }
     };

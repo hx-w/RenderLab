@@ -3,6 +3,8 @@
 
 #include "shader.hpp"
 #include "xwindow.h"
+#include "../infrastructure/communication/ContextHub.h"
+#include "../infrastructure/communication/AutoBus.hpp"
 
 namespace RenderSpace {
     class Renderer {
@@ -21,6 +23,8 @@ namespace RenderSpace {
         Shader m_shader;
         RenderWindowWidget m_win_widget;
         GLFWwindow* m_window;
+
+        std::unique_ptr<fundamental::AutoBus> m_autobus;
     };
 }
 

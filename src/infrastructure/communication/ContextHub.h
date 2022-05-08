@@ -31,7 +31,7 @@ namespace fundamental {
     template <typename T>
     typename std::enable_if<std::is_function<T>::value, CServiceTable<T>>::type
     getServiceTable() {
-        std::string typename = typeid(T).name();
+        std::string typeName = typeid(T).name();
         if (m_serviceSet.emplace(typeName, CServiceTable<T>()).second) {
             CServiceTable<T> serviceTable{ new ServiceTable<std::function<T>>() };
             m_serviceSet[typeName] = serviceTable;
@@ -49,7 +49,7 @@ namespace fundamental {
     template <typename T>
     typename std::enable_if<std::is_function<T>::value, CEventTable<T>>::type
     getEventTable() {
-        std::string typename = typeid(T).name();
+        std::string typeName = typeid(T).name();
         if (m_eventSet.emplace(typeName, CEventTable<T>()).second) {
             CEventTable<T> eventTable{ new EventTable<std::function<T>>() };
             m_eventSet[typeName] = eventTable;

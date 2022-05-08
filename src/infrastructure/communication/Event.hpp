@@ -69,7 +69,7 @@ namespace fundamental {
                     return func.m_id == id;
                 });
                 if (iter != vtr.end()) {
-                    vtr.erase(it);
+                    vtr.erase(iter);
                     std::clog << "unsubscribe " << signal << std::endl;
                 }
             }

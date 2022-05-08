@@ -82,9 +82,9 @@ namespace RenderSpace {
         // set up vertex data (and buffer(s)) and configure vertex attributes
         // ------------------------------------------------------------------
         float vertices[] = {
-            0.5f,  0.5f,  0.5f,
-            -0.5f,  0.5f,  0.5f,
-            -0.5f,  0.5f, -0.5f,
+            0.50f,  0.50f,  0.50f,
+            0.51f,  0.51f,  0.51f,
+            0.52f,  0.52f, 0.52f,
         };
         glGenVertexArrays(1, &m_vao);
         glGenBuffers(1, &m_vbo);

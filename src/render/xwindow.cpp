@@ -23,7 +23,7 @@ namespace RenderSpace {
 
         // glfw m_window creation
         // --------------------
-        m_window = glfwCreateWindow(m_scr_width, m_scr_height, "LearnOpenGL", NULL, NULL);
+        m_window = glfwCreateWindow(m_scr_width, m_scr_height, "XRender", NULL, NULL);
         if (m_window == NULL)
         {
             std::cout << "Failed to create GLFW m_window" << std::endl;
@@ -36,7 +36,7 @@ namespace RenderSpace {
 
     RenderWindow::~RenderWindow() {
         if (m_window != NULL) {
-            delete m_window;
+            // delete m_window;
         }
         glfwTerminate();
 

@@ -6,6 +6,17 @@
 namespace RenderSpace {
     Renderer::Renderer(unsigned int _width, unsigned int _height) {
         m_win.init(_width, _height);
+        glfwSetWindowUserPointer(m_win.m_window, &m_win);
+
+        auto func1 = [](GLFWwindow* w, double xpos, double ypos) {
+            static_cast<RenderWindow*>(glfwGetWindowUserPointer(w))->mouse_callback(w, xpos, ypos);
+        };
+        glfwSetCursorPosCallback(m_win.m_window, func1);
+
+        auto func2 = [](GLFWwindow* w, double xoffset, double yoffset) {
+            static_cast<RenderWindow*>(glfwGetWindowUserPointer(w))->scroll_callback(w, xoffset, yoffset);
+        };
+        glfwSetScrollCallback(m_win.m_window, func2);
     }
 
     Renderer::~Renderer() {
@@ -14,10 +25,6 @@ namespace RenderSpace {
 
     int Renderer::exec() {
         // glfwSetFramebufferSizeCallback(m_win, func);
-        // glfwSetCursorPosCallback(m_win, Renderer::mouse_callback);
-        // glfwSetScrollCallback(m_win, &scroll_callback);
-
-        // tell GLFW to capture our mouse
 
         // glad: load all OpenGL function pointers
         // ---------------------------------------

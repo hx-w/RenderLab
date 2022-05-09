@@ -22,6 +22,7 @@ namespace RenderSpace {
 
     private:
         unsigned int m_vao;
+        unsigned int m_light_vao;
         unsigned int m_vbo;
         Shader m_shader;
         RenderWindowWidget m_win_widget;

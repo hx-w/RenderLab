@@ -9,4 +9,8 @@ namespace ToothSpace {
             m_ofs.open(m_filename.c_str(), std::ios::app);
         }
     }
+
+    void Printer::show_percient(const string& desc, double percent) {
+        printf("\r[%s] %.2f%%\n", desc.c_str(), percent * 100.0);
+    }
 }

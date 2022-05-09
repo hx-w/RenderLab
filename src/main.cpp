@@ -9,9 +9,10 @@ using namespace std;
 
 int main() {
     thread logic_thread([&]() {
-        int scale = 50;
+        int scale = 100;
+        cin >> scale;
         auto service = ToothSpace::make_service("static", scale);
-        service->refresh_edge();
+        service->retag_point();
         service->calculate_table("test.csv");
     });
     logic_thread.detach();

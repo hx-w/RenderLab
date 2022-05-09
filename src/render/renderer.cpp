@@ -66,23 +66,36 @@ namespace RenderSpace {
             (
                 "#version 330 core\n"
                 "layout (location = 0) in vec3 aPos;\n"
+                "layout (location = 1) in vec3 aColor;\n"
+                "out vec3 vColor;\n"
                 "uniform mat4 model;\n"
                 "uniform mat4 view;\n"
                 "uniform mat4 projection;\n"
                 "void main() {\n"
+                "    vColor = aColor;\n"
                 "    gl_Position = projection * view * model * vec4(aPos, 1.0f);\n"
                 "}\n"
             ),
             (
                 "#version 330 core\n"
+                "in vec3 vColor;\n"
                 "out vec4 FragColor;\n"
+                "uniform vec3 lightColor;\n"
                 "void main() {\n"
-                "    FragColor = vec4(1.0, 1.0, 1.0, 1.0);\n"
+                "    FragColor = vec4(vColor * lightColor, 1.0);\n"
                 "}\n"
             )
         );
         glGenVertexArrays(1, &m_vao);
         glGenBuffers(1, &m_vbo);
+
+        glGenVertexArrays(1, &m_light_vao);
+        glBindVertexArray(m_light_vao);
+        // 只需要绑定VBO不用再次设置VBO的数据，因为箱子的VBO数据中已经包含了正确的立方体顶点数据
+        glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+        // 设置灯立方体的顶点属性（对我们的灯来说仅仅只有位置数据）
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
     } 
 
     Renderer::~Renderer() {
@@ -115,6 +128,7 @@ namespace RenderSpace {
         // optional: de-allocate all resources once they've outlived their purpose:
         // ------------------------------------------------------------------------
         glDeleteVertexArrays(1, &m_vao);
+        glDeleteVertexArrays(1, &m_light_vao);
         glDeleteBuffers(1, &m_vbo);
 
         // glfw: terminate, clearing all previously allocated GLFW resources.
@@ -128,18 +142,21 @@ namespace RenderSpace {
         glBindVertexArray(m_vao);
 
         glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 3 * vertices.m_vertex_count, vertices.m_vertices, GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, vertices.m_vertices.size() * sizeof(Vertex), &vertices.m_vertices[0], GL_DYNAMIC_DRAW);
 
         // position attribute
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Vertex::Color));
 
         // render elements
-        glBindVertexArray(m_vao);
         glm::mat4 model = glm::mat4(1.0f);
         m_shader.setMat4("model", model);
-        glPointSize(3.0f);
+        glPointSize(2.0f);
         glDrawArrays(GL_POINTS, 0, vertices.m_vertex_count);
+
+        glBindVertexArray(0);
     }
 
     void Renderer::update_transform() {
@@ -158,5 +175,7 @@ namespace RenderSpace {
         // camera/view transformation
         glm::mat4 view = glm::lookAt(m_win_widget.cameraPos, m_win_widget.cameraPos + m_win_widget.cameraFront, m_win_widget.cameraUp);
         m_shader.setMat4("view", view);
+
+        m_shader.setVec3("lightColor",  1.0f, 1.0f, 1.0f);
     }
 }

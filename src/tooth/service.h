@@ -25,7 +25,7 @@ namespace ToothSpace {
         void _init(const std::string& dir, int scale);
     
         // 对face1，计算边缘点，更新点种类
-        void refresh_edge();
+        void retag_point();
 
         // 计算结果 保存到csv
         void calculate_table(const std::string& target);

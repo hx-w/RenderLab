@@ -36,6 +36,8 @@ namespace ToothSpace {
             _stream(std::cout, ", ", true, args...);
         }
 
+        static void show_percient(const string& desc, double percent);
+
     private:
         template <class T, class ...Args>
         static void _stream(std::ostream& ofs, const string& sep, bool first, T head, Args... args) {

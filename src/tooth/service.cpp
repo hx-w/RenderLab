@@ -28,9 +28,9 @@ namespace ToothSpace {
         sep = "\\";
 #endif
         m_faces.emplace_back(NURBSFace(fmt_str(".%s%s%s%s", sep.c_str(), dir.c_str(), sep.c_str(), "face-1.txt"), scale, true));
-        m_faces.emplace_back(NURBSFace(fmt_str(".%s%s%s%s", sep.c_str(), dir.c_str(), sep.c_str(), "face-2.txt"), scale, true));
-        m_faces.emplace_back(NURBSFace(fmt_str(".%s%s%s%s", sep.c_str(), dir.c_str(), sep.c_str(), "face-3.txt"), scale, true));
-        m_faces.emplace_back(NURBSFace(fmt_str(".%s%s%s%s", sep.c_str(), dir.c_str(), sep.c_str(), "face-4.txt"), scale, true));
+        m_faces.emplace_back(NURBSFace(fmt_str(".%s%s%s%s", sep.c_str(), dir.c_str(), sep.c_str(), "face-2.txt"), scale, false));
+        m_faces.emplace_back(NURBSFace(fmt_str(".%s%s%s%s", sep.c_str(), dir.c_str(), sep.c_str(), "face-3.txt"), scale, false));
+        m_faces.emplace_back(NURBSFace(fmt_str(".%s%s%s%s", sep.c_str(), dir.c_str(), sep.c_str(), "face-4.txt"), scale, false));
     }
 
     void ToothService::_reset() {
@@ -38,9 +38,8 @@ namespace ToothSpace {
         FaceList().swap(m_faces);
     }
 
-    void ToothService::refresh_edge() {
+    void ToothService::retag_point() {
         // 重设face1中边缘节点
-        int count = 0;
         for (int iu = 0; iu < m_scale; ++iu) {
             for (int iv = 0; iv < m_scale; ++iv) {
                 Point _t;
@@ -54,6 +53,7 @@ namespace ToothSpace {
                     f1pnt._type() = PointType::DEFAULT;
                 }
             }
+            Printer::show_percient("retag_point", double(iu) / m_scale);
         }
         // 去除uv边缘
         for (int iu = 1; iu < m_scale - 1; ++iu) {
@@ -96,9 +96,26 @@ namespace ToothSpace {
 
                 _table_handler(pivot, dist, tpnt, tface);
 
-                // _service.sync_invoke(Point(iu * 1.0 / m_scale, iv * 1.0 / m_scale, 0.0), Point(0.0));
-                _service.sync_invoke(static_cast<Point>(pivot), Point(0.0));
-                _service.sync_invoke(tpnt, Point(0.0));
+                Point _clr_pivot(0.0);
+                Point _clr_target(1.0);
+                if (pivot._type() == PointType::DEFAULT) {
+                    _clr_pivot = Point(1.0, 1.0, 1.0);
+                    _clr_target = Point(1.0, 1.0, 1.0);
+                }
+                else if (pivot._type() == PointType::ON_EDGE) {
+                    _clr_pivot = Point(0.0, 1.0, 0.0);
+                    _clr_target = Point(0.0, 1.0, 0.0);
+                }
+                else if (pivot._type() == PointType::IN_EDGE) {
+                    _clr_pivot = Point(0.0, 0.0, 1.0);
+                    _clr_target = Point(0.0, 0.0, 1.0);
+                }
+                else {
+                    _clr_pivot = Point(1.0, 0.0, 0.0);
+                    _clr_target = Point(1.0, 0.0, 0.0);
+                }
+                _service.sync_invoke(static_cast<Point>(pivot), _clr_pivot);
+                _service.sync_invoke(tpnt, _clr_target);
 
                 // saver.to_csv(
                 //     fmt_str("\"%.2lf,%.2lf\"", iu * 1.0 / m_scale, iv * 1.0 / m_scale),
@@ -107,9 +124,10 @@ namespace ToothSpace {
                 //     dist, tface
                 // );
             }
+            Printer::show_percient("calculate_table", double(iu) / m_scale);
         }
 
-        _service.sync_invoke(Point(0.0, 0.0, 0.0), Point(0.0));
+        _service.sync_invoke(Point(0.0, 0.0, 0.0), Point(1.0));
         Printer::to_console("done.");
     }
 

@@ -7,9 +7,11 @@
 #include "../infrastructure/communication/AutoBus.hpp"
 
 namespace RenderSpace {
+    class RenderEngine;
+
     class Renderer {
     public:
-        Renderer(unsigned int width = 800, unsigned int height = 600);
+        Renderer(RenderEngine& engine, unsigned int width, unsigned int height);
         ~Renderer();
 
         int exec();
@@ -25,6 +27,9 @@ namespace RenderSpace {
         GLFWwindow* m_window;
 
         std::unique_ptr<fundamental::AutoBus> m_autobus;
+    
+    private:
+        RenderEngine& m_engine;
     };
 }
 

@@ -1,12 +1,11 @@
 ﻿#include <iostream>
-#include <engine.h>
-#include <renderer.h>
 #include <thread>
+#include "render/engine.h"
+#include "tooth/engine.h"
 
 #include <communication/AutoBus.hpp>
 
 using namespace std;
-using namespace RenderSpace;
 
 int main() {
     thread logic_thread([&]() {
@@ -17,7 +16,6 @@ int main() {
     });
     logic_thread.detach();
 
-    Renderer renderer(800, 600);
-
-    return renderer.exec();
+    auto renderer = RenderSpace::make_renderer(800, 600);
+    return renderer->exec();
 }

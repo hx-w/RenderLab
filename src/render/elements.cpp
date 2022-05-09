@@ -2,6 +2,7 @@
 
 namespace RenderSpace {
     void RenderVertices::add_vertex(const Point& pnt, const Point& clr) {
+        std::lock_guard<std::mutex> lk(m_mutex);
         if (m_vertex_count * 3 >= MAX_VERTEX_COUNT) {
             return;
         }

@@ -46,6 +46,9 @@ namespace RenderSpace {
         glfwSetFramebufferSizeCallback(m_window, [](GLFWwindow* w, int width, int height) {
             static_cast<RenderWindowWidget*>(glfwGetWindowUserPointer(w))->framebuffer_size_callback(w, width, height);
         });
+        glfwSetMouseButtonCallback(m_window, [](GLFWwindow* w, int button, int action, int modes) {
+            static_cast<RenderWindowWidget*>(glfwGetWindowUserPointer(w))->mouse_button_callback(w, button, action, modes);
+        });
         // glad: load all OpenGL function pointers
         // ---------------------------------------
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {

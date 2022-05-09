@@ -47,6 +47,8 @@ namespace RenderSpace {
     // glfw: whenever the mouse moves, this callback is called
     // -------------------------------------------------------
     void RenderWindowWidget::mouse_callback(GLFWwindow* window, double xposIn, double yposIn) {
+        if (!leftMousePressed)
+            return;
         float xpos = static_cast<float>(xposIn);
         float ypos = static_cast<float>(yposIn);
 
@@ -89,5 +91,35 @@ namespace RenderSpace {
             fov = 1.0f;
         if (fov > 45.0f)
             fov = 45.0f;
+    }
+
+    void RenderWindowWidget::mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+	    if (action == GLFW_PRESS) {
+            switch(button) {
+			case GLFW_MOUSE_BUTTON_LEFT:
+                leftMousePressed = true;
+                firstMouse = true;
+				break;
+			case GLFW_MOUSE_BUTTON_MIDDLE:
+				break;
+			case GLFW_MOUSE_BUTTON_RIGHT:
+				break;
+			default:
+				return;
+			}
+        }
+        if (action == GLFW_RELEASE) {
+            switch(button) {
+			case GLFW_MOUSE_BUTTON_LEFT:
+                leftMousePressed = false;
+				break;
+			case GLFW_MOUSE_BUTTON_MIDDLE:
+				break;
+			case GLFW_MOUSE_BUTTON_RIGHT:
+				break;
+			default:
+				return;
+			}
+        }
     }
 }

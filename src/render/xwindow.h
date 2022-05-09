@@ -17,6 +17,7 @@ namespace RenderSpace {
     public:
         void framebuffer_size_callback(GLFWwindow* window, int width, int height);
         void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+        void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
         void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
         void processInput(GLFWwindow* window);
 
@@ -29,6 +30,7 @@ namespace RenderSpace {
         glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
         glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f, 0.0f);
 
+        bool leftMousePressed = false;
         bool firstMouse = true;
         float yaw   = -90.0f;	// yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction vector pointing to the right so we initially rotate a bit to the left.
         float pitch =  0.0f;

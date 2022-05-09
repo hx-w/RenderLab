@@ -108,6 +108,7 @@ namespace ToothSpace {
             }
         }
 
+        _service.sync_invoke(Point(0.0, 0.0, 0.0), Point(0.0));
         Printer::to_console("done.");
     }
 

@@ -1,6 +1,7 @@
 #ifndef RENDER_ELEMENTS_H
 #define RENDER_ELEMENTS_H
 
+#include <mutex>
 #include "../libs/coords.h"
 
 namespace RenderSpace {
@@ -13,6 +14,8 @@ namespace RenderSpace {
 
         unsigned int m_vertex_count = 0;
         float m_vertices[MAX_VERTEX_COUNT];
+    private:
+        std::mutex m_mutex;
     };
 }
 

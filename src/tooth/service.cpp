@@ -98,13 +98,14 @@ namespace ToothSpace {
 
                 // _service.sync_invoke(Point(iu * 1.0 / m_scale, iv * 1.0 / m_scale, 0.0), Point(0.0));
                 _service.sync_invoke(static_cast<Point>(pivot), Point(0.0));
+                _service.sync_invoke(tpnt, Point(0.0));
 
-                saver.to_csv(
-                    fmt_str("\"%.2lf,%.2lf\"", iu * 1.0 / m_scale, iv * 1.0 / m_scale),
-                    fmt_str("\"%lf,%lf,%lf\"", pivot.x(), pivot.y(), pivot.z()),
-                    fmt_str("\"%lf,%lf,%lf\"", tpnt.x(), tpnt.y(), tpnt.z()),
-                    dist, tface
-                );
+                // saver.to_csv(
+                //     fmt_str("\"%.2lf,%.2lf\"", iu * 1.0 / m_scale, iv * 1.0 / m_scale),
+                //     fmt_str("\"%lf,%lf,%lf\"", pivot.x(), pivot.y(), pivot.z()),
+                //     fmt_str("\"%lf,%lf,%lf\"", tpnt.x(), tpnt.y(), tpnt.z()),
+                //     dist, tface
+                // );
             }
         }
 

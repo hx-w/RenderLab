@@ -32,10 +32,10 @@ namespace ToothSpace {
 #ifdef _WIN32
         sep = "\\";
 #endif
-        m_faces.emplace_back(NURBSFace(dir + sep + "face-1.txt", scale, true));
-        m_faces.emplace_back(NURBSFace(dir + sep + "face-2.txt", scale, true));
-        m_faces.emplace_back(NURBSFace(dir + sep + "face-3.txt", scale, true));
-        m_faces.emplace_back(NURBSFace(dir + sep + "face-4.txt", scale, true));
+        m_faces.emplace_back(NURBSFace(fmt_str(".%s%s%s%s", sep.c_str(), dir.c_str(), sep.c_str(), "face-1.txt"), scale, true));
+        m_faces.emplace_back(NURBSFace(fmt_str(".%s%s%s%s", sep.c_str(), dir.c_str(), sep.c_str(), "face-2.txt"), scale, true));
+        m_faces.emplace_back(NURBSFace(fmt_str(".%s%s%s%s", sep.c_str(), dir.c_str(), sep.c_str(), "face-3.txt"), scale, true));
+        m_faces.emplace_back(NURBSFace(fmt_str(".%s%s%s%s", sep.c_str(), dir.c_str(), sep.c_str(), "face-4.txt"), scale, true));
     }
 
     void ToothService::_reset() {

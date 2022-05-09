@@ -30,6 +30,8 @@ namespace ToothSpace {
         static ToothEngine* m_instance;
         static std::once_flag m_inited;
     };
+
+    ToothService* make_service(const std::string& dir, int scale=100);
 }
 
 #endif

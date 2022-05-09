@@ -11,27 +11,27 @@ public:
     CSingleton(const CSingleton&) = delete;
     CSingleton& operator=(const CSingleton&) = delete;
 
-    static T* instance() {
+    static T* get_instance() {
         std::call_once(m_instantiated, []() {
-            pInstance = new T;
+            m_instance = new T;
         });
-        return pInstance;
+        return m_instance;
     }
 
     static void destroy() {
-        if (pInstance) {
-            delete pInstance;
-            pInstance = nullptr;
+        if (m_instance) {
+            delete m_instance;
+            m_instance = nullptr;
         }
     }
 
 private:
-    static pointer pInstance;
+    static pointer m_instance;
     static std::once_flag m_instantiated;
 };
 
 template<typename T>
-T* CSingleton<T>::pInstance = nullptr;
+T* CSingleton<T>::m_instance = nullptr;
 
 template<typename T>
 std::once_flag CSingleton<T>::m_instantiated;

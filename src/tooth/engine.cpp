@@ -40,4 +40,8 @@ namespace ToothSpace {
             m_services.erase(iter);
         }
     }
+
+    ToothService* make_service(const string& dir, int scale) {
+        return ToothEngine::get_instance()->create_service(dir, scale);
+    }
 }

@@ -55,7 +55,7 @@ namespace fundamental {
         template<typename _Func, typename... Args>
         bool registerMethod(const std::string &interface, _Func &&_func, Args &&... args) {
             return _registerMethod(
-                    std::is_convertible<_Func, Func>::type(),
+                    std::bool_constant<std::is_convertible<_Func, Func>::value>(),
                     interface,
                     std::forward<_Func>(_func),
                     std::forward<Args>(args)...

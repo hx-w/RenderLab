@@ -10,11 +10,6 @@ namespace ToothSpace {
         ToothEngine& engine,
         const string& dir, int scale
     ) noexcept : m_engine(engine) {
-        m_autobus = make_unique<AutoBus>();
-
-        m_autobus->registerMethod<void(int)>("tooth_service", [&](int hello) {
-            Printer::to_console("[tooth_service] " + to_string(hello));
-        });
         _init(dir, scale);
     }
 
@@ -94,11 +89,15 @@ namespace ToothSpace {
         Scalar dist = 0.0;
         string tface = "";
 
+        auto _service = ContextHub::getInstance()->getService<void(const Point&, const Point&)>("render/add_point");
         for (int iu = 0; iu < m_scale; ++iu) {
             for (int iv = 0; iv < m_scale; ++iv) {
                 pivot = m_faces[0]._cached_point(iu, iv);
 
                 _table_handler(pivot, dist, tpnt, tface);
+
+                // _service.sync_invoke(Point(iu * 1.0 / m_scale, iv * 1.0 / m_scale, 0.0), Point(0.0));
+                _service.sync_invoke(static_cast<Point>(pivot), Point(0.0));
 
                 saver.to_csv(
                     fmt_str("\"%.2lf,%.2lf\"", iu * 1.0 / m_scale, iv * 1.0 / m_scale),
@@ -108,6 +107,8 @@ namespace ToothSpace {
                 );
             }
         }
+
+        Printer::to_console("done.");
     }
 
     void ToothService::_table_handler(UVPoint& pivot, Scalar& dist, Point& tpnt, string& tface) {

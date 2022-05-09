@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 #include "../libs/nurbs.h"
-#include "../infrastructure/communication/AutoBus.hpp"
+#include "../infrastructure/communication/ContextHub.h"
 
 namespace ToothSpace {
     class ToothEngine;
@@ -46,7 +46,6 @@ namespace ToothSpace {
         int m_scale;
         FaceList m_faces;
         ToothEngine& m_engine;
-        std::unique_ptr<fundamental::AutoBus> m_autobus;
     };
 }
 

@@ -3,8 +3,7 @@
 
 #include "shader.hpp"
 #include "xwindow.h"
-#include "../infrastructure/communication/ContextHub.h"
-#include "../infrastructure/communication/AutoBus.hpp"
+#include "service.h"
 
 namespace RenderSpace {
     class RenderEngine;
@@ -18,6 +17,8 @@ namespace RenderSpace {
     
     private:
         void setup();
+        void update_transform();
+        void draw_vertex();
 
     private:
         unsigned int m_vao;
@@ -25,11 +26,10 @@ namespace RenderSpace {
         Shader m_shader;
         RenderWindowWidget m_win_widget;
         GLFWwindow* m_window;
-
-        std::unique_ptr<fundamental::AutoBus> m_autobus;
     
     private:
         RenderEngine& m_engine;
+        std::unique_ptr<RenderService> m_service;
     };
 }
 

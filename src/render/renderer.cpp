@@ -1,13 +1,15 @@
 #include "renderer.h"
+#include "elements.h"
 
 #include <iostream>
 
+using namespace std;
 using namespace fundamental;
 
 namespace RenderSpace {
     Renderer::Renderer(RenderEngine& engine, unsigned int _width, unsigned int _height):
         m_engine(engine),
-        m_autobus(std::make_unique<fundamental::AutoBus>()) {
+        m_service(std::make_unique<RenderService>()) {
         m_win_widget.init(_width, _height);
         setup();
     }
@@ -76,68 +78,30 @@ namespace RenderSpace {
                 "}\n"
             )
         );
+        glGenVertexArrays(1, &m_vao);
+        glGenBuffers(1, &m_vbo);
     } 
 
     Renderer::~Renderer() {
         glfwTerminate();
+        m_service.reset();
     }
 
     int Renderer::exec() {
-        // set up vertex data (and buffer(s)) and configure vertex attributes
-        // ------------------------------------------------------------------
-        float vertices[] = {
-            0.50f,  0.50f,  0.50f,
-            0.51f,  0.51f,  0.51f,
-            0.52f,  0.52f, 0.52f,
-        };
-        glGenVertexArrays(1, &m_vao);
-        glGenBuffers(1, &m_vbo);
-
-        glBindVertexArray(m_vao);
-
-        glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-        // position attribute
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(0);
-
-
         // render loop
         // -----------
         while (!glfwWindowShouldClose(m_window)) {
-            // per-frame time logic
-            // --------------------
-            float currentFrame = static_cast<float>(glfwGetTime());
-            m_win_widget.deltaTime = currentFrame - m_win_widget.lastFrame;
-            m_win_widget.lastFrame = currentFrame;
+            // clear
+            glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 
             // input
             // -----
             m_win_widget.processInput(m_window);
 
-            // render
-            // ------
-            glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
+            update_transform();
 
-            // activate shader
-            m_shader.use();
-
-            // pass projection matrix to shader (note that in this case it could change every frame)
-            glm::mat4 projection = glm::perspective(glm::radians(m_win_widget.fov), (float)m_win_widget.m_scr_width / (float)m_win_widget.m_scr_height, 0.1f, 100.0f);
-            m_shader.setMat4("projection", projection);
-
-            // camera/view transformation
-            glm::mat4 view = glm::lookAt(m_win_widget.cameraPos, m_win_widget.cameraPos + m_win_widget.cameraFront, m_win_widget.cameraUp);
-            m_shader.setMat4("view", view);
-
-            // render elements
-            glBindVertexArray(m_vao);
-            glm::mat4 model = glm::mat4(1.0f);
-            m_shader.setMat4("model", model);
-            glPointSize(3.0f);
-            glDrawArrays(GL_POINTS, 0, 3);
+            draw_vertex();
 
             // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
             // -------------------------------------------------------------------------------
@@ -156,4 +120,40 @@ namespace RenderSpace {
         return 0;
     }
 
+    void Renderer::draw_vertex() {
+        const RenderVertices& vertices = m_service->get_vertices();
+        glBindVertexArray(m_vao);
+
+        glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 3 * vertices.m_vertex_count, vertices.m_vertices, GL_DYNAMIC_DRAW);
+
+        // position attribute
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        // render elements
+        glBindVertexArray(m_vao);
+        glm::mat4 model = glm::mat4(1.0f);
+        m_shader.setMat4("model", model);
+        glPointSize(3.0f);
+        glDrawArrays(GL_POINTS, 0, vertices.m_vertex_count);
+    }
+
+    void Renderer::update_transform() {
+        // --------------------
+        float currentFrame = static_cast<float>(glfwGetTime());
+        m_win_widget.deltaTime = currentFrame - m_win_widget.lastFrame;
+        m_win_widget.lastFrame = currentFrame;
+
+        // activate shader
+        m_shader.use();
+
+        // pass projection matrix to shader (note that in this case it could change every frame)
+        glm::mat4 projection = glm::perspective(glm::radians(m_win_widget.fov), (float)m_win_widget.m_scr_width / (float)m_win_widget.m_scr_height, 0.1f, 100.0f);
+        m_shader.setMat4("projection", projection);
+
+        // camera/view transformation
+        glm::mat4 view = glm::lookAt(m_win_widget.cameraPos, m_win_widget.cameraPos + m_win_widget.cameraFront, m_win_widget.cameraUp);
+        m_shader.setMat4("view", view);
+    }
 }

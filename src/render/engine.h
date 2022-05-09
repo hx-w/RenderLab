@@ -1,4 +1,4 @@
-#ifndef RENDER_ENGINE_H
+﻿#ifndef RENDER_ENGINE_H
 #define RENDER_ENGINE_H
 
 #include <mutex>

@@ -1,4 +1,4 @@
-#ifndef RENDER_SERVICE_H
+﻿#ifndef RENDER_SERVICE_H
 #define RENDER_SERVICE_H
 
 #include <memory>

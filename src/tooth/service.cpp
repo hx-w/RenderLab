@@ -28,9 +28,9 @@ namespace ToothSpace {
         sep = "\\";
 #endif
         m_faces.emplace_back(NURBSFace(fmt_str(".%s%s%s%s", sep.c_str(), dir.c_str(), sep.c_str(), "face-1.txt"), scale, true));
-        m_faces.emplace_back(NURBSFace(fmt_str(".%s%s%s%s", sep.c_str(), dir.c_str(), sep.c_str(), "face-2.txt"), scale, false));
-        m_faces.emplace_back(NURBSFace(fmt_str(".%s%s%s%s", sep.c_str(), dir.c_str(), sep.c_str(), "face-3.txt"), scale, false));
-        m_faces.emplace_back(NURBSFace(fmt_str(".%s%s%s%s", sep.c_str(), dir.c_str(), sep.c_str(), "face-4.txt"), scale, false));
+        m_faces.emplace_back(NURBSFace(fmt_str(".%s%s%s%s", sep.c_str(), dir.c_str(), sep.c_str(), "face-2.txt"), scale, true));
+        m_faces.emplace_back(NURBSFace(fmt_str(".%s%s%s%s", sep.c_str(), dir.c_str(), sep.c_str(), "face-3.txt"), scale, true));
+        m_faces.emplace_back(NURBSFace(fmt_str(".%s%s%s%s", sep.c_str(), dir.c_str(), sep.c_str(), "face-4.txt"), scale, true));
     }
 
     void ToothService::_reset() {

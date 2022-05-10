@@ -8,6 +8,9 @@ namespace RenderSpace {
     RenderService::RenderService():
         m_autobus(make_unique<AutoBus>()) {
         setup();
+
+        Mesh mesh;
+        mesh.load_STL("./static/STL/LowerJawScan.stl");
     }
 
     void RenderService::setup() {

@@ -9,9 +9,23 @@
 #include "./libs/glm/gtc/type_ptr.hpp"
 
 namespace RenderSpace {
+    typedef glm::vec3 Normal;
+
     struct Vertex {
+        Vertex() = default;
+        Vertex(const glm::vec3& pos, const glm::vec3& clr=glm::vec3(0.0f, 0.0f, 0.0f)) :
+            Position(pos), Color(clr) {
+        }
         glm::vec3 Position;
         glm::vec3 Color;
+    };
+
+    struct Triangle {
+        Triangle() = default;
+        Triangle(const int v0, const int v1, const int v2) {
+            VertexIdx = glm::uvec3(v0, v1, v2);
+        }
+        glm::uvec3 VertexIdx;
     };
 
     struct RenderVertices {
@@ -23,6 +37,36 @@ namespace RenderSpace {
         unsigned int m_vertex_count = 0;
         std::vector<Vertex> m_vertices;
     private:
+        std::mutex m_mutex;
+    };
+
+    class Mesh {
+    public:
+        Mesh() = default;
+        ~Mesh();
+
+        bool load_STL(const std::string& filename);
+
+        const std::vector<Triangle>& get_triangles() const {
+            return m_triangles;
+        };
+        const std::vector<Vertex>& get_vertices() const {
+            return m_vertices;
+        }
+        const std::vector<Normal>& get_normals() const {
+            return m_normals;
+        }
+    private:
+        void _reset();
+        bool _read_STL_ASCII(const std::string& filename);
+        bool _read_STL_Binary(const std::string& filename);
+    private:
+        std::vector<Triangle> m_triangles;
+        std::vector<Vertex> m_vertices;
+        std::vector<Normal> m_normals;
+        glm::vec3 m_center;
+        float m_radius;
+
         std::mutex m_mutex;
     };
 }

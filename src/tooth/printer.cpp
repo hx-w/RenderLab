@@ -11,6 +11,6 @@ namespace ToothSpace {
     }
 
     void Printer::show_percient(const string& desc, double percent) {
-        printf("\r[%s] %.2f%%\n", desc.c_str(), percent * 100.0);
+        printf("\r[%s] %.2f%%", desc.c_str(), percent * 100.0);
     }
 }

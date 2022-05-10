@@ -108,7 +108,6 @@ class Shader {
         glShaderSource(fragment, 1, &fShaderCode, NULL);
         glCompileShader(fragment);
         checkCompileErrors(fragment, "FRAGMENT");
-        // if geometry shader is given, compile geometry shader
         // shader Program
         ID = glCreateProgram();
         glAttachShader(ID, vertex);

@@ -2,6 +2,9 @@
 #include <string>
 #include <iostream>
 
+#include "./libs/glad/glad.h"
+#include "./libs/GLFW/glfw3.h"
+
 using namespace std;
 namespace RenderSpace {
     void RenderVertices::add_vertex(const Point& pnt, const Point& clr) {
@@ -24,7 +27,7 @@ namespace RenderSpace {
         vector<Normal>().swap(m_normals);
     }
 
-    bool Mesh::load_STL(const std::string& filename) {
+    bool MeshDrawable::load_STL(const std::string& filename) {
         m_mutex.lock();
         ifstream ifs(filename);
         if (!ifs.good()) {
@@ -48,7 +51,7 @@ namespace RenderSpace {
         }
     }
 
-    bool Mesh::_read_STL_ASCII(const std::string& filename) {
+    bool MeshDrawable::_read_STL_ASCII(const std::string& filename) {
         std::lock_guard<std::mutex> lk(m_mutex);
         ifstream ifs(filename);
         if (!ifs.good()) {
@@ -59,7 +62,7 @@ namespace RenderSpace {
         return false;
     }
 
-    bool Mesh::_read_STL_Binary(const std::string& filename) {
+    bool MeshDrawable::_read_STL_Binary(const std::string& filename) {
         std::lock_guard<std::mutex> lk(m_mutex);
         ifstream ifs(filename, ios::binary);
         if (!ifs.good()) {
@@ -134,5 +137,28 @@ namespace RenderSpace {
         cout << m_vertices.back().Position.x << " " << m_vertices.back().Position.y << " " << m_vertices.back().Position.z << endl;
         cout << "radius: " << m_radius << " center: " << m_center.x << "," << m_center.y << "," << m_center.z << endl;
         return true;
+    }
+
+    // 基础绘制
+    void MeshDrawable::draw() {
+        m_shader.use();
+        glBindVertexArray(m_vao);
+
+        glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+        glBufferData(GL_ARRAY_BUFFER, m_vertices.size() * sizeof(Vertex), &m_vertices[0], GL_DYNAMIC_DRAW);
+
+        // position attribute
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Color));
+
+        // render elements
+        glm::mat4 model = glm::mat4(1.0f);
+        m_shader.setMat4("model", model);
+        glPointSize(2.0f);
+        glDrawArrays(GL_POINTS, 0, m_vertices.size());
+
+        glBindVertexArray(0);
     }
 }

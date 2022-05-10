@@ -1,33 +1,9 @@
 #ifndef RENDER_ELEMENTS_H
 #define RENDER_ELEMENTS_H
 
-#include <mutex>
-#include <vector>
-#include "../libs/coords.h"
-#include "./libs/glm/glm.hpp"
-#include "./libs/glm/gtc/matrix_transform.hpp"
-#include "./libs/glm/gtc/type_ptr.hpp"
+#include "drawable.h"
 
 namespace RenderSpace {
-    typedef glm::vec3 Normal;
-
-    struct Vertex {
-        Vertex() = default;
-        Vertex(const glm::vec3& pos, const glm::vec3& clr=glm::vec3(0.0f, 0.0f, 0.0f)) :
-            Position(pos), Color(clr) {
-        }
-        glm::vec3 Position;
-        glm::vec3 Color;
-    };
-
-    struct Triangle {
-        Triangle() = default;
-        Triangle(const int v0, const int v1, const int v2) {
-            VertexIdx = glm::uvec3(v0, v1, v2);
-        }
-        glm::uvec3 VertexIdx;
-    };
-
     struct RenderVertices {
         RenderVertices() = default;
         ~RenderVertices() = default;
@@ -45,7 +21,7 @@ namespace RenderSpace {
         Mesh() = default;
         ~Mesh();
 
-        bool load_STL(const std::string& filename);
+        // bool load_STL(const std::string& filename);
 
         std::vector<Triangle>& get_triangles() {
             return m_triangles;
@@ -58,8 +34,8 @@ namespace RenderSpace {
         }
     private:
         void _reset();
-        bool _read_STL_ASCII(const std::string& filename);
-        bool _read_STL_Binary(const std::string& filename);
+        // bool _read_STL_ASCII(const std::string& filename);
+        // bool _read_STL_Binary(const std::string& filename);
     private:
         std::vector<Triangle> m_triangles;
         std::vector<Vertex> m_vertices;
@@ -68,6 +44,19 @@ namespace RenderSpace {
         float m_radius;
 
         std::mutex m_mutex;
+    };
+
+    class MeshDrawable : public Drawable {
+    public:
+        MeshDrawable() = default;
+        ~MeshDrawable() = default;
+
+        void draw() override;
+
+        bool load_STL(const std::string& filename);
+    private:
+        bool _read_STL_ASCII(const std::string& filename);
+        bool _read_STL_Binary(const std::string& filename);
     };
 }
 

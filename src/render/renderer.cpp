@@ -1,17 +1,16 @@
 ﻿#include "renderer.h"
 #include "elements.h"
 
-#include <iostream>
-
 using namespace std;
 using namespace fundamental;
 
 namespace RenderSpace {
     Renderer::Renderer(RenderEngine& engine, unsigned int _width, unsigned int _height):
-        m_engine(engine),
-        m_service(std::make_unique<RenderService>()) {
+        m_engine(engine) {
         m_win_widget.init(_width, _height);
         setup();
+        // service 中维护了 shader，需要在renderer setup之后初始化
+        m_service = std::make_unique<RenderService>();
     }
 
     void Renderer::setup() {
@@ -59,43 +58,6 @@ namespace RenderSpace {
         // configure global opengl state
         // -----------------------------
         glEnable(GL_DEPTH_TEST);
-
-        // build and compile our shader zprogram
-        // ------------------------------------
-        m_shader.fromCode(
-            (
-                "#version 330 core\n"
-                "layout (location = 0) in vec3 aPos;\n"
-                "layout (location = 1) in vec3 aColor;\n"
-                "out vec3 vColor;\n"
-                "uniform mat4 model;\n"
-                "uniform mat4 view;\n"
-                "uniform mat4 projection;\n"
-                "void main() {\n"
-                "    vColor = aColor;\n"
-                "    gl_Position = projection * view * model * vec4(aPos, 1.0f);\n"
-                "}\n"
-            ),
-            (
-                "#version 330 core\n"
-                "in vec3 vColor;\n"
-                "out vec4 FragColor;\n"
-                "uniform vec3 lightColor;\n"
-                "void main() {\n"
-                "    FragColor = vec4(vColor * lightColor, 1.0);\n"
-                "}\n"
-            )
-        );
-        glGenVertexArrays(1, &m_vao);
-        glGenBuffers(1, &m_vbo);
-
-        glGenVertexArrays(1, &m_light_vao);
-        glBindVertexArray(m_light_vao);
-        // 只需要绑定VBO不用再次设置VBO的数据，因为箱子的VBO数据中已经包含了正确的立方体顶点数据
-        glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-        // 设置灯立方体的顶点属性（对我们的灯来说仅仅只有位置数据）
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(0);
     } 
 
     Renderer::~Renderer() {
@@ -126,12 +88,6 @@ namespace RenderSpace {
             glfwPollEvents();
         }
 
-        // optional: de-allocate all resources once they've outlived their purpose:
-        // ------------------------------------------------------------------------
-        glDeleteVertexArrays(1, &m_vao);
-        glDeleteVertexArrays(1, &m_light_vao);
-        glDeleteBuffers(1, &m_vbo);
-
         // glfw: terminate, clearing all previously allocated GLFW resources.
         // ------------------------------------------------------------------
         glfwTerminate();
@@ -139,54 +95,34 @@ namespace RenderSpace {
     }
 
     void Renderer::draw_vertex() {
-        const RenderVertices& vertices = m_service->get_vertices();
-        glBindVertexArray(m_vao);
+        // auto& m_shader = m_service->get_shader();
+        // const RenderVertices& vertices = m_service->get_vertices();
+        // glBindVertexArray(m_vao);
 
-        glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-        glBufferData(GL_ARRAY_BUFFER, vertices.m_vertices.size() * sizeof(Vertex), &vertices.m_vertices[0], GL_DYNAMIC_DRAW);
+        // glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+        // glBufferData(GL_ARRAY_BUFFER, vertices.m_vertices.size() * sizeof(Vertex), &vertices.m_vertices[0], GL_DYNAMIC_DRAW);
 
-        // position attribute
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Color));
+        // // position attribute
+        // glEnableVertexAttribArray(0);
+        // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+        // glEnableVertexAttribArray(1);
+        // glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Color));
 
-        // render elements
-        glm::mat4 model = glm::mat4(1.0f);
-        m_shader.setMat4("model", model);
-        glPointSize(2.0f);
-        glDrawArrays(GL_POINTS, 0, vertices.m_vertex_count);
+        // // render elements
+        // glm::mat4 model = glm::mat4(1.0f);
+        // m_shader.setMat4("model", model);
+        // glPointSize(2.0f);
+        // glDrawArrays(GL_POINTS, 0, vertices.m_vertex_count);
 
-        glBindVertexArray(0);
+        // glBindVertexArray(0);
     }
 
     void Renderer::draw_mesh() {
-        Mesh& mesh = m_service->get_mesh();
-        vector<Vertex>& vertices = mesh.get_vertices();
-        vector<Triangle>& triangles = mesh.get_triangles();
-        vector<Normal>& normals = mesh.get_normals();
-
-        glBindVertexArray(m_vao);
-
-        glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_DYNAMIC_DRAW);
-
-        // position attribute
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Color));
-
-        // render elements
-        glm::mat4 model = glm::mat4(1.0f);
-        m_shader.setMat4("model", model);
-        glPointSize(2.0f);
-        glDrawArrays(GL_POINTS, 0, vertices.size());
-
-        glBindVertexArray(0);
+        m_service->get_meshdraw().draw();
     }
 
     void Renderer::update_transform() {
+        auto& m_shader = m_service->get_shader();
         // --------------------
         float currentFrame = static_cast<float>(glfwGetTime());
         m_win_widget.deltaTime = currentFrame - m_win_widget.lastFrame;

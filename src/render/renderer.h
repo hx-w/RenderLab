@@ -1,9 +1,8 @@
 ﻿#ifndef RENDERER_H
 #define RENDERER_H
 
-#include "shader.hpp"
-#include "xwindow.h"
 #include "service.h"
+#include "xwindow.h"
 
 namespace RenderSpace {
     class RenderEngine;
@@ -22,9 +21,6 @@ namespace RenderSpace {
         void draw_mesh();
 
     private:
-        unsigned int m_vao;
-        unsigned int m_light_vao;
-        unsigned int m_vbo;
         Shader m_shader;
         RenderWindowWidget m_win_widget;
         GLFWwindow* m_window;

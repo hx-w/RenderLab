@@ -131,6 +131,7 @@ namespace RenderSpace {
             }
         }
 
+        cout << m_vertices.back().Position.x << " " << m_vertices.back().Position.y << " " << m_vertices.back().Position.z << endl;
         cout << "radius: " << m_radius << " center: " << m_center.x << "," << m_center.y << "," << m_center.z << endl;
         return true;
     }

@@ -9,8 +9,8 @@ namespace RenderSpace {
         m_autobus(make_unique<AutoBus>()) {
         setup();
 
-        Mesh mesh;
-        mesh.load_STL("./static/STL/LowerJawScan.stl");
+        // 在这里预读取
+        m_mesh.load_STL("./static/STL/LowerJawScan.stl");
     }
 
     void RenderService::setup() {
@@ -24,5 +24,9 @@ namespace RenderSpace {
 
     RenderVertices& RenderService::get_vertices() {
         return m_vertices;
+    }
+
+    Mesh& RenderService::get_mesh() {
+        return m_mesh;
     }
 }

@@ -19,6 +19,7 @@ namespace RenderSpace {
         void setup();
         void update_transform();
         void draw_vertex();
+        void draw_mesh();
 
     private:
         unsigned int m_vao;

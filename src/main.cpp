@@ -17,6 +17,6 @@ int main() {
     });
     logic_thread.detach();
 
-    auto renderer = RenderSpace::make_renderer(800, 600);
+    auto renderer = RenderSpace::make_renderer(1200, 800);
     return renderer->exec();
 }

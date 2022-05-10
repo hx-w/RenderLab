@@ -117,7 +117,8 @@ namespace RenderSpace {
 
             update_transform();
 
-            draw_vertex();
+            // draw_vertex();
+            draw_mesh();
 
             // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
             // -------------------------------------------------------------------------------
@@ -155,6 +156,32 @@ namespace RenderSpace {
         m_shader.setMat4("model", model);
         glPointSize(2.0f);
         glDrawArrays(GL_POINTS, 0, vertices.m_vertex_count);
+
+        glBindVertexArray(0);
+    }
+
+    void Renderer::draw_mesh() {
+        Mesh& mesh = m_service->get_mesh();
+        vector<Vertex>& vertices = mesh.get_vertices();
+        vector<Triangle>& triangles = mesh.get_triangles();
+        vector<Normal>& normals = mesh.get_normals();
+
+        glBindVertexArray(m_vao);
+
+        glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_DYNAMIC_DRAW);
+
+        // position attribute
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Color));
+
+        // render elements
+        glm::mat4 model = glm::mat4(1.0f);
+        m_shader.setMat4("model", model);
+        glPointSize(2.0f);
+        glDrawArrays(GL_POINTS, 0, vertices.size());
 
         glBindVertexArray(0);
     }

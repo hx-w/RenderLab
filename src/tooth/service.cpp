@@ -128,6 +128,10 @@ namespace ToothSpace {
         }
 
         _service.sync_invoke(Point(0.0, 0.0, 0.0), Point(1.0));
+        _service.sync_invoke(Point(10.0, -5.0, -5.0), Point(1.0));
+        _service.sync_invoke(Point(20.0, -10.0, -10.0), Point(1.0));
+        _service.sync_invoke(Point(30.0, -10.0, -15.0), Point(1.0));
+        _service.sync_invoke(Point(40.0, -10.0, -15.0), Point(1.0));
         Printer::to_console("done.");
     }
 

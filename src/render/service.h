@@ -13,13 +13,18 @@ namespace RenderSpace {
         RenderService();
         ~RenderService() = default;
 
+        // 临时画点集，后续删掉
         RenderVertices& get_vertices();
+
+        // 只画一个mesh
+        Mesh& get_mesh();
 
     private:
         void setup();
 
     private:
         RenderVertices m_vertices;
+        Mesh m_mesh;
 
         std::string m_symbol = "render";
         std::unique_ptr<fundamental::AutoBus> m_autobus;

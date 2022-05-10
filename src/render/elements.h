@@ -47,13 +47,13 @@ namespace RenderSpace {
 
         bool load_STL(const std::string& filename);
 
-        const std::vector<Triangle>& get_triangles() const {
+        std::vector<Triangle>& get_triangles() {
             return m_triangles;
         };
-        const std::vector<Vertex>& get_vertices() const {
+        std::vector<Vertex>& get_vertices() {
             return m_vertices;
         }
-        const std::vector<Normal>& get_normals() const {
+        std::vector<Normal>& get_normals() {
             return m_normals;
         }
     private:

@@ -14,7 +14,7 @@ namespace RenderSpace {
 
         // 在这里预读取
         m_meshdraw.set_shader(m_shader);
-        m_meshdraw.load_STL("./static/STL/LowerJawScan.stl");
+        m_meshdraw.load_STL("./static/STL/JawScan.stl");
 
         m_nurbs.set_shader(m_shader);
     }

@@ -23,7 +23,7 @@ namespace RenderSpace {
     void RenderWindowWidget::processInput(GLFWwindow* window) {
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
-        float cameraSpeed = static_cast<float>(2.5 * deltaTime);
+        float cameraSpeed = static_cast<float>(10.0 * deltaTime);
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
             cameraPos += cameraSpeed * cameraFront;
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -32,6 +32,21 @@ namespace RenderSpace {
             cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
             cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+        if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) {
+            if (!T_down) {
+                T_down = !T_down;
+                if (shade_mode == GL_LINE) {
+                    shade_mode = GL_FILL;
+                } else if (shade_mode == GL_FILL) {
+                    shade_mode = GL_POINT;
+                } else if (shade_mode == GL_POINT) {
+                    shade_mode = GL_LINE;
+                }
+            } 
+        }
+        if (glfwGetKey(window, GLFW_KEY_T) == GLFW_RELEASE) {
+            T_down = false;
+        } 
     }
 
     // glfw: whenever the window size changed (by OS or user resize) this callback function executes

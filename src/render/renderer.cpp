@@ -69,13 +69,15 @@ namespace RenderSpace {
             glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 
+            // shade mode
+            glPolygonMode(GL_FRONT_AND_BACK, m_win_widget.shade_mode);
+
             // input
-            // -----
             m_win_widget.processInput(m_window);
 
             update_transform();
 
-            draw_vertex();
+            // draw_vertex();
             draw_mesh();
 
             // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)

@@ -16,36 +16,6 @@ namespace RenderSpace {
         std::mutex m_mutex;
     };
 
-    class Mesh {
-    public:
-        Mesh() = default;
-        ~Mesh();
-
-        // bool load_STL(const std::string& filename);
-
-        std::vector<Triangle>& get_triangles() {
-            return m_triangles;
-        };
-        std::vector<Vertex>& get_vertices() {
-            return m_vertices;
-        }
-        std::vector<Normal>& get_normals() {
-            return m_normals;
-        }
-    private:
-        void _reset();
-        // bool _read_STL_ASCII(const std::string& filename);
-        // bool _read_STL_Binary(const std::string& filename);
-    private:
-        std::vector<Triangle> m_triangles;
-        std::vector<Vertex> m_vertices;
-        std::vector<Normal> m_normals;
-        glm::vec3 m_center;
-        float m_radius;
-
-        std::mutex m_mutex;
-    };
-
     class MeshDrawable : public Drawable {
     public:
         MeshDrawable() = default;

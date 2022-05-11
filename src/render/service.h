@@ -16,9 +16,6 @@ namespace RenderSpace {
         // 临时画点集，后续删掉
         RenderVertices& get_vertices() { return m_vertices; }
 
-        // 只画一个mesh
-        Mesh& get_mesh() { return m_mesh; }
-
         MeshDrawable& get_meshdraw() { return m_meshdraw; }
 
         Shader& get_shader() { return m_shader; }
@@ -28,8 +25,6 @@ namespace RenderSpace {
 
     private:
         RenderVertices m_vertices;
-        Mesh m_mesh;
-
         MeshDrawable m_meshdraw;
 
         Shader m_shader;

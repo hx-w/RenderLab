@@ -40,6 +40,10 @@ namespace RenderSpace {
 
         float deltaTime = 0.0f;	// time between current frame and last frame
         float lastFrame = 0.0f;
+
+        GLenum shade_mode = GL_LINE;
+    private:
+        bool T_down = false;
     };
 }
 

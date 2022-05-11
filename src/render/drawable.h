@@ -14,7 +14,7 @@ namespace RenderSpace {
 
     struct Vertex {
         Vertex() = default;
-        Vertex(const glm::vec3& pos, const glm::vec3& clr=glm::vec3(0.0f, 0.0f, 0.0f)) :
+        Vertex(const glm::vec3& pos, const glm::vec3& clr=glm::vec3(1.0f, 1.0f, 1.0f)) :
             Position(pos), Color(clr) {
         }
         glm::vec3 Position;
@@ -32,7 +32,7 @@ namespace RenderSpace {
     // base class for drawable objects
     class Drawable {
     public:
-        Drawable();
+        Drawable() = default;
         virtual ~Drawable();
         virtual void draw() = 0;
 
@@ -43,8 +43,9 @@ namespace RenderSpace {
 
     protected:
         Shader m_shader;
-        unsigned int m_vao;
-        unsigned int m_vbo;
+        GLuint m_vao = 0;
+        GLuint m_vbo = 0;
+        GLuint m_ebo = 0;
 
         std::vector<Triangle> m_triangles;
         std::vector<Vertex> m_vertices;

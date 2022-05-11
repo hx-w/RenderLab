@@ -16,17 +16,6 @@ namespace RenderSpace {
         m_vertex_count ++;
     }
 
-    Mesh::~Mesh() {
-        _reset();
-    }
-
-    void Mesh::_reset() {
-        std::lock_guard<std::mutex> lk(m_mutex);
-        vector<Triangle>().swap(m_triangles);
-        vector<Vertex>().swap(m_vertices);
-        vector<Normal>().swap(m_normals);
-    }
-
     bool MeshDrawable::load_STL(const std::string& filename) {
         m_mutex.lock();
         ifstream ifs(filename);
@@ -52,7 +41,9 @@ namespace RenderSpace {
         }
 
         if (success) {
-            _gen_vao();
+            if (m_vao == 0) {
+                _gen_vao();
+            }
             glBindVertexArray(m_vao);
 
             glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
@@ -64,6 +55,9 @@ namespace RenderSpace {
             // color
             glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Color));
             glEnableVertexAttribArray(1);
+
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_triangles.size() * sizeof(Triangle), &m_triangles[0], GL_STATIC_DRAW);
         }
         return success;
     }
@@ -165,7 +159,14 @@ namespace RenderSpace {
         glm::mat4 model = glm::mat4(1.0f);
         m_shader.setMat4("model", model);
         glPointSize(3.0f);
-        glDrawArrays(GL_POINTS, 0, m_vertices.size());
+
+        if (m_ebo != 0) {
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
+            glDrawElements(GL_TRIANGLES, m_triangles.size() * 3, GL_UNSIGNED_INT, 0);
+        }
+        else {
+            glDrawArrays(GL_POINTS, 0, m_vertices.size());
+        }
 
         glBindVertexArray(0);
     }

@@ -24,6 +24,9 @@ namespace RenderSpace {
         void draw() override;
 
         bool load_STL(const std::string& filename);
+
+        // sync vertex/triangle data to vao vbo ebo
+        void sync();
     private:
         bool _read_STL_ASCII(const std::string& filename);
         bool _read_STL_Binary(const std::string& filename);

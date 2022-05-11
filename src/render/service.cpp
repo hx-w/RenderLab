@@ -49,4 +49,8 @@ namespace RenderSpace {
                 m_vertices.add_vertex(pnt, clr);
             });
     }
+
+    void RenderService::draw_all() {
+        m_meshdraw.draw();
+    }
 }

@@ -78,7 +78,7 @@ namespace RenderSpace {
             update_transform();
 
             // draw_vertex();
-            draw_mesh();
+            draw();
 
             // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
             // -------------------------------------------------------------------------------
@@ -116,8 +116,8 @@ namespace RenderSpace {
         // glBindVertexArray(0);
     }
 
-    void Renderer::draw_mesh() {
-        m_service->get_meshdraw().draw();
+    void Renderer::draw() {
+        m_service->draw_all();
     }
 
     void Renderer::update_transform() {

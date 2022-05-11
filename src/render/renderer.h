@@ -18,13 +18,9 @@ namespace RenderSpace {
         void setup();
         void update_transform();
         void draw_vertex();
-        void draw_mesh();
+        void draw();
 
     private:
-        // Shader m_shader;
-        // unsigned int m_vao;
-        // unsigned int m_vbo;
-
         RenderWindowWidget m_win_widget;
         GLFWwindow* m_window;
     

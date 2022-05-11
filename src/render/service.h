@@ -20,6 +20,8 @@ namespace RenderSpace {
 
         Shader& get_shader() { return m_shader; }
 
+        void draw_all();
+
     private:
         void setup();
 

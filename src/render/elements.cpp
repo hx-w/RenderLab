@@ -41,23 +41,7 @@ namespace RenderSpace {
         }
 
         if (success) {
-            if (m_vao == 0) {
-                _gen_vao();
-            }
-            glBindVertexArray(m_vao);
-
-            glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-            glBufferData(GL_ARRAY_BUFFER, m_vertices.size() * sizeof(Vertex), &m_vertices[0], GL_DYNAMIC_DRAW);
-
-            // position attribute
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
-            glEnableVertexAttribArray(0);
-            // color
-            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Color));
-            glEnableVertexAttribArray(1);
-
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_triangles.size() * sizeof(Triangle), &m_triangles[0], GL_STATIC_DRAW);
+            sync();
         }
         return success;
     }
@@ -169,5 +153,25 @@ namespace RenderSpace {
         }
 
         glBindVertexArray(0);
+    }
+
+    void MeshDrawable::sync() {
+        if (m_vao == 0) {
+            _gen_vao();
+        }
+        glBindVertexArray(m_vao);
+
+        glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+        glBufferData(GL_ARRAY_BUFFER, m_vertices.size() * sizeof(Vertex), &m_vertices[0], GL_DYNAMIC_DRAW);
+
+        // position attribute
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+        glEnableVertexAttribArray(0);
+        // color
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Color));
+        glEnableVertexAttribArray(1);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_triangles.size() * sizeof(Triangle), &m_triangles[0], GL_DYNAMIC_DRAW);
     }
 }

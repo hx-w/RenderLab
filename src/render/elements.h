@@ -4,18 +4,6 @@
 #include "drawable.h"
 
 namespace RenderSpace {
-    struct RenderVertices {
-        RenderVertices() = default;
-        ~RenderVertices() = default;
-
-        void add_vertex(const Point& pnt, const Point& clr);
-
-        unsigned int m_vertex_count = 0;
-        std::vector<Vertex> m_vertices;
-    private:
-        std::mutex m_mutex;
-    };
-
     class MeshDrawable : public Drawable {
     public:
         MeshDrawable();

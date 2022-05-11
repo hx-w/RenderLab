@@ -62,6 +62,16 @@ namespace RenderSpace {
                 m_nurbs.add_triangle_by_idx(Triangle(v1, v2, v3));
             });
         
+        m_autobus->registerMethod<void(const Point&, const Point&, const Point&, const Point&, const Point&, const Point&)>(
+            m_symbol + "/add_triangle_raw",
+            [this](const Point& p1, const Point& p2, const Point& p3, const Point& p1clr, const Point& p2clr, const Point& p3clr) {
+                m_nurbs.add_triangle_raw(
+                    Vertex(glm::vec3(p1.x(), p1.y(), p1.z()), glm::vec3(p1clr.x(), p1clr.y(), p1clr.z())),
+                    Vertex(glm::vec3(p2.x(), p2.y(), p2.z()), glm::vec3(p2clr.x(), p2clr.y(), p2clr.z())),
+                    Vertex(glm::vec3(p3.x(), p3.y(), p3.z()), glm::vec3(p3clr.x(), p3clr.y(), p3clr.z()))
+                );
+            });
+
         m_autobus->registerMethod<void()>(
             m_symbol + "/sync",
             [this]() {

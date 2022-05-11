@@ -75,12 +75,12 @@ namespace ToothSpace {
     }
 
     void ToothService::calculate_table(const string& target) {
-        Printer saver(target);
-        saver.to_csv(
-            "source uv", "source xyz", 
-            "target xyz", "target L",
-            "target face"
-        );
+        // Printer saver(target);
+        // saver.to_csv(
+        //     "source uv", "source xyz", 
+        //     "target xyz", "target L",
+        //     "target face"
+        // );
 
         // 原点 目标点 距离 目标面名称
         UVPoint pivot;
@@ -112,8 +112,15 @@ namespace ToothSpace {
                     _clr_pivot = Point(1.0, 0.0, 0.0);
                     _clr_target = Point(1.0, 0.0, 0.0);
                 }
-                // _service.sync_invoke(static_cast<Point>(pivot), _clr_pivot);
-                // _service.sync_invoke(tpnt, _clr_target);
+
+                if (iu > 0 && iv > 0) {
+                    auto _service = ContextHub::getInstance()->getService<void(const Point&, const Point&, const Point&, const Point&, const Point&, const Point&)>("render/add_triangle_raw");
+                    _service.sync_invoke(
+                        m_faces[0].get_point_by_uv(iu - 1, iv), m_faces[0].get_point_by_uv(iu, iv), m_faces[0].get_point_by_uv(iu, iv - 1),
+                        _clr_pivot, _clr_pivot, _clr_pivot);
+                    _service.sync_invoke(m_faces[0].get_point_by_uv(iu - 1, iv), m_faces[0].get_point_by_uv(iu, iv - 1), m_faces[0].get_point_by_uv(iu - 1, iv - 1),
+                        _clr_pivot, _clr_pivot, _clr_pivot);
+                }
 
                 // saver.to_csv(
                 //     fmt_str("\"%.2lf,%.2lf\"", iu * 1.0 / m_scale, iv * 1.0 / m_scale),
@@ -122,7 +129,7 @@ namespace ToothSpace {
                 //     dist, tface
                 // );
             }
-            Printer::show_percient("calculate_table", double(iu) / m_scale);
+            // Printer::show_percient("calculate_table", double(iu) / m_scale);
         }
 
         {

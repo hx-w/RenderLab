@@ -42,7 +42,6 @@ namespace RenderSpace {
                 "}\n"
             )
         );
-
         // 模块间通讯
         m_autobus->registerMethod<void(const Point& pnt, const Point& clr)>(
             m_symbol + "/add_point",

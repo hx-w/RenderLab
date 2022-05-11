@@ -8,7 +8,6 @@
 #include "../infrastructure/communication/AutoBus.hpp"
 
 namespace RenderSpace {
-    #define MAX_VERTEX_COUNT 1 << 16
     class RenderService {
     public:
         RenderService();

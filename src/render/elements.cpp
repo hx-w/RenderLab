@@ -141,7 +141,6 @@ namespace RenderSpace {
 
     // 基础绘制
     void MeshDrawable::draw() {
-        m_shader.use();
         glBindVertexArray(m_vao);
 
         glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
@@ -154,9 +153,10 @@ namespace RenderSpace {
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Color));
 
         // render elements
+        m_shader.use();
         glm::mat4 model = glm::mat4(1.0f);
         m_shader.setMat4("model", model);
-        glPointSize(2.0f);
+        glPointSize(3.0f);
         glDrawArrays(GL_POINTS, 0, m_vertices.size());
 
         glBindVertexArray(0);

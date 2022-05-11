@@ -21,7 +21,7 @@ namespace RenderSpace {
         void draw_mesh();
 
     private:
-        Shader m_shader;
+        // Shader m_shader;
         RenderWindowWidget m_win_widget;
         GLFWwindow* m_window;
     

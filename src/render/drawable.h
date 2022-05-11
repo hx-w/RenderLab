@@ -9,16 +9,18 @@
 #include "./libs/glm/gtc/type_ptr.hpp"
 
 namespace RenderSpace {
-    typedef glm::vec3 Normal;
     typedef std::pair<glm::vec3, glm::vec3> AABB; // min, max
 
     struct Vertex {
         Vertex() = default;
-        Vertex(const glm::vec3& pos, const glm::vec3& clr=glm::vec3(1.0f, 1.0f, 1.0f)) :
-            Position(pos), Color(clr) {
-        }
+        Vertex(
+            const glm::vec3& pos,
+            const glm::vec3& clr,
+            const glm::vec3& nml) :
+            Position(pos), Color(clr), Normal(nml) { }
         glm::vec3 Position;
         glm::vec3 Color;
+        glm::vec3 Normal;
     };
 
     struct Triangle {
@@ -49,7 +51,6 @@ namespace RenderSpace {
 
         std::vector<Triangle> m_triangles;
         std::vector<Vertex> m_vertices;
-        std::vector<Normal> m_normals;
         glm::vec3 m_center;
         float m_radius;
         AABB m_aabb;

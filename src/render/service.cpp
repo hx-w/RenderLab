@@ -26,22 +26,37 @@ namespace RenderSpace {
                 "#version 330 core\n"
                 "layout (location = 0) in vec3 aPos;\n"
                 "layout (location = 1) in vec3 aColor;\n"
-                "out vec3 vColor;\n"
+                "layout (location = 2) in vec3 aNorm;\n"
+                "out vec3 objectColor;\n"
+                "out vec3 Norm;\n"
+                "out vec3 FragPos;\n"
                 "uniform mat4 model;\n"
                 "uniform mat4 view;\n"
                 "uniform mat4 projection;\n"
                 "void main() {\n"
-                "    vColor = aColor;\n"
+                "    objectColor = aColor;\n"
+                "    Norm = aNorm;\n"
+                "    FragPos = vec3(model * vec4(aPos, 1.0));\n"
                 "    gl_Position = projection * view * model * vec4(aPos, 1.0f);\n"
                 "}\n"
             ),
             (
                 "#version 330 core\n"
-                "in vec3 vColor;\n"
+                "in vec3 objectColor;\n"
+                "in vec3 Norm;\n"
+                "in vec3 FragPos;\n"
                 "out vec4 FragColor;\n"
+                "uniform vec3 lightPos;\n"
                 "uniform vec3 lightColor;\n"
                 "void main() {\n"
-                "    FragColor = vec4(vColor * lightColor, 1.0);\n"
+                "    float ambientStrength = 0.1f;\n"
+                "    vec3 ambient = ambientStrength * lightColor;\n"
+                "    vec3 norm = normalize(Norm);\n"
+                "    vec3 lightDir = normalize(lightPos - FragPos);\n"
+                "    float diff = max(dot(norm, lightDir), 0.0);\n"
+                "    vec3 diffuse = diff * lightColor;\n"
+                "    vec3 result = (ambient + diffuse) * objectColor;\n"
+                "    FragColor = vec4(result, 1.0);\n"
                 "}\n"
             )
         );
@@ -52,7 +67,8 @@ namespace RenderSpace {
             [this](const Point& pnt, const Point& clr) {
                 m_nurbs.add_vertex_raw(Vertex(
                     glm::vec3(pnt.x(), pnt.y(), pnt.z()),
-                    glm::vec3(clr.x(), clr.y(), clr.z())
+                    glm::vec3(clr.x(), clr.y(), clr.z()),
+                    glm::vec3(0.0f, 0.0f, 0.0f)
                 ));
             });
 
@@ -66,9 +82,9 @@ namespace RenderSpace {
             m_symbol + "/add_triangle_raw",
             [this](const Point& p1, const Point& p2, const Point& p3, const Point& p1clr, const Point& p2clr, const Point& p3clr) {
                 m_nurbs.add_triangle_raw(
-                    Vertex(glm::vec3(p1.x(), p1.y(), p1.z()), glm::vec3(p1clr.x(), p1clr.y(), p1clr.z())),
-                    Vertex(glm::vec3(p2.x(), p2.y(), p2.z()), glm::vec3(p2clr.x(), p2clr.y(), p2clr.z())),
-                    Vertex(glm::vec3(p3.x(), p3.y(), p3.z()), glm::vec3(p3clr.x(), p3clr.y(), p3clr.z()))
+                    Vertex(glm::vec3(p1.x(), p1.y(), p1.z()), glm::vec3(p1clr.x(), p1clr.y(), p1clr.z()), glm::vec3(0.0f, 0.0f, 0.0f)),
+                    Vertex(glm::vec3(p2.x(), p2.y(), p2.z()), glm::vec3(p2clr.x(), p2clr.y(), p2clr.z()), glm::vec3(0.0f, 0.0f, 0.0f)),
+                    Vertex(glm::vec3(p3.x(), p3.y(), p3.z()), glm::vec3(p3clr.x(), p3clr.y(), p3clr.z()), glm::vec3(0.0f, 0.0f, 0.0f))
                 );
             });
 

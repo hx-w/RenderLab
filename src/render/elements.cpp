@@ -77,7 +77,6 @@ namespace RenderSpace {
             ifs.read((char*)(&tn0), _float_size);
             ifs.read((char*)(&tn1), _float_size);
             ifs.read((char*)(&tn2), _float_size);
-            
             //如果模型进行坐标变换，需要重新计算法向量
             // faceNrm.push_back(Normal(tn0, tn1, -tn2)); 
             
@@ -86,21 +85,33 @@ namespace RenderSpace {
             ifs.read((char*)(&v1), _float_size);
             ifs.read((char*)(&v2), _float_size);
 
-            m_vertices.emplace_back(Vertex{glm::vec3(v0, v1, v2)});
+            m_vertices.emplace_back(Vertex(
+                glm::vec3(v0, v1, v2),
+                glm::vec3(1.0, 1.0, 1.0),
+                glm::vec3(tn0, tn1, tn2)
+            ));
             cx += v0; cy += v1; cz += v2;
 
             ifs.read((char*)(&v0), _float_size);
             ifs.read((char*)(&v1), _float_size);
             ifs.read((char*)(&v2), _float_size);
 
-            m_vertices.emplace_back(Vertex{glm::vec3(v0, v1, v2)});
+            m_vertices.emplace_back(Vertex(
+                glm::vec3(v0, v1, v2),
+                glm::vec3(1.0, 1.0, 1.0),
+                glm::vec3(tn0, tn1, tn2)
+            ));
             cx += v0; cy += v1; cz += v2;
 
             ifs.read((char*)(&v0), _float_size);
             ifs.read((char*)(&v1), _float_size);
             ifs.read((char*)(&v2), _float_size);
 
-            m_vertices.emplace_back(Vertex{glm::vec3(v0, v1, v2)});
+            m_vertices.emplace_back(Vertex(
+                glm::vec3(v0, v1, v2),
+                glm::vec3(1.0, 1.0, 1.0),
+                glm::vec3(tn0, tn1, tn2)
+            ));
             cx += v0; cy += v1; cz += v2;
 
             // 建立面片索引，确定顶点顺序
@@ -118,7 +129,7 @@ namespace RenderSpace {
         //计算半径
         m_radius = 0;
         for (int i = 0; i < m_vertices.size(); ++i) {
-            m_vertices[i] = m_vertices[i].Position - m_center;
+            m_vertices[i].Position = m_vertices[i].Position - m_center;
             float lens = sqrt(glm::dot(m_vertices[i].Position, m_vertices[i].Position));
             if (lens > m_radius) {
                 m_radius = lens;
@@ -161,7 +172,6 @@ namespace RenderSpace {
         std::lock_guard<std::mutex> lk(m_mutex);
         if (!_ready_to_update) return;
         _ready_to_update = false;
-        // cout << "test" << endl;
         if (m_vao == 0) {
             _gen_vao();
         }
@@ -175,6 +185,9 @@ namespace RenderSpace {
         // color
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Color));
         glEnableVertexAttribArray(1);
+        // normal
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
+        glEnableVertexAttribArray(2);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_triangles.size() * sizeof(Triangle), &m_triangles[0], GL_DYNAMIC_DRAW);

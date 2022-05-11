@@ -20,7 +20,6 @@ namespace RenderSpace {
     void Drawable::_reset() {
         vector<Triangle>().swap(m_triangles);
         vector<Vertex>().swap(m_vertices);
-        vector<Normal>().swap(m_normals);
     }
 
     void Drawable::_gen_vao() {

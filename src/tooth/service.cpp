@@ -53,7 +53,6 @@ namespace ToothSpace {
                     f1pnt._type() = PointType::DEFAULT;
                 }
             }
-            Printer::show_percient("retag_point", double(iu) / m_scale);
         }
         // 去除uv边缘
         for (int iu = 1; iu < m_scale - 1; ++iu) {
@@ -89,7 +88,6 @@ namespace ToothSpace {
         Scalar dist = 0.0;
         string tface = "";
 
-        auto _service = ContextHub::getInstance()->getService<void(const Point&, const Point&)>("render/add_point");
         for (int iu = 0; iu < m_scale; ++iu) {
             for (int iv = 0; iv < m_scale; ++iv) {
                 pivot = m_faces[0]._cached_point(iu, iv);
@@ -114,8 +112,8 @@ namespace ToothSpace {
                     _clr_pivot = Point(1.0, 0.0, 0.0);
                     _clr_target = Point(1.0, 0.0, 0.0);
                 }
-                _service.sync_invoke(static_cast<Point>(pivot), _clr_pivot);
-                _service.sync_invoke(tpnt, _clr_target);
+                // _service.sync_invoke(static_cast<Point>(pivot), _clr_pivot);
+                // _service.sync_invoke(tpnt, _clr_target);
 
                 // saver.to_csv(
                 //     fmt_str("\"%.2lf,%.2lf\"", iu * 1.0 / m_scale, iv * 1.0 / m_scale),
@@ -127,11 +125,21 @@ namespace ToothSpace {
             Printer::show_percient("calculate_table", double(iu) / m_scale);
         }
 
-        _service.sync_invoke(Point(0.0, 0.0, 0.0), Point(1.0));
-        _service.sync_invoke(Point(10.0, -5.0, -5.0), Point(1.0));
-        _service.sync_invoke(Point(20.0, -10.0, -10.0), Point(1.0));
-        _service.sync_invoke(Point(30.0, -10.0, -15.0), Point(1.0));
-        _service.sync_invoke(Point(40.0, -10.0, -15.0), Point(1.0));
+        {
+            auto _service = ContextHub::getInstance()->getService<void(const Point&, const Point&)>("render/add_vertex");
+            _service.sync_invoke(Point(0.0, -10.0, -10.0), Point(1.0));
+            _service.sync_invoke(Point(10.0, -10.0, -15.0), Point(1.0, 0.0, 0.0));
+            _service.sync_invoke(Point(20.0, -10.0, -15.0), Point(1.0, 1.0, 0.0));
+        }
+        {
+            auto _service = ContextHub::getInstance()->getService<void(unsigned int, unsigned int, unsigned int)>("render/add_triangle_by_idx");
+            _service.sync_invoke(0, 1, 2);
+        }
+        {
+            auto _service = ContextHub::getInstance()->getService<void()>("render/sync");
+            _service.sync_invoke();
+        }
+        cout << "逻辑线程ID: " << this_thread::get_id() << endl;
         Printer::to_console("done.");
     }
 

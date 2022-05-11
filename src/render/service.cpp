@@ -2,6 +2,7 @@
 #include "../libs/coords.h"
 
 #include <iostream>
+#include <thread>
 
 using namespace std;
 using namespace fundamental;
@@ -14,6 +15,8 @@ namespace RenderSpace {
         // 在这里预读取
         m_meshdraw.set_shader(m_shader);
         m_meshdraw.load_STL("./static/STL/LowerJawScan.stl");
+
+        m_nurbs.set_shader(m_shader);
     }
 
     void RenderService::setup() {
@@ -42,15 +45,41 @@ namespace RenderSpace {
                 "}\n"
             )
         );
+        // 如果逻辑线程计算太快，可能在下面方法注册前调用，会出错
         // 模块间通讯
-        m_autobus->registerMethod<void(const Point& pnt, const Point& clr)>(
-            m_symbol + "/add_point",
+        m_autobus->registerMethod<void(const Point&, const Point&)>(
+            m_symbol + "/add_vertex",
             [this](const Point& pnt, const Point& clr) {
-                m_vertices.add_vertex(pnt, clr);
+                m_nurbs.add_vertex_raw(Vertex(
+                    glm::vec3(pnt.x(), pnt.y(), pnt.z()),
+                    glm::vec3(clr.x(), clr.y(), clr.z())
+                ));
+            });
+
+        m_autobus->registerMethod<void(unsigned int, unsigned int, unsigned int)>(
+            m_symbol + "/add_triangle_by_idx",
+            [this](unsigned int v1, unsigned int v2, unsigned int v3) {
+                m_nurbs.add_triangle_by_idx(Triangle(v1, v2, v3));
+            });
+        
+        m_autobus->registerMethod<void()>(
+            m_symbol + "/sync",
+            [this]() {
+                sync_all();
             });
     }
 
     void RenderService::draw_all() {
+        m_nurbs.draw();
         m_meshdraw.draw();
+    }
+
+    void RenderService::update() {
+        m_nurbs.sync();
+    }
+
+    void RenderService::sync_all() {
+        cout << "当前线程ID: " << std::this_thread::get_id() << endl;
+        m_nurbs.ready_to_update();
     }
 }

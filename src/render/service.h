@@ -13,20 +13,19 @@ namespace RenderSpace {
         RenderService();
         ~RenderService() = default;
 
-        // 临时画点集，后续删掉
-        RenderVertices& get_vertices() { return m_vertices; }
-
-        MeshDrawable& get_meshdraw() { return m_meshdraw; }
-
         Shader& get_shader() { return m_shader; }
 
         void draw_all();
 
+        void update();
+
     private:
         void setup();
 
+        void sync_all();
+
     private:
-        RenderVertices m_vertices;
+        MeshDrawable m_nurbs;
         MeshDrawable m_meshdraw;
 
         Shader m_shader;

@@ -9,6 +9,7 @@ namespace RenderSpace {
         m_engine(engine) {
         m_win_widget.init(_width, _height);
         setup();
+
         // service 中维护了 shader，需要在renderer setup之后初始化
         m_service = std::make_unique<RenderService>();
     }
@@ -65,6 +66,7 @@ namespace RenderSpace {
 
     int Renderer::exec() {
         while (!glfwWindowShouldClose(m_window)) {
+            
             // clear
             glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
@@ -117,6 +119,7 @@ namespace RenderSpace {
     }
 
     void Renderer::draw() {
+        m_service->update();
         m_service->draw_all();
     }
 

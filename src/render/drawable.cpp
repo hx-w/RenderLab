@@ -8,6 +8,9 @@ using namespace std;
 namespace RenderSpace {
     Drawable::~Drawable() {
         _reset();
+        glDeleteVertexArrays(1, &m_vao);
+        glDeleteBuffers(1, &m_vbo);
+        glDeleteBuffers(1, &m_ebo);
     }
 
     void Drawable::set_shader(Shader& shader) {
@@ -18,9 +21,6 @@ namespace RenderSpace {
         vector<Triangle>().swap(m_triangles);
         vector<Vertex>().swap(m_vertices);
         vector<Normal>().swap(m_normals);
-        glDeleteVertexArrays(1, &m_vao);
-        glDeleteBuffers(1, &m_vbo);
-        glDeleteBuffers(1, &m_ebo);
     }
 
     void Drawable::_gen_vao() {

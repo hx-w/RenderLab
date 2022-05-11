@@ -16,6 +16,11 @@ namespace RenderSpace {
         m_vertex_count ++;
     }
 
+    MeshDrawable::MeshDrawable() {
+        std::lock_guard<std::mutex> lk(m_mutex);
+        // _gen_vao();
+    }
+
     bool MeshDrawable::load_STL(const std::string& filename) {
         m_mutex.lock();
         ifstream ifs(filename);
@@ -39,8 +44,8 @@ namespace RenderSpace {
         else {
             success =  _read_STL_Binary(filename);
         }
-
         if (success) {
+            ready_to_update();
             sync();
         }
         return success;
@@ -129,13 +134,14 @@ namespace RenderSpace {
             }
         }
 
-        cout << m_vertices.back().Position.x << " " << m_vertices.back().Position.y << " " << m_vertices.back().Position.z << endl;
         cout << "radius: " << m_radius << " center: " << m_center.x << "," << m_center.y << "," << m_center.z << endl;
         return true;
     }
 
     // 基础绘制
     void MeshDrawable::draw() {
+        if (!_ready_to_draw) return;
+        std::lock_guard<std::mutex> lk(m_mutex);
         m_shader.use();
         glBindVertexArray(m_vao);
 
@@ -155,7 +161,16 @@ namespace RenderSpace {
         glBindVertexArray(0);
     }
 
+    void MeshDrawable::ready_to_update() {
+        std::lock_guard<std::mutex> lk(m_mutex);
+        _ready_to_update = true;
+    }
+
     void MeshDrawable::sync() {
+        std::lock_guard<std::mutex> lk(m_mutex);
+        if (!_ready_to_update) return;
+        _ready_to_update = false;
+        // cout << "test" << endl;
         if (m_vao == 0) {
             _gen_vao();
         }
@@ -163,7 +178,6 @@ namespace RenderSpace {
 
         glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
         glBufferData(GL_ARRAY_BUFFER, m_vertices.size() * sizeof(Vertex), &m_vertices[0], GL_DYNAMIC_DRAW);
-
         // position attribute
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
         glEnableVertexAttribArray(0);
@@ -173,5 +187,26 @@ namespace RenderSpace {
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_triangles.size() * sizeof(Triangle), &m_triangles[0], GL_DYNAMIC_DRAW);
+        _ready_to_draw = true;
+    }
+
+    // 需要同步更新 center aabb radius
+    void MeshDrawable::add_vertex_raw(const Vertex& v) {
+        std::lock_guard<std::mutex> lk(m_mutex);
+        m_vertices.push_back(v);
+    }
+
+    void MeshDrawable::add_triangle_by_idx(const Triangle& tri) {
+        std::lock_guard<std::mutex> lk(m_mutex);
+        m_triangles.push_back(tri);
+        // 还可以计算法线
+    }
+
+    void MeshDrawable::add_triangle_raw(const Vertex& v1, const Vertex& v2, const Vertex& v3) {
+        std::lock_guard<std::mutex> lk(m_mutex);
+        m_vertices.push_back(v1);
+        m_vertices.push_back(v2);
+        m_vertices.push_back(v3);
+        m_triangles.push_back(Triangle(m_vertices.size() - 3, m_vertices.size() - 2, m_vertices.size() - 1));
     }
 }

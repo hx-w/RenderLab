@@ -22,13 +22,14 @@ namespace fundamental {
 
         // 提交任务
         template<typename Func>
-        typename std::enable_if_t < std::is_invocable<Func>::value,
+        typename std::enable_if_t<std::is_invocable<Func>::value,
             std::future<typename std::invoke_result_t<Func>>>
-            submit(Func func) {
+        submit(Func func) {
             using result_type = typename std::invoke_result_t<Func>;
             std::packaged_task<result_type()> task(std::move(func));
             std::future<result_type> res = task.get_future();
             m_taskQueue.push(std::move(task));
+            // m_taskQueue.push(std::move(TaskWrapper(std::move(func))));
             m_conVar.notify_one();
 
             return std::move(res);
@@ -38,14 +39,14 @@ namespace fundamental {
         class TaskWrapper {
         public:
             template<typename Func>
-            explicit TaskWrapper(Func&& func) :
-                m_imp(new impl_type<Func>(std::forward<Func>(func))) {}
+            TaskWrapper(Func&& func) :
+                m_imp(new impl_type<Func>(std::move(func))) {}
             TaskWrapper() = default;
             TaskWrapper(const TaskWrapper&) = delete;
             TaskWrapper& operator=(const TaskWrapper&) = delete;
-            TaskWrapper(TaskWrapper&& other)  noexcept :
+            TaskWrapper(TaskWrapper&& other) :
                 m_imp(std::move(other.m_imp)) {}
-            TaskWrapper& operator=(TaskWrapper&& other)  noexcept {
+            TaskWrapper& operator=(TaskWrapper&& other) {
                 m_imp.swap(other.m_imp);
                 return *this;
             }
@@ -59,7 +60,7 @@ namespace fundamental {
             };
             template<typename Func>
             struct impl_type: public impl_base {
-                explicit impl_type(Func&& func):
+                impl_type(Func&& func):
                     m_functor(std::move(func)) {}
                 void call() override {
                     m_functor();

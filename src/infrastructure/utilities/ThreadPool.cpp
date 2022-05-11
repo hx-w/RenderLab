@@ -40,7 +40,8 @@ namespace fundamental {
         const auto core = thread::hardware_concurrency() == 0 ?
             CORE_NUM : thread::hardware_concurrency();
         try {
-            for (auto idx = 0U; idx < core; ++idx) m_threads.emplace_back(&ThreadPool::execute, this);
+            for (auto idx = 0U; idx < core; ++idx)
+                m_threads.emplace_back(&ThreadPool::execute, this);
         }
         catch (...) {
             m_done = true;

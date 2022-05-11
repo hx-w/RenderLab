@@ -43,12 +43,29 @@ namespace RenderSpace {
         }
 
         _reset();
+        bool success = false;
         if (headStr[0] == 's') {
-            return _read_STL_ASCII(filename);
+            success = _read_STL_ASCII(filename);
         }
         else {
-            return _read_STL_Binary(filename);
+            success =  _read_STL_Binary(filename);
         }
+
+        if (success) {
+            _gen_vao();
+            glBindVertexArray(m_vao);
+
+            glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+            glBufferData(GL_ARRAY_BUFFER, m_vertices.size() * sizeof(Vertex), &m_vertices[0], GL_DYNAMIC_DRAW);
+
+            // position attribute
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+            glEnableVertexAttribArray(0);
+            // color
+            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Color));
+            glEnableVertexAttribArray(1);
+        }
+        return success;
     }
 
     bool MeshDrawable::_read_STL_ASCII(const std::string& filename) {
@@ -141,19 +158,10 @@ namespace RenderSpace {
 
     // 基础绘制
     void MeshDrawable::draw() {
+        m_shader.use();
         glBindVertexArray(m_vao);
 
-        glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-        glBufferData(GL_ARRAY_BUFFER, m_vertices.size() * sizeof(Vertex), &m_vertices[0], GL_DYNAMIC_DRAW);
-
-        // position attribute
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Color));
-
         // render elements
-        m_shader.use();
         glm::mat4 model = glm::mat4(1.0f);
         m_shader.setMat4("model", model);
         glPointSize(3.0f);

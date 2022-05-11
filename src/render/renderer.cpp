@@ -64,8 +64,6 @@ namespace RenderSpace {
     }
 
     int Renderer::exec() {
-        // render loop
-        // -----------
         while (!glfwWindowShouldClose(m_window)) {
             // clear
             glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -77,7 +75,7 @@ namespace RenderSpace {
 
             update_transform();
 
-            // draw_vertex();
+            draw_vertex();
             draw_mesh();
 
             // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
@@ -107,9 +105,10 @@ namespace RenderSpace {
         // glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Color));
 
         // // render elements
+        // m_shader.use();
         // glm::mat4 model = glm::mat4(1.0f);
         // m_shader.setMat4("model", model);
-        // glPointSize(2.0f);
+        // glPointSize(3.0f);
         // glDrawArrays(GL_POINTS, 0, vertices.m_vertex_count);
 
         // glBindVertexArray(0);

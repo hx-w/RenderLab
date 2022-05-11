@@ -7,7 +7,7 @@ using namespace std;
 
 namespace RenderSpace {
     Drawable::Drawable() {
-        _gen_vao();
+        // _gen_vao();
     }
 
     Drawable::~Drawable() {
@@ -29,12 +29,5 @@ namespace RenderSpace {
     void Drawable::_gen_vao() {
         glGenVertexArrays(1, &m_vao);
         glGenBuffers(1, &m_vbo);
-
-        glBindVertexArray(m_vao);
-        glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-        glBindBuffer(GL_ARRAY_BUFFER, 0); 
-        glBindVertexArray(0); 
-
-        glEnableVertexAttribArray(0);
     }
 }

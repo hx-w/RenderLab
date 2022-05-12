@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <thread>
+#include <array>
 
 using namespace std;
 using namespace fundamental;
@@ -84,13 +85,26 @@ namespace RenderSpace {
                 m_nurbs.add_triangle_by_idx(Triangle(v1, v2, v3));
             });
         
-        m_autobus->registerMethod<void(const Point&, const Point&, const Point&, const Point&, const Point&, const Point&)>(
+        // { Point1, Color1, Normal1, Point2, Color2, Normal2, Point3, Color3, Normal3 }
+        m_autobus->registerMethod<void(array<Point, 9>&&)>(
             m_symbol + "/add_triangle_raw",
-            [this](const Point& p1, const Point& p2, const Point& p3, const Point& p1clr, const Point& p2clr, const Point& p3clr) {
+            [this](array<Point, 9>&& coords) {
                 m_nurbs.add_triangle_raw(
-                    Vertex(glm::vec3(p1.x(), p1.y(), p1.z()), glm::vec3(p1clr.x(), p1clr.y(), p1clr.z()), glm::vec3(0.0f, 0.0f, 0.0f)),
-                    Vertex(glm::vec3(p2.x(), p2.y(), p2.z()), glm::vec3(p2clr.x(), p2clr.y(), p2clr.z()), glm::vec3(0.0f, 0.0f, 0.0f)),
-                    Vertex(glm::vec3(p3.x(), p3.y(), p3.z()), glm::vec3(p3clr.x(), p3clr.y(), p3clr.z()), glm::vec3(0.0f, 0.0f, 0.0f))
+                    Vertex(
+                        glm::vec3(coords[0].x(), coords[0].y(), coords[0].z()),
+                        glm::vec3(coords[1].x(), coords[1].y(), coords[1].z()),
+                        glm::vec3(coords[2].x(), coords[2].y(), coords[2].z())
+                    ),
+                    Vertex(
+                        glm::vec3(coords[3].x(), coords[3].y(), coords[3].z()),
+                        glm::vec3(coords[4].x(), coords[4].y(), coords[4].z()),
+                        glm::vec3(coords[5].x(), coords[5].y(), coords[5].z())
+                    ),
+                    Vertex(
+                        glm::vec3(coords[6].x(), coords[6].y(), coords[6].z()),
+                        glm::vec3(coords[7].x(), coords[7].y(), coords[7].z()),
+                        glm::vec3(coords[8].x(), coords[8].y(), coords[8].z())
+                    )
                 );
             });
 

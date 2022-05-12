@@ -1,6 +1,7 @@
 ﻿#include "service.h"
 #include "printer.h"
 #include <functional>
+#include <array>
 
 using namespace std;
 using namespace fundamental;
@@ -114,12 +115,17 @@ namespace ToothSpace {
                 }
 
                 if (iu > 0 && iv > 0) {
-                    auto _service = ContextHub::getInstance()->getService<void(const Point&, const Point&, const Point&, const Point&, const Point&, const Point&)>("render/add_triangle_raw");
-                    _service.sync_invoke(
-                        m_faces[0].get_point_by_uv(iu - 1, iv), m_faces[0].get_point_by_uv(iu, iv), m_faces[0].get_point_by_uv(iu, iv - 1),
-                        _clr_pivot, _clr_pivot, _clr_pivot);
-                    _service.sync_invoke(m_faces[0].get_point_by_uv(iu - 1, iv), m_faces[0].get_point_by_uv(iu, iv - 1), m_faces[0].get_point_by_uv(iu - 1, iv - 1),
-                        _clr_pivot, _clr_pivot, _clr_pivot);
+                    auto _service = ContextHub::getInstance()->getService<void(array<Point, 9>&&)>("render/add_triangle_raw");
+                    _service.sync_invoke(array<Point, 9>{
+                        m_faces[0].get_point_by_uv(iu - 1, iv), _clr_pivot, m_faces[0].get_norm_by_uv(iu - 1, iv),
+                        m_faces[0].get_point_by_uv(iu, iv), _clr_pivot, m_faces[0].get_norm_by_uv(iu, iv),
+                        m_faces[0].get_point_by_uv(iu, iv - 1), _clr_pivot, m_faces[0].get_norm_by_uv(iu, iv - 1)
+                    });
+                    _service.sync_invoke(array<Point, 9>{
+                        m_faces[0].get_point_by_uv(iu - 1, iv), _clr_pivot, m_faces[0].get_norm_by_uv(iu - 1, iv),
+                        m_faces[0].get_point_by_uv(iu, iv - 1), _clr_pivot, m_faces[0].get_norm_by_uv(iu, iv - 1),
+                        m_faces[0].get_point_by_uv(iu - 1, iv - 1), _clr_pivot, m_faces[0].get_norm_by_uv(iu - 1, iv - 1)
+                    });
                 }
 
                 // saver.to_csv(

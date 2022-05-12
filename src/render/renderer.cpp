@@ -118,5 +118,6 @@ namespace RenderSpace {
 
         m_shader.setVec3("lightColor",  1.0f, 1.0f, 1.0f);
         m_shader.setVec3("lightPos", 0.0, 0.0, 0.0);
+        m_shader.setVec3("viewPos", m_win_widget.cameraPos);
     }
 }

@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 #include "shader.hpp"
-#include "elements.h"
+#include "./mesh/elements.h"
 #include "../infrastructure/communication/AutoBus.hpp"
 
 namespace RenderSpace {

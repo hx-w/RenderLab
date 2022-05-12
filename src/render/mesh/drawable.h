@@ -2,11 +2,10 @@
 #define DRAWABLE_H
 #include <mutex>
 #include <vector>
-#include "shader.hpp"
-#include "../libs/coords.h"
-#include "./libs/glm/glm.hpp"
-#include "./libs/glm/gtc/matrix_transform.hpp"
-#include "./libs/glm/gtc/type_ptr.hpp"
+#include "../shader.hpp"
+#include "../libs/glm/glm.hpp"
+#include "../libs/glm/gtc/matrix_transform.hpp"
+#include "../libs/glm/gtc/type_ptr.hpp"
 
 namespace RenderSpace {
     typedef std::pair<glm::vec3, glm::vec3> AABB; // min, max

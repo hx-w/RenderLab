@@ -139,16 +139,6 @@ namespace ToothSpace {
         }
 
         {
-            auto _service = ContextHub::getInstance()->getService<void(const Point&, const Point&)>("render/add_vertex");
-            _service.sync_invoke(Point(0.0, -10.0, -10.0), Point(1.0));
-            _service.sync_invoke(Point(10.0, -10.0, -15.0), Point(1.0, 0.0, 0.0));
-            _service.sync_invoke(Point(20.0, -10.0, -15.0), Point(1.0, 1.0, 0.0));
-        }
-        {
-            auto _service = ContextHub::getInstance()->getService<void(unsigned int, unsigned int, unsigned int)>("render/add_triangle_by_idx");
-            _service.sync_invoke(0, 1, 2);
-        }
-        {
             auto _service = ContextHub::getInstance()->getService<void()>("render/sync");
             _service.sync_invoke();
         }

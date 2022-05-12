@@ -7,7 +7,9 @@ namespace RenderSpace {
     class MeshDrawable : public Drawable {
     public:
         MeshDrawable();
-        ~MeshDrawable() = default;
+        ~MeshDrawable();
+        MeshDrawable(const MeshDrawable&);
+        MeshDrawable& operator=(const MeshDrawable&);
 
         void draw() override;
 

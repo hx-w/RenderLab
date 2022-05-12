@@ -12,6 +12,35 @@ namespace RenderSpace {
         // _gen_vao();
     }
 
+    MeshDrawable::~MeshDrawable() {
+        std::lock_guard<std::mutex> lk(m_mutex);
+        _ready_to_draw = false;
+        _ready_to_update = false;
+    }
+
+    MeshDrawable::MeshDrawable(const MeshDrawable& mesh) {
+        std::lock_guard<std::mutex> lk(m_mutex);
+        _ready_to_draw = mesh._ready_to_draw;
+        _ready_to_update = mesh._ready_to_update;
+        m_triangles.assign(mesh.m_triangles.begin(), mesh.m_triangles.end());
+        m_vertices.assign(mesh.m_vertices.begin(), mesh.m_vertices.end());
+        m_center = mesh.m_center;
+        m_radius = mesh.m_radius;
+        m_aabb = mesh.m_aabb;
+    }
+
+    MeshDrawable& MeshDrawable::operator=(const MeshDrawable& mesh) {
+        std::lock_guard<std::mutex> lk(m_mutex);
+        _ready_to_draw = mesh._ready_to_draw;
+        _ready_to_update = mesh._ready_to_update;
+        m_triangles.assign(mesh.m_triangles.begin(), mesh.m_triangles.end());
+        m_vertices.assign(mesh.m_vertices.begin(), mesh.m_vertices.end());
+        m_center = mesh.m_center;
+        m_radius = mesh.m_radius;
+        m_aabb = mesh.m_aabb;
+        return *this;
+    }
+
     bool MeshDrawable::load_STL(const std::string& filename) {
         m_mutex.lock();
         ifstream ifs(filename);
@@ -37,7 +66,6 @@ namespace RenderSpace {
         }
         if (success) {
             ready_to_update();
-            sync();
         }
         return success;
     }
@@ -54,7 +82,7 @@ namespace RenderSpace {
     }
 
     bool MeshDrawable::_read_STL_Binary(const std::string& filename) {
-        std::lock_guard<std::mutex> lk(m_mutex);
+        // std::lock_guard<std::mutex> lk(m_mutex);
         ifstream ifs(filename, ios::binary);
         if (!ifs.good()) {
             return false;
@@ -77,45 +105,43 @@ namespace RenderSpace {
             ifs.read((char*)(&tn0), _float_size);
             ifs.read((char*)(&tn1), _float_size);
             ifs.read((char*)(&tn2), _float_size);
-            //如果模型进行坐标变换，需要重新计算法向量
-            // faceNrm.push_back(Normal(tn0, tn1, -tn2)); 
             
             // 01-STL model
             ifs.read((char*)(&v0), _float_size);
             ifs.read((char*)(&v1), _float_size);
             ifs.read((char*)(&v2), _float_size);
 
-            m_vertices.emplace_back(Vertex(
+            Vertex vt1(
                 glm::vec3(v0, v1, v2),
                 glm::vec3(1.0, 1.0, 1.0),
                 glm::vec3(tn0, tn1, tn2)
-            ));
+            );
             cx += v0; cy += v1; cz += v2;
 
             ifs.read((char*)(&v0), _float_size);
             ifs.read((char*)(&v1), _float_size);
             ifs.read((char*)(&v2), _float_size);
 
-            m_vertices.emplace_back(Vertex(
+            Vertex vt2(
                 glm::vec3(v0, v1, v2),
                 glm::vec3(1.0, 1.0, 1.0),
                 glm::vec3(tn0, tn1, tn2)
-            ));
+            );
             cx += v0; cy += v1; cz += v2;
 
             ifs.read((char*)(&v0), _float_size);
             ifs.read((char*)(&v1), _float_size);
             ifs.read((char*)(&v2), _float_size);
 
-            m_vertices.emplace_back(Vertex(
+            Vertex vt3(
                 glm::vec3(v0, v1, v2),
                 glm::vec3(1.0, 1.0, 1.0),
                 glm::vec3(tn0, tn1, tn2)
-            ));
+            );
             cx += v0; cy += v1; cz += v2;
 
             // 建立面片索引，确定顶点顺序
-            m_triangles.emplace_back(Triangle(i * 3 + 0, i * 3 + 1, i * 3 + 2));
+            add_triangle_raw(vt1, vt2, vt3);
 
             ifs.ignore(2);
         }
@@ -208,6 +234,17 @@ namespace RenderSpace {
 
     void MeshDrawable::add_triangle_raw(const Vertex& v1, const Vertex& v2, const Vertex& v3) {
         std::lock_guard<std::mutex> lk(m_mutex);
+        // 查重
+        // for (auto& tri : m_triangles) {
+        //     if ((m_vertices[tri.VertexIdx.x].Position == v1.Position && m_vertices[tri.VertexIdx.y].Position == v2.Position && m_vertices[tri.VertexIdx.z].Position == v3.Position) || \
+        //         (m_vertices[tri.VertexIdx.x].Position == v1.Position && m_vertices[tri.VertexIdx.y].Position == v3.Position && m_vertices[tri.VertexIdx.z].Position == v2.Position) || \
+        //         (m_vertices[tri.VertexIdx.x].Position == v2.Position && m_vertices[tri.VertexIdx.y].Position == v1.Position && m_vertices[tri.VertexIdx.z].Position == v3.Position) || \
+        //         (m_vertices[tri.VertexIdx.x].Position == v2.Position && m_vertices[tri.VertexIdx.y].Position == v3.Position && m_vertices[tri.VertexIdx.z].Position == v1.Position) || \
+        //         (m_vertices[tri.VertexIdx.x].Position == v3.Position && m_vertices[tri.VertexIdx.y].Position == v1.Position && m_vertices[tri.VertexIdx.z].Position == v2.Position) || \
+        //         (m_vertices[tri.VertexIdx.x].Position == v3.Position && m_vertices[tri.VertexIdx.y].Position == v2.Position && m_vertices[tri.VertexIdx.z].Position == v1.Position)) {
+        //         return;
+        //     }
+        // }
         m_vertices.push_back(v1);
         m_vertices.push_back(v2);
         m_vertices.push_back(v3);

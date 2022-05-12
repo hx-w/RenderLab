@@ -1,5 +1,6 @@
 ﻿#include "service.h"
 #include "../libs/coords.h"
+#include "./mesh/parameterization.h"
 
 #include <iostream>
 #include <thread>
@@ -15,9 +16,16 @@ namespace RenderSpace {
 
         // 在这里预读取
         m_meshdraw.set_shader(m_shader);
-        m_meshdraw.load_STL("./static/STL/JawScan.stl");
-
+        m_disk.set_shader(m_shader);
         m_nurbs.set_shader(m_shader);
+
+        thread param_thread([&]() {
+            m_meshdraw.load_STL("./static/STL/JawScan.stl");
+            Parameterization param(&m_meshdraw, &m_disk);
+            param.parameterize();
+            update();
+        });
+        param_thread.detach();
     }
 
     void RenderService::setup() {
@@ -118,14 +126,19 @@ namespace RenderSpace {
     void RenderService::draw_all() {
         m_nurbs.draw();
         m_meshdraw.draw();
+        m_disk.draw();
     }
 
     void RenderService::update() {
         m_nurbs.sync();
+        m_meshdraw.sync();
+        m_disk.sync();
     }
 
     void RenderService::sync_all() {
         cout << "当前线程ID: " << std::this_thread::get_id() << endl;
         m_nurbs.ready_to_update();
+        m_meshdraw.ready_to_update();
+        m_disk.ready_to_update();
     }
 }

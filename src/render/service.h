@@ -26,7 +26,8 @@ namespace RenderSpace {
 
     private:
         MeshDrawable m_nurbs;
-        MeshDrawable m_meshdraw;
+        MeshDrawable m_meshdraw; // origin
+        MeshDrawable m_disk; // target
 
         Shader m_shader;
 

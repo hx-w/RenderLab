@@ -22,11 +22,29 @@ namespace RenderSpace {
         glm::vec3 Normal;
     };
 
+    // 独立边
+    struct Edge {
+        Edge() = default;
+        Edge(const glm::vec3& v0, const glm::vec3& v1, int v0idx, int v1idx):
+            v0(v0), v1(v1), v0idx(v0idx), v1idx(v1idx) { }
+        Edge(const Edge& edge): v0(edge.v0), v1(edge.v1), v0idx(edge.v0idx), v1idx(edge.v1idx) { }
+        bool operator==(const Edge& rhs) const {
+            return (v0 == rhs.v0 && v1 == rhs.v1) || (v0 == rhs.v1 && v1 == rhs.v0);
+        }
+        bool operator<(const Edge& rhs) const {
+            return v0.x < rhs.v0.x;
+        }
+
+        glm::vec3 v0;
+        glm::vec3 v1;
+        int v0idx;
+        int v1idx;
+    };
+
     struct Triangle {
         Triangle() = default;
-        Triangle(const int v0, const int v1, const int v2) {
-            VertexIdx = glm::uvec3(v0, v1, v2);
-        }
+        Triangle(const int v0, const int v1, const int v2):
+            VertexIdx(glm::uvec3(v0, v1, v2)) { }
         glm::uvec3 VertexIdx;
     };
 
@@ -38,6 +56,13 @@ namespace RenderSpace {
         virtual void draw() = 0;
 
         void set_shader(Shader& shader);
+
+        std::vector<Triangle>& get_triangles() {
+            return m_triangles;
+        }
+        std::vector<Vertex>& get_vertices() {
+            return m_vertices;
+        }
     protected:
         void _gen_vao();
         void _reset();

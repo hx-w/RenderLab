@@ -3,8 +3,6 @@
 #include "render/engine.h"
 #include "tooth/engine.h"
 
-#include <communication/AutoBus.hpp>
-
 using namespace std;
 
 int main() {

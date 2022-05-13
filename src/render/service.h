@@ -3,8 +3,10 @@
 
 #include <memory>
 #include <string>
+#include <array>
 #include "shader.hpp"
 #include "./mesh/elements.h"
+#include "../libs/coords.h"
 #include "../infrastructure/communication/AutoBus.hpp"
 
 namespace RenderSpace {
@@ -19,15 +21,20 @@ namespace RenderSpace {
 
         void update();
 
+
     private:
         void setup();
 
-        void sync_all();
+        // 对外接口
+        int create_mesh(const std::string& name);
+        void refresh(int mesh_id);
+        void add_triangle_raw(int mesh_id, std::array<Point, 9>&& coords);
 
     private:
         MeshDrawable m_nurbs;
         MeshDrawable m_meshdraw; // origin
         MeshDrawable m_disk; // target
+        std::vector<std::shared_ptr<MeshDrawable>> m_meshes;
 
         Shader m_shader;
 

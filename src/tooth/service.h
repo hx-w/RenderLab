@@ -43,6 +43,8 @@ namespace ToothSpace {
         void _table_handler(UVPoint& pivot, Scalar& dist, Point& tpnt, std::string& tface);
 
     private:
+        int m_id; // render中的id
+        std::string m_name; // 名称
         int m_scale;
         FaceList m_faces;
         ToothEngine& m_engine;

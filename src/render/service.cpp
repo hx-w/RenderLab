@@ -1,10 +1,8 @@
 ﻿#include "service.h"
-#include "../libs/coords.h"
 #include "./mesh/parameterization.h"
 
 #include <iostream>
 #include <thread>
-#include <array>
 
 using namespace std;
 using namespace fundamental;
@@ -77,49 +75,38 @@ namespace RenderSpace {
         );
         // 如果逻辑线程计算太快，可能在下面方法注册前调用，会出错
         // 模块间通讯
-        m_autobus->registerMethod<void(const Point&, const Point&)>(
-            m_symbol + "/add_vertex",
-            [this](const Point& pnt, const Point& clr) {
-                m_nurbs.add_vertex_raw(Vertex(
-                    glm::vec3(pnt.x(), pnt.y(), pnt.z()),
-                    glm::vec3(clr.x(), clr.y(), clr.z()),
-                    glm::vec3(1.0f, 1.0f, 1.0f)
-                ));
+        m_autobus->registerMethod<int(const string& name)>(
+            m_symbol + "/create_mesh",
+            [this](const string& name)->int {
+                return create_mesh(name);
             });
+        // m_autobus->registerMethod<void(const Point&, const Point&)>(
+        //     m_symbol + "/add_vertex",
+        //     [this](const Point& pnt, const Point& clr) {
+        //         m_nurbs.add_vertex_raw(Vertex(
+        //             glm::vec3(pnt.x(), pnt.y(), pnt.z()),
+        //             glm::vec3(clr.x(), clr.y(), clr.z()),
+        //             glm::vec3(1.0f, 1.0f, 1.0f)
+        //         ));
+        //     });
 
-        m_autobus->registerMethod<void(unsigned int, unsigned int, unsigned int)>(
-            m_symbol + "/add_triangle_by_idx",
-            [this](unsigned int v1, unsigned int v2, unsigned int v3) {
-                m_nurbs.add_triangle_by_idx(Triangle(v1, v2, v3));
-            });
+        // m_autobus->registerMethod<void(unsigned int, unsigned int, unsigned int)>(
+        //     m_symbol + "/add_triangle_by_idx",
+        //     [this](unsigned int v1, unsigned int v2, unsigned int v3) {
+        //         m_nurbs.add_triangle_by_idx(Triangle(v1, v2, v3));
+        //     });
         
         // { Point1, Color1, Normal1, Point2, Color2, Normal2, Point3, Color3, Normal3 }
-        m_autobus->registerMethod<void(array<Point, 9>&&)>(
+        m_autobus->registerMethod<void(int, array<Point, 9>&&)>(
             m_symbol + "/add_triangle_raw",
-            [this](array<Point, 9>&& coords) {
-                m_nurbs.add_triangle_raw(
-                    Vertex(
-                        glm::vec3(coords[0].x(), coords[0].y(), coords[0].z()),
-                        glm::vec3(coords[1].x(), coords[1].y(), coords[1].z()),
-                        glm::vec3(coords[2].x(), coords[2].y(), coords[2].z())
-                    ),
-                    Vertex(
-                        glm::vec3(coords[3].x(), coords[3].y(), coords[3].z()),
-                        glm::vec3(coords[4].x(), coords[4].y(), coords[4].z()),
-                        glm::vec3(coords[5].x(), coords[5].y(), coords[5].z())
-                    ),
-                    Vertex(
-                        glm::vec3(coords[6].x(), coords[6].y(), coords[6].z()),
-                        glm::vec3(coords[7].x(), coords[7].y(), coords[7].z()),
-                        glm::vec3(coords[8].x(), coords[8].y(), coords[8].z())
-                    )
-                );
+            [this](int mesh_id, array<Point, 9>&& coords) {
+                this->add_triangle_raw(mesh_id, move(coords));
             });
 
-        m_autobus->registerMethod<void()>(
-            m_symbol + "/sync",
-            [this]() {
-                sync_all();
+        m_autobus->registerMethod<void(int)>(
+            m_symbol + "/refresh_mesh",
+            [this](int mesh_id) {
+                this->refresh(mesh_id);
             });
     }
 
@@ -127,18 +114,61 @@ namespace RenderSpace {
         m_nurbs.draw();
         m_meshdraw.draw();
         m_disk.draw();
+        for (auto ptr: m_meshes) {
+            ptr->draw();
+        }
     }
 
     void RenderService::update() {
         m_nurbs.sync();
         m_meshdraw.sync();
         m_disk.sync();
+        for (auto ptr: m_meshes) {
+            ptr->sync();
+        }
     }
 
-    void RenderService::sync_all() {
-        cout << "当前线程ID: " << std::this_thread::get_id() << endl;
-        m_nurbs.ready_to_update();
-        m_meshdraw.ready_to_update();
-        m_disk.ready_to_update();
+    void RenderService::refresh(int mesh_id) {
+        if (mesh_id < 0 || mesh_id >= m_meshes.size()) {
+            return;
+        }
+        cout << "[INFO] 刷新网格: " << mesh_id << endl;
+        m_meshes[mesh_id]->ready_to_update();
+    }
+
+    int RenderService::create_mesh(const string& name) {
+        int nsize = m_meshes.size();
+        for (int i = 0; i < nsize; ++i) {
+            if (m_meshes[i]->get_name() == name) {
+                return i;
+            }
+        }
+        auto new_mesh = make_shared<MeshDrawable>(name);
+        new_mesh->set_shader(m_shader);
+        m_meshes.emplace_back(new_mesh);
+        return nsize;
+    }
+
+    void RenderService::add_triangle_raw(int mesh_id, array<Point, 9>&& coords) {
+        if (mesh_id < 0 || mesh_id >= m_meshes.size()) {
+            return;
+        }
+        m_meshes[mesh_id]->add_triangle_raw(
+            Vertex(
+                glm::vec3(coords[0].x(), coords[0].y(), coords[0].z()),
+                glm::vec3(coords[1].x(), coords[1].y(), coords[1].z()),
+                glm::vec3(coords[2].x(), coords[2].y(), coords[2].z())
+            ),
+            Vertex(
+                glm::vec3(coords[3].x(), coords[3].y(), coords[3].z()),
+                glm::vec3(coords[4].x(), coords[4].y(), coords[4].z()),
+                glm::vec3(coords[5].x(), coords[5].y(), coords[5].z())
+            ),
+            Vertex(
+                glm::vec3(coords[6].x(), coords[6].y(), coords[6].z()),
+                glm::vec3(coords[7].x(), coords[7].y(), coords[7].z()),
+                glm::vec3(coords[8].x(), coords[8].y(), coords[8].z())
+            )
+        );
     }
 }

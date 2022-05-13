@@ -1,5 +1,4 @@
 ﻿#include "elements.h"
-#include <string>
 #include <iostream>
 
 #include "../libs/glad/glad.h"
@@ -7,9 +6,10 @@
 
 using namespace std;
 namespace RenderSpace {
-    MeshDrawable::MeshDrawable() {
+    MeshDrawable::MeshDrawable(const string& name) {
         std::lock_guard<std::mutex> lk(m_mutex);
         // _gen_vao();
+        m_name = name;
     }
 
     MeshDrawable::~MeshDrawable() {

@@ -2,6 +2,7 @@
 #define DRAWABLE_H
 #include <mutex>
 #include <vector>
+#include <string>
 #include "../shader.hpp"
 #include "../libs/glm/glm.hpp"
 #include "../libs/glm/gtc/matrix_transform.hpp"
@@ -56,6 +57,9 @@ namespace RenderSpace {
         virtual void draw() = 0;
 
         void set_shader(Shader& shader);
+        std::string get_name() const {
+            return m_name;
+        };
 
         std::vector<Triangle>& get_triangles() {
             return m_triangles;
@@ -79,6 +83,7 @@ namespace RenderSpace {
         float m_radius;
         AABB m_aabb;
 
+        std::string m_name;
         std::mutex m_mutex;
     };
 }

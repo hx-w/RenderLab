@@ -10,10 +10,17 @@ int main() {
 
     thread logic_thread([&]() {
         int scale = 100;
-        // cin >> scale;
-        auto service = ToothSpace::make_service("static", scale);
-        service->retag_point();
-        service->calculate_table("test.csv");
+        auto source_list = {
+            "N1", "N2", "N3", "N4", "N5",
+            "N6", "N7", "N8", "N9", "N10",
+        };
+        for (auto& source : source_list) {
+            auto service = ToothSpace::make_service(
+                "static/" + string(source), scale
+            );
+            service->retag_point();
+            service->calculate_table("test.csv");
+        }
     });
     logic_thread.detach();
 

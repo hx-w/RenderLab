@@ -40,21 +40,20 @@ void Surface::read_file(const string& filename) {
         exit(1);
     }
     double x, y, z;
-    fscanf(infile, "%d %d %d %d", &m_degree.first, &m_degree.second, &m_order.first, &m_order.second);
+    // update 05/13, preset 4 6 3 3
+    m_degree = UV(4, 6);
+    m_order = UV(3, 3);
+    // fscanf(infile, "%d %d %d %d", &m_degree.first, &m_degree.second, &m_order.first, &m_order.second);
     // read weights
+    // update 05/13, preset all weights = 1
     for (int i = 0; i < m_degree.first + 1; ++i) {
-        vector<Scalar> temp;
-        for (int j = 0; j < m_degree.second + 1; ++j) {
-            fscanf(infile, "%lf", &x);
-            temp.push_back(x);
-        }
-        m_weights.push_back(temp);
+        m_weights.push_back(vector<Scalar>(m_degree.second + 1, 1.0));
     }
     // read pnts
     for (int i = 0; i < m_degree.first + 1; ++i) {
         vector<Point> temp;
         for (int j = 0; j < m_degree.second + 1; ++j) {
-            fscanf(infile, "%lf %lf %lf", &x, &y, &z);
+            fscanf(infile, "%lf \t%lf \t%lf", &x, &y, &z);
             temp.push_back(Point(x, y, z));
         }
         m_control_points.push_back(temp);

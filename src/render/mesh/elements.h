@@ -6,7 +6,8 @@
 namespace RenderSpace {
     class MeshDrawable : public Drawable {
     public:
-        MeshDrawable();
+        MeshDrawable() = default;
+        MeshDrawable(const std::string& name);
         ~MeshDrawable();
         MeshDrawable(const MeshDrawable&);
         MeshDrawable& operator=(const MeshDrawable&);

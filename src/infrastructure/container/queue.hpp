@@ -73,8 +73,8 @@ namespace fundamental {
         mutable std::mutex tail_mutex; // 队尾锁
         std::unique_ptr<Node> m_head;
         Node* m_tail;
-
 #else
+
     public:
         constexpr static bool is_lock_free() {
             return true;

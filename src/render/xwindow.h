@@ -14,6 +14,7 @@ namespace RenderSpace {
         ~RenderWindowWidget();
 
         void init(unsigned int width, unsigned int height);
+
     public:
         void framebuffer_size_callback(GLFWwindow* window, int width, int height);
         void mouse_callback(GLFWwindow* window, double xpos, double ypos);

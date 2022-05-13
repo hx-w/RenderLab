@@ -19,7 +19,7 @@ int main() {
                 "static/" + string(source), scale
             );
             service->retag_point();
-            service->calculate_table("test.csv");
+            service->simulate("test.csv");
         }
     });
     logic_thread.detach();

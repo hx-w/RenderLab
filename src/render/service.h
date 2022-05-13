@@ -21,6 +21,7 @@ namespace RenderSpace {
 
         void update();
 
+        void set_visible(bool visible);
 
     private:
         void setup();
@@ -29,6 +30,7 @@ namespace RenderSpace {
         int create_mesh(const std::string& name);
         void refresh(int mesh_id);
         void add_triangle_raw(int mesh_id, std::array<Point, 9>&& coords);
+        void add_vertex_raw(int mesh_id, std::array<Point, 3>&& coords);
 
     private:
         MeshDrawable m_nurbs;

@@ -25,7 +25,7 @@ namespace RenderSpace {
     
     private:
         RenderEngine& m_engine;
-        std::unique_ptr<RenderService> m_service;
+        std::shared_ptr<RenderService> m_service;
     };
 }
 

@@ -28,7 +28,7 @@ namespace ToothSpace {
         void retag_point();
 
         // 计算结果 保存到csv
-        void calculate_table(const std::string& target);
+        void simulate(const std::string& target);
 
     private:
         void _reset();
@@ -44,7 +44,6 @@ namespace ToothSpace {
         void _table_handler(UVPoint& pivot, Scalar& dist, Point& tpnt, std::string& tface);
 
     private:
-        int m_id; // render中的id
         std::string m_name; // 名称
         int m_scale;
         FaceList m_faces;

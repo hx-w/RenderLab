@@ -178,7 +178,7 @@ namespace RenderSpace {
         m_shader.setMat4("model", model);
         glPointSize(3.0f);
 
-        if (m_ebo != 0) {
+        if (m_ebo != 0 && m_triangles.size() > 0) {
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
             glDrawElements(GL_TRIANGLES, m_triangles.size() * 3, GL_UNSIGNED_INT, 0);
         }
@@ -218,6 +218,16 @@ namespace RenderSpace {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_triangles.size() * sizeof(Triangle), &m_triangles[0], GL_DYNAMIC_DRAW);
         _ready_to_draw = true;
+    }
+
+    void MeshDrawable::set_visible(bool visible) {
+        if (visible) {
+            ready_to_update();
+        }
+        else {
+            std::lock_guard<std::mutex> lk(m_mutex);
+            _ready_to_draw = false;
+        }
     }
 
     // 需要同步更新 center aabb radius

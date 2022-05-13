@@ -7,11 +7,10 @@ using namespace fundamental;
 namespace RenderSpace {
     Renderer::Renderer(RenderEngine& engine, unsigned int _width, unsigned int _height):
         m_engine(engine) {
-        m_win_widget.init(_width, _height);
         setup();
-
         // service 中维护了 shader，需要在renderer setup之后初始化
-        m_service = std::make_unique<RenderService>();
+        m_service = std::make_shared<RenderService>();
+        m_win_widget.init(_width, _height, m_service);
     }
 
     void Renderer::setup() {

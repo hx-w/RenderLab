@@ -80,15 +80,12 @@ namespace RenderSpace {
             [this](const string& name)->int {
                 return create_mesh(name);
             });
-        // m_autobus->registerMethod<void(const Point&, const Point&)>(
-        //     m_symbol + "/add_vertex",
-        //     [this](const Point& pnt, const Point& clr) {
-        //         m_nurbs.add_vertex_raw(Vertex(
-        //             glm::vec3(pnt.x(), pnt.y(), pnt.z()),
-        //             glm::vec3(clr.x(), clr.y(), clr.z()),
-        //             glm::vec3(1.0f, 1.0f, 1.0f)
-        //         ));
-        //     });
+
+        m_autobus->registerMethod<void(int, array<Point, 3>&&)>(
+            m_symbol + "/add_vertex_raw",
+            [this](int mesh_id, array<Point, 3>&& coords) {
+                this->add_vertex_raw(mesh_id, move(coords));
+            });
 
         // m_autobus->registerMethod<void(unsigned int, unsigned int, unsigned int)>(
         //     m_symbol + "/add_triangle_by_idx",
@@ -128,6 +125,12 @@ namespace RenderSpace {
         }
     }
 
+    void RenderService::set_visible(bool visible) {
+        for (auto ptr: m_meshes) {
+            ptr->set_visible(visible);
+        }
+    }
+
     void RenderService::refresh(int mesh_id) {
         if (mesh_id < 0 || mesh_id >= m_meshes.size()) {
             return;
@@ -147,6 +150,17 @@ namespace RenderSpace {
         new_mesh->set_shader(m_shader);
         m_meshes.emplace_back(new_mesh);
         return nsize;
+    }
+
+    void RenderService::add_vertex_raw(int mesh_id, array<Point, 3>&& coords) {
+        if (mesh_id < 0 || mesh_id >= m_meshes.size()) {
+            return;
+        }
+        m_meshes[mesh_id]->add_vertex_raw(Vertex(
+            glm::vec3(coords[0].x(), coords[0].y(), coords[0].z()),
+            glm::vec3(coords[1].x(), coords[1].y(), coords[1].z()),
+            glm::vec3(coords[2].x(), coords[2].y(), coords[2].z())
+        ));
     }
 
     void RenderService::add_triangle_raw(int mesh_id, array<Point, 9>&& coords) {

@@ -20,6 +20,9 @@ namespace RenderSpace {
 
         // sync vertex/triangle data to vao vbo ebo
         void sync();
+
+        // hide or show
+        void set_visible(bool visible);
         
         // 根据原始坐标点创建顶点以及顶点索引三角形
         void add_triangle_raw(const Vertex& v1, const Vertex& v2, const Vertex& v3);

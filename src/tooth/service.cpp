@@ -76,11 +76,14 @@ namespace ToothSpace {
         }
     }
 
-    void ToothService::calculate_table(const string& target) {
+    void ToothService::simulate(const string& target) {
         // 创建网格
+        int _face1_id = 0;
+        int _target_id = 0;
         {
             auto _service = ContextHub::getInstance()->getService<int(const string&)>("render/create_mesh");
-            m_id = _service.sync_invoke(m_name);
+            _face1_id = _service.sync_invoke(m_name + "[face-1]");
+            _target_id = _service.sync_invoke(m_name + "[target]");
         }
 
         // 原点 目标点 距离 目标面名称
@@ -116,15 +119,23 @@ namespace ToothSpace {
 
                 if (iu > 0 && iv > 0) {
                     auto _service = ContextHub::getInstance()->getService<void(int, array<Point, 9>&&)>("render/add_triangle_raw");
-                    _service.sync_invoke(m_id, array<Point, 9>{
+                    _service.sync_invoke(_face1_id, array<Point, 9>{
                         m_faces[0].get_point_by_uv(iu - 1, iv), _clr_pivot, m_faces[0].get_norm_by_uv(iu - 1, iv),
                         m_faces[0].get_point_by_uv(iu, iv), _clr_pivot, m_faces[0].get_norm_by_uv(iu, iv),
                         m_faces[0].get_point_by_uv(iu, iv - 1), _clr_pivot, m_faces[0].get_norm_by_uv(iu, iv - 1)
                     });
-                    _service.sync_invoke(m_id, array<Point, 9>{
+                    _service.sync_invoke(_face1_id, array<Point, 9>{
                         m_faces[0].get_point_by_uv(iu - 1, iv), _clr_pivot, m_faces[0].get_norm_by_uv(iu - 1, iv),
                         m_faces[0].get_point_by_uv(iu, iv - 1), _clr_pivot, m_faces[0].get_norm_by_uv(iu, iv - 1),
                         m_faces[0].get_point_by_uv(iu - 1, iv - 1), _clr_pivot, m_faces[0].get_norm_by_uv(iu - 1, iv - 1)
+                    });
+                }
+
+                // 设置target点
+                {
+                    auto _service = ContextHub::getInstance()->getService<void(int, array<Point, 3>&&)>("render/add_vertex_raw");
+                    _service.sync_invoke(_target_id, array<Point, 3>{
+                        tpnt, _clr_target, m_faces[0].get_norm_by_uv(iu, iv)
                     });
                 }
             }
@@ -132,7 +143,8 @@ namespace ToothSpace {
 
         {
             auto _service = ContextHub::getInstance()->getService<void(int)>("render/refresh_mesh");
-            _service.sync_invoke(m_id);
+            _service.sync_invoke(_face1_id);
+            _service.sync_invoke(_target_id);
         }
         Printer::info(m_name + " -> done");
     }

@@ -5,15 +5,16 @@
 #include "./libs/glm/gtc/matrix_transform.hpp"
 #include "./libs/glm/gtc/type_ptr.hpp"
 #include "./libs/GLFW/glfw3.h"
+#include "service.h"
 
 namespace RenderSpace {
     class RenderWindowWidget {
     public:
         RenderWindowWidget() = default;
-        RenderWindowWidget(unsigned int width, unsigned int height);
+        RenderWindowWidget(unsigned int width, unsigned int height, std::shared_ptr<RenderService> service);
         ~RenderWindowWidget();
 
-        void init(unsigned int width, unsigned int height);
+        void init(unsigned int width, unsigned int height, std::shared_ptr<RenderService> service);
 
     public:
         void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -43,9 +44,16 @@ namespace RenderSpace {
         float lastFrame = 0.0f;
 
         GLenum shade_mode = GL_LINE;
+        std::shared_ptr<RenderService> m_service;
+        bool all_visible = true;
 
     private:
         bool T_down = false;
+        bool H_down = false;
+    
+    private:
+        void T_EventHandler();
+        void H_EventHandler();
     };
 }
 

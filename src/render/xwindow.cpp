@@ -5,13 +5,14 @@
 using namespace std;
 
 namespace RenderSpace {
-    RenderWindowWidget::RenderWindowWidget(unsigned int width, unsigned int height) {
-        init(width, height);
+    RenderWindowWidget::RenderWindowWidget(unsigned int width, unsigned int height, shared_ptr<RenderService> service) {
+        init(width, height, service);
     }
 
-    void RenderWindowWidget::init(unsigned int width, unsigned int height) {
+    void RenderWindowWidget::init(unsigned int width, unsigned int height, shared_ptr<RenderService> service) {
         m_scr_width = width;
         m_scr_height = height;
+        m_service = service;
     }
 
     RenderWindowWidget::~RenderWindowWidget() {
@@ -35,18 +36,21 @@ namespace RenderSpace {
         if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) {
             if (!T_down) {
                 T_down = !T_down;
-                if (shade_mode == GL_LINE) {
-                    shade_mode = GL_FILL;
-                } else if (shade_mode == GL_FILL) {
-                    shade_mode = GL_POINT;
-                } else if (shade_mode == GL_POINT) {
-                    shade_mode = GL_LINE;
-                }
+                T_EventHandler();
             } 
         }
         if (glfwGetKey(window, GLFW_KEY_T) == GLFW_RELEASE) {
             T_down = false;
-        } 
+        }
+        if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS) {
+            if (!H_down) {
+                H_down = !H_down;
+                H_EventHandler();
+            }
+        }
+        if (glfwGetKey(window, GLFW_KEY_H) == GLFW_RELEASE) {
+            H_down = false;
+        }
     }
 
     // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -136,5 +140,20 @@ namespace RenderSpace {
 				return;
 			}
         }
+    }
+
+    void RenderWindowWidget::T_EventHandler() {
+        if (shade_mode == GL_LINE) {
+            shade_mode = GL_FILL;
+        } else if (shade_mode == GL_FILL) {
+            shade_mode = GL_POINT;
+        } else if (shade_mode == GL_POINT) {
+            shade_mode = GL_LINE;
+        }
+    }
+
+    void RenderWindowWidget::H_EventHandler() {
+        m_service->set_visible(all_visible);
+        all_visible = !all_visible;
     }
 }

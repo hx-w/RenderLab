@@ -68,6 +68,7 @@ public:
     bool get_intersection_by_ray(const Ray& ray, Point& ipnt) const;
 
     UVPoint& _cached_point(int iu, int iv);
+
 private:
     void _pfree();
     inline Scalar _itof(int i) const {

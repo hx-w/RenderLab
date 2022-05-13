@@ -26,6 +26,7 @@ namespace RenderSpace {
 
         void add_triangle_by_idx(const Triangle& tri);
         void add_vertex_raw(const Vertex& v);
+
     private:
         bool _read_STL_ASCII(const std::string& filename);
         bool _read_STL_Binary(const std::string& filename);

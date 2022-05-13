@@ -67,6 +67,7 @@ namespace RenderSpace {
         std::vector<Vertex>& get_vertices() {
             return m_vertices;
         }
+
     protected:
         void _gen_vao();
         void _reset();

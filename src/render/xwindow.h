@@ -42,6 +42,7 @@ namespace RenderSpace {
         float lastFrame = 0.0f;
 
         GLenum shade_mode = GL_LINE;
+
     private:
         bool T_down = false;
     };

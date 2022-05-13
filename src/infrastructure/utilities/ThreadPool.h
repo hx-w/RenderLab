@@ -53,6 +53,7 @@ namespace fundamental {
             void operator()() {
                 m_imp->call();
             }
+
         private:
             struct impl_base {
                 virtual void call() = 0;
@@ -67,6 +68,7 @@ namespace fundamental {
                 }
                 Func m_functor;
             };
+
         private:
             std::unique_ptr<impl_base> m_imp;
         };

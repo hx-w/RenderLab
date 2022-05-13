@@ -29,13 +29,14 @@ namespace ToothSpace {
 
         // 计算结果 保存到csv
         void calculate_table(const std::string& target);
+
     private:
         void _reset();
         
         template <class ...Args>
         static inline std::string fmt_str(const char* fmt, Args... args) {
             char buffer[1024]; // preset
-            sprintf(buffer, fmt, args...);
+            snprintf(buffer, sizeof(buffer), fmt, args...);
             return std::move(std::string(buffer));
         }
 

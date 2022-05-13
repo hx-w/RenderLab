@@ -41,6 +41,7 @@ public:
     const Direction& get_direction() const {
         return m_direction;
     }
+
 private:
     Point m_origin;
     Direction m_direction;

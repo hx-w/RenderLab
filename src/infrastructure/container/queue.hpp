@@ -12,6 +12,7 @@ namespace fundamental {
     template <typename T>
     class queue {
 #ifndef LOCK_FREE
+
     public:
         constexpr static bool is_lock_free() {
             return false;
@@ -72,6 +73,7 @@ namespace fundamental {
         mutable std::mutex tail_mutex; // 队尾锁
         std::unique_ptr<Node> m_head;
         Node* m_tail;
+
 #else
     public:
         constexpr static bool is_lock_free() {

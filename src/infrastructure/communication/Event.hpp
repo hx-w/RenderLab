@@ -74,6 +74,7 @@ namespace fundamental {
                 }
             }
         }
+
     private:
         struct FuncType {
                 FuncType(int id, Func func, SignalPolicy policy):

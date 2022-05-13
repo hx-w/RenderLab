@@ -96,7 +96,7 @@ namespace ToothSpace {
                 _table_handler(pivot, dist, tpnt, tface);
 
                 Point _clr_pivot(0.0);
-                Point _clr_target(1.0);
+                Point _clr_target(0.0);
                 if (pivot._type() == PointType::DEFAULT) {
                     _clr_pivot = Point(1.0, 1.0, 1.0);
                     _clr_target = Point(1.0, 1.0, 1.0);

@@ -57,6 +57,8 @@ namespace RenderSpace {
         }
     
         glEnable(GL_DEPTH_TEST);
+        // 启用阴影平滑
+        glShadeModel(GL_SMOOTH);
     } 
 
     Renderer::~Renderer() {
@@ -67,7 +69,8 @@ namespace RenderSpace {
     int Renderer::exec() {
         while (!glfwWindowShouldClose(m_window)) {
             // clear
-            glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+            // glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+            glClearColor(0.35f, 0.35f, 0.35f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 
             // shade mode

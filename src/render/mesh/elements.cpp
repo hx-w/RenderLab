@@ -151,4 +151,11 @@ namespace RenderSpace {
         m_vertices.push_back(v3);
         m_triangles.push_back(Triangle(m_vertices.size() - 3, m_vertices.size() - 2, m_vertices.size() - 1));
     }
+
+    void MeshDrawable::add_edge_raw(const Vertex& v1, const Vertex& v2) {
+        std::lock_guard<std::mutex> lk(m_mutex);
+        m_vertices.push_back(v1);
+        m_vertices.push_back(v2);
+        m_edges.push_back(Edge(m_vertices.size() - 2, m_vertices.size() - 1));
+    }
 }

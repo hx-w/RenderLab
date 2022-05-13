@@ -45,6 +45,7 @@ namespace ToothSpace {
 
         void _draw_face(const std::string& name, int faceidx, const Point& clr);
 
+        void _draw_arrow(const Point& p1, const Point& p2, const Point& clr);
     private:
         std::string m_name; // 名称
         int m_scale;

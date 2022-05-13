@@ -257,4 +257,26 @@ namespace ToothSpace {
             _service.sync_invoke(_face_id);
         }
     }
+
+    void ToothService::_draw_arrow(const Point& p1, const Point& p2, const Point& clr) {
+        // 预创建mesh
+        int _arrow_id = 0;
+        {
+            auto _service = ContextHub::getInstance()->getService<int(const string&, int)>("render/create_mesh");
+            _arrow_id = _service.sync_invoke("arrow-test", 1);
+        }
+        // 添加元素
+        {
+            auto _service = ContextHub::getInstance()->getService<void(int, array<Point, 6>&&)>("render/add_edge_raw");
+            _service.sync_invoke(_arrow_id, array<Point, 6>{
+                p1, clr, Point(1.0), p2, clr, Point(1.0)
+            });
+        }
+
+        // 通知渲染器 更新
+        {
+            auto _service = ContextHub::getInstance()->getService<void(int)>("render/refresh_mesh");
+            _service.sync_invoke(_arrow_id);
+        }
+    }
 }

@@ -1,5 +1,4 @@
 #include "drawable.h"
-#include <cstdlib>
 
 #include "../libs/glad/glad.h"
 #include "../libs/GLFW/glfw3.h"
@@ -56,6 +55,7 @@ namespace RenderSpace {
             glDrawArrays(GL_POINTS, 0, m_vertices.size());
             break;
         case DrawableType::DRAWABLE_LINE:
+            glLineWidth(3.0f);
             if (m_ebo != 0 && m_edges.size() > 0) {
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
                 glDrawElements(GL_LINES, m_edges.size() * 2, GL_UNSIGNED_INT, 0);
@@ -63,6 +63,7 @@ namespace RenderSpace {
             else {
                 glDrawArrays(GL_LINES, 0, m_vertices.size());
             }
+            glLineWidth(1.0f);
             break;
         case DrawableType::DRAWABLE_TRIANGLE:
             if (m_ebo != 0 && m_triangles.size() > 0) {

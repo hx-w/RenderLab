@@ -88,6 +88,11 @@ namespace RenderSpace {
                 this->add_vertex_raw(mesh_id, move(coords));
             });
 
+        m_autobus->registerMethod<void(int, array<Point, 6>&&)>(
+            m_symbol + "/add_edge_raw",
+            [this](int mesh_id, array<Point, 6>&& coords) {
+                this->add_edge_raw(mesh_id, move(coords));
+            });
         // m_autobus->registerMethod<void(unsigned int, unsigned int, unsigned int)>(
         //     m_symbol + "/add_triangle_by_idx",
         //     [this](unsigned int v1, unsigned int v2, unsigned int v3) {
@@ -111,7 +116,7 @@ namespace RenderSpace {
     void RenderService::draw_all() {
         m_meshdraw.draw();
         m_disk.draw();
-        for (auto ptr: m_meshes) {
+        for (auto [id, ptr]: m_meshes_map) {
             ptr->draw();
         }
     }
@@ -119,54 +124,67 @@ namespace RenderSpace {
     void RenderService::update() {
         m_meshdraw.sync();
         m_disk.sync();
-        for (auto ptr: m_meshes) {
+        for (auto [id, ptr]: m_meshes_map) {
             ptr->sync();
         }
     }
 
     void RenderService::set_visible(bool visible) {
-        for (auto ptr: m_meshes) {
+        for (auto [id, ptr]: m_meshes_map) {
             ptr->set_visible(visible);
         }
     }
 
     void RenderService::refresh(int mesh_id) {
-        if (mesh_id < 0 || mesh_id >= m_meshes.size()) {
+        if (m_meshes_map.find(mesh_id) == m_meshes_map.end()) {
             return;
         }
         cout << "[INFO] 刷新网格: " << mesh_id << endl;
-        m_meshes[mesh_id]->ready_to_update();
+        m_meshes_map[mesh_id]->ready_to_update();
     }
 
     int RenderService::create_mesh(const string& name, DrawableType type) {
-        int nsize = m_meshes.size();
-        for (int i = 0; i < nsize; ++i) {
-            if (m_meshes[i]->get_name() == name) {
-                return i;
-            }
-        }
+        int _id = gen_id();
         auto new_mesh = make_shared<MeshDrawable>(name, type);
         new_mesh->set_shader(m_shader);
-        m_meshes.emplace_back(new_mesh);
-        return nsize;
+        m_meshes_map[_id] = new_mesh;
+        return _id;
     }
 
     void RenderService::add_vertex_raw(int mesh_id, array<Point, 3>&& coords) {
-        if (mesh_id < 0 || mesh_id >= m_meshes.size()) {
+        if (m_meshes_map.find(mesh_id) == m_meshes_map.end()) {
             return;
         }
-        m_meshes[mesh_id]->add_vertex_raw(Vertex(
+        m_meshes_map[mesh_id]->add_vertex_raw(Vertex(
             glm::vec3(coords[0].x(), coords[0].y(), coords[0].z()),
             glm::vec3(coords[1].x(), coords[1].y(), coords[1].z()),
             glm::vec3(coords[2].x(), coords[2].y(), coords[2].z())
         ));
     }
 
-    void RenderService::add_triangle_raw(int mesh_id, array<Point, 9>&& coords) {
-        if (mesh_id < 0 || mesh_id >= m_meshes.size()) {
+    void RenderService::add_edge_raw(int mesh_id, array<Point, 6>&& coords) {
+        if (m_meshes_map.find(mesh_id) == m_meshes_map.end()) {
             return;
         }
-        m_meshes[mesh_id]->add_triangle_raw(
+        m_meshes_map[mesh_id]->add_edge_raw(
+            Vertex(
+                glm::vec3(coords[0].x(), coords[0].y(), coords[0].z()),
+                glm::vec3(coords[1].x(), coords[1].y(), coords[1].z()),
+                glm::vec3(coords[2].x(), coords[2].y(), coords[2].z())
+            ),
+            Vertex(
+                glm::vec3(coords[3].x(), coords[3].y(), coords[3].z()),
+                glm::vec3(coords[4].x(), coords[4].y(), coords[4].z()),
+                glm::vec3(coords[5].x(), coords[5].y(), coords[5].z())
+            )
+        );
+    }
+
+    void RenderService::add_triangle_raw(int mesh_id, array<Point, 9>&& coords) {
+        if (m_meshes_map.find(mesh_id) == m_meshes_map.end()) {
+            return;
+        }
+        m_meshes_map[mesh_id]->add_triangle_raw(
             Vertex(
                 glm::vec3(coords[0].x(), coords[0].y(), coords[0].z()),
                 glm::vec3(coords[1].x(), coords[1].y(), coords[1].z()),
@@ -183,5 +201,10 @@ namespace RenderSpace {
                 glm::vec3(coords[8].x(), coords[8].y(), coords[8].z())
             )
         );
+    }
+
+    int RenderService::gen_id() {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        return m_id_gen++;
     }
 }

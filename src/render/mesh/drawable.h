@@ -26,20 +26,9 @@ namespace RenderSpace {
     // 独立边
     struct Edge {
         Edge() = default;
-        Edge(const glm::vec3& v0, const glm::vec3& v1, int v0idx, int v1idx):
-            v0(v0), v1(v1), v0idx(v0idx), v1idx(v1idx) { }
-        Edge(const Edge& edge): v0(edge.v0), v1(edge.v1), v0idx(edge.v0idx), v1idx(edge.v1idx) { }
-        bool operator==(const Edge& rhs) const {
-            return (v0 == rhs.v0 && v1 == rhs.v1) || (v0 == rhs.v1 && v1 == rhs.v0);
-        }
-        bool operator<(const Edge& rhs) const {
-            return v0.x < rhs.v0.x;
-        }
-
-        glm::vec3 v0;
-        glm::vec3 v1;
-        int v0idx;
-        int v1idx;
+        Edge(int v0idx, int v1idx):
+            VertexIdx(glm::uvec2(v0idx, v1idx)) { }
+        glm::uvec2 VertexIdx;
     };
 
     struct Triangle {
@@ -53,8 +42,11 @@ namespace RenderSpace {
     class Drawable {
     public:
         Drawable() = default;
-        virtual ~Drawable();
-        virtual void draw() = 0;
+        Drawable(const std::string& name): m_name(name) { }
+        ~Drawable();
+
+        Drawable(const Drawable&);
+        Drawable& operator=(const Drawable&);
 
         void set_shader(Shader& shader);
         std::string get_name() const {
@@ -68,9 +60,21 @@ namespace RenderSpace {
             return m_vertices;
         }
 
+        // hide or show
+        void set_visible(bool visible);
+
+        // 先ready update -> sync -> draw 
+        void ready_to_update();
+
+        // sync vertex/triangle data to vao vbo ebo
+        virtual void sync() = 0;
+
+        virtual void draw() = 0;
+
     protected:
         void _gen_vao();
         void _reset();
+        void _deepcopy(const Drawable& element);
 
     protected:
         Shader m_shader;
@@ -79,6 +83,7 @@ namespace RenderSpace {
         GLuint m_ebo = 0;
 
         std::vector<Triangle> m_triangles;
+        std::vector<Edge> m_edges;
         std::vector<Vertex> m_vertices;
         glm::vec3 m_center;
         float m_radius;
@@ -86,6 +91,9 @@ namespace RenderSpace {
 
         std::string m_name;
         std::mutex m_mutex;
+
+        bool _ready_to_update = false;
+        bool _ready_to_draw = false;
     };
 }
 

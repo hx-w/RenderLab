@@ -10,10 +10,11 @@ int main() {
 
     thread logic_thread([&]() {
         int scale = 100;
-        auto source_list = {
-            "N1", "N2", "N3", "N4", "N5",
-            "N6", "N7", "N8", "N9", "N10",
-        };
+        // auto source_list = {
+        //     "N1", "N2", "N3", "N4", "N5",
+        //     "N6", "N7", "N8", "N9", "N10",
+        // };
+        auto source_list = { "N1" };
         for (auto& source : source_list) {
             auto service = ToothSpace::make_service(
                 "static/" + string(source), scale

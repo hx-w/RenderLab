@@ -15,7 +15,6 @@ namespace RenderSpace {
         // 在这里预读取
         m_meshdraw.set_shader(m_shader);
         m_disk.set_shader(m_shader);
-        m_nurbs.set_shader(m_shader);
 
         thread param_thread([&]() {
             m_meshdraw.load_STL("./static/STL/JawScan.stl");
@@ -108,7 +107,6 @@ namespace RenderSpace {
     }
 
     void RenderService::draw_all() {
-        m_nurbs.draw();
         m_meshdraw.draw();
         m_disk.draw();
         for (auto ptr: m_meshes) {
@@ -117,7 +115,6 @@ namespace RenderSpace {
     }
 
     void RenderService::update() {
-        m_nurbs.sync();
         m_meshdraw.sync();
         m_disk.sync();
         for (auto ptr: m_meshes) {

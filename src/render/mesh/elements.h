@@ -7,23 +7,18 @@ namespace RenderSpace {
     class MeshDrawable : public Drawable {
     public:
         MeshDrawable() = default;
-        MeshDrawable(const std::string& name);
-        ~MeshDrawable();
-        MeshDrawable(const MeshDrawable&);
-        MeshDrawable& operator=(const MeshDrawable&);
+        MeshDrawable(const std::string& name): Drawable(name) {}
+        ~MeshDrawable() = default;
+        // 拷贝构造不允许拷贝vao
+        MeshDrawable(const MeshDrawable&) = default;
+        MeshDrawable& operator=(const MeshDrawable&) = default;
 
         void draw() override;
 
         bool load_STL(const std::string& filename);
 
-        void ready_to_update();
+        void sync() override;
 
-        // sync vertex/triangle data to vao vbo ebo
-        void sync();
-
-        // hide or show
-        void set_visible(bool visible);
-        
         // 根据原始坐标点创建顶点以及顶点索引三角形
         void add_triangle_raw(const Vertex& v1, const Vertex& v2, const Vertex& v3);
 
@@ -31,11 +26,9 @@ namespace RenderSpace {
         void add_vertex_raw(const Vertex& v);
 
     private:
+        void _deepcopy(const MeshDrawable&);
         bool _read_STL_ASCII(const std::string& filename);
         bool _read_STL_Binary(const std::string& filename);
-
-        bool _ready_to_update = false;
-        bool _ready_to_draw = false;
     };
 }
 

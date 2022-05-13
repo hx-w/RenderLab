@@ -6,41 +6,6 @@
 
 using namespace std;
 namespace RenderSpace {
-    MeshDrawable::MeshDrawable(const string& name) {
-        std::lock_guard<std::mutex> lk(m_mutex);
-        // _gen_vao();
-        m_name = name;
-    }
-
-    MeshDrawable::~MeshDrawable() {
-        std::lock_guard<std::mutex> lk(m_mutex);
-        _ready_to_draw = false;
-        _ready_to_update = false;
-    }
-
-    MeshDrawable::MeshDrawable(const MeshDrawable& mesh) {
-        std::lock_guard<std::mutex> lk(m_mutex);
-        _ready_to_draw = mesh._ready_to_draw;
-        _ready_to_update = mesh._ready_to_update;
-        m_triangles.assign(mesh.m_triangles.begin(), mesh.m_triangles.end());
-        m_vertices.assign(mesh.m_vertices.begin(), mesh.m_vertices.end());
-        m_center = mesh.m_center;
-        m_radius = mesh.m_radius;
-        m_aabb = mesh.m_aabb;
-    }
-
-    MeshDrawable& MeshDrawable::operator=(const MeshDrawable& mesh) {
-        std::lock_guard<std::mutex> lk(m_mutex);
-        _ready_to_draw = mesh._ready_to_draw;
-        _ready_to_update = mesh._ready_to_update;
-        m_triangles.assign(mesh.m_triangles.begin(), mesh.m_triangles.end());
-        m_vertices.assign(mesh.m_vertices.begin(), mesh.m_vertices.end());
-        m_center = mesh.m_center;
-        m_radius = mesh.m_radius;
-        m_aabb = mesh.m_aabb;
-        return *this;
-    }
-
     bool MeshDrawable::load_STL(const std::string& filename) {
         m_mutex.lock();
         ifstream ifs(filename);
@@ -189,10 +154,6 @@ namespace RenderSpace {
         glBindVertexArray(0);
     }
 
-    void MeshDrawable::ready_to_update() {
-        std::lock_guard<std::mutex> lk(m_mutex);
-        _ready_to_update = true;
-    }
 
     void MeshDrawable::sync() {
         std::lock_guard<std::mutex> lk(m_mutex);
@@ -218,16 +179,6 @@ namespace RenderSpace {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_triangles.size() * sizeof(Triangle), &m_triangles[0], GL_DYNAMIC_DRAW);
         _ready_to_draw = true;
-    }
-
-    void MeshDrawable::set_visible(bool visible) {
-        if (visible) {
-            ready_to_update();
-        }
-        else {
-            std::lock_guard<std::mutex> lk(m_mutex);
-            _ready_to_draw = false;
-        }
     }
 
     // 需要同步更新 center aabb radius

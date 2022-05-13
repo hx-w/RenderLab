@@ -6,6 +6,7 @@
 #include <array>
 #include "shader.hpp"
 #include "./mesh/elements.h"
+#include "./mesh/assist.h"
 #include "../libs/coords.h"
 #include "../infrastructure/communication/AutoBus.hpp"
 
@@ -33,9 +34,9 @@ namespace RenderSpace {
         void add_vertex_raw(int mesh_id, std::array<Point, 3>&& coords);
 
     private:
-        MeshDrawable m_nurbs;
         MeshDrawable m_meshdraw; // origin
         MeshDrawable m_disk; // target
+        // 网格列表
         std::vector<std::shared_ptr<MeshDrawable>> m_meshes;
 
         Shader m_shader;

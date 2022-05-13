@@ -15,9 +15,15 @@ class Shader {
     // constructor generates the shader on the fly
     // ------------------------------------------------------------------------
     Shader() = default;
-    Shader(const char* vertexPath,
-           const char* fragmentPath,
-           const char* geometryPath = nullptr) {
+    Shader(const std::string& vertexPath,
+           const std::string& fragmentPath,
+           const std::string& geometryPath = "") {
+        fromFile(vertexPath, fragmentPath, geometryPath);
+    }
+    
+    void fromFile(const std::string& vertexPath,
+                  const std::string& fragmentPath,
+                  const std::string& geometryPath = "") {
         // 1. retrieve the vertex/fragment source code from filePath
         std::string vertexCode;
         std::string fragmentCode;
@@ -43,7 +49,7 @@ class Shader {
             // convert stream into string
             vertexCode = vShaderStream.str();
             fragmentCode = fShaderStream.str();
-            if (geometryPath != nullptr) {
+            if (geometryPath.length() != 0) {
                 gShaderFile.open(geometryPath);
                 std::stringstream gShaderStream;
                 gShaderStream << gShaderFile.rdbuf();
@@ -70,7 +76,7 @@ class Shader {
         checkCompileErrors(fragment, "FRAGMENT");
         // if geometry shader is given, compile geometry shader
         unsigned int geometry;
-        if (geometryPath != nullptr) {
+        if (geometryPath.length() != 0) {
             const char* gShaderCode = geometryCode.c_str();
             geometry = glCreateShader(GL_GEOMETRY_SHADER);
             glShaderSource(geometry, 1, &gShaderCode, NULL);
@@ -81,7 +87,7 @@ class Shader {
         ID = glCreateProgram();
         glAttachShader(ID, vertex);
         glAttachShader(ID, fragment);
-        if (geometryPath != nullptr)
+        if (geometryPath.length() != 0)
             glAttachShader(ID, geometry);
         glLinkProgram(ID);
         checkCompileErrors(ID, "PROGRAM");
@@ -89,10 +95,10 @@ class Shader {
         // longer necessery
         glDeleteShader(vertex);
         glDeleteShader(fragment);
-        if (geometryPath != nullptr)
+        if (geometryPath.length() != 0)
             glDeleteShader(geometry);
     }
-    
+
     void fromCode(const std::string& vertexCode, const std::string& fragmentCode) {
         const char* vShaderCode = vertexCode.c_str();
         const char* fShaderCode = fragmentCode.c_str();

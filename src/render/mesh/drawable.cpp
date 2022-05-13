@@ -2,6 +2,7 @@
 
 #include "../libs/glad/glad.h"
 #include "../libs/GLFW/glfw3.h"
+#include <iostream>
 
 using namespace std;
 
@@ -52,9 +53,11 @@ namespace RenderSpace {
 
         switch (m_type) {
         case DrawableType::DRAWABLE_POINT:
+            m_shader.setBool("ignoreLight", true);
             glDrawArrays(GL_POINTS, 0, m_vertices.size());
             break;
         case DrawableType::DRAWABLE_LINE:
+            m_shader.setBool("ignoreLight", true);
             glLineWidth(3.0f);
             if (m_ebo != 0 && m_edges.size() > 0) {
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
@@ -66,6 +69,7 @@ namespace RenderSpace {
             glLineWidth(1.0f);
             break;
         case DrawableType::DRAWABLE_TRIANGLE:
+            m_shader.setBool("ignoreLight", false);
             if (m_ebo != 0 && m_triangles.size() > 0) {
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
                 glDrawElements(GL_TRIANGLES, m_triangles.size() * 3, GL_UNSIGNED_INT, 0);
@@ -75,12 +79,12 @@ namespace RenderSpace {
             }
             break;
         default:
+            m_shader.setBool("ignoreLight", false);
             break;
         }
 
         glBindVertexArray(0);
     }
-
 
     void Drawable::sync() {
         std::lock_guard<std::mutex> lk(m_mutex);

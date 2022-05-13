@@ -81,6 +81,9 @@ namespace ToothSpace {
         _draw_face(m_name + "[face-2]", 1, Point(1.0, 1.0, 0.0));
         _draw_face(m_name + "[face-3]", 2, Point(0.0, 1.0, 1.0));
         _draw_face(m_name + "[face-4]", 3, Point(0.7, 0.8, 0.5));
+        // 测试 绘制箭头
+        _draw_arrow(Point(0.0), Point(5.0), Point(0.8, 0.0, 0.0));
+        _draw_arrow(Point(5.0), Point(5.0, 5.0, 0.0), Point(0.8, 0.0, 0.0));
         // 创建网格
         int _face1_id = 0;
         int _target_id = 0;
@@ -106,7 +109,7 @@ namespace ToothSpace {
                 Point _clr_target(0.0);
                 if (pivot._type() == PointType::DEFAULT) {
                     _clr_pivot = Point(1.0, 1.0, 1.0);
-                    _clr_target = Point(1.0, 1.0, 1.0);
+                    _clr_target = Point(1.0, 1.0, 0.0);
                 }
                 else if (pivot._type() == PointType::ON_EDGE) {
                     _clr_pivot = Point(0.0, 1.0, 0.0);
@@ -269,7 +272,7 @@ namespace ToothSpace {
         {
             auto _service = ContextHub::getInstance()->getService<void(int, array<Point, 6>&&)>("render/add_edge_raw");
             _service.sync_invoke(_arrow_id, array<Point, 6>{
-                p1, clr, Point(1.0), p2, clr, Point(1.0)
+                p1, clr, Point(0.0), p2, clr, Point(1.0, 0.0, 0.0)
             });
         }
 

@@ -29,50 +29,13 @@ namespace RenderSpace {
 
     void RenderService::setup() {
         // 初始化 shader
-        m_shader.fromCode(
-            (
-                "#version 330 core\n"
-                "layout (location = 0) in vec3 aPos;\n"
-                "layout (location = 1) in vec3 aColor;\n"
-                "layout (location = 2) in vec3 aNorm;\n"
-                "out vec3 objectColor;\n"
-                "out vec3 Norm;\n"
-                "out vec3 FragPos;\n"
-                "uniform mat4 model;\n"
-                "uniform mat4 view;\n"
-                "uniform mat4 projection;\n"
-                "void main() {\n"
-                "    objectColor = aColor;\n"
-                "    Norm = aNorm;\n"
-                "    FragPos = vec3(model * vec4(aPos, 1.0));\n"
-                "    gl_Position = projection * view * model * vec4(aPos, 1.0f);\n"
-                "}\n"
-            ),
-            (
-                "#version 330 core\n"
-                "in vec3 objectColor;\n"
-                "in vec3 Norm;\n"
-                "in vec3 FragPos;\n"
-                "out vec4 FragColor;\n"
-                "uniform vec3 lightPos;\n"
-                "uniform vec3 lightColor;\n"
-                "uniform vec3 viewPos;\n"
-                "void main() {\n"
-                "    float ambientStrength = 0.1f;\n"
-                "    float specularStrength = 0.5f;\n"
-                "    vec3 ambient = ambientStrength * lightColor;\n"
-                "    vec3 norm = normalize(Norm);\n"
-                "    vec3 lightDir = normalize(lightPos - FragPos);\n"
-                "    float diff = max(dot(norm, lightDir), 0.0);\n"
-                "    vec3 diffuse = diff * lightColor;\n"
-                "    vec3 viewDir = normalize(viewPos - FragPos);\n"
-                "    vec3 halfwayDir = normalize(lightDir + viewDir);\n"
-                "    float spec = pow(max(dot(norm, halfwayDir), 0.0), 32);\n"
-                "    vec3 specular = specularStrength * spec * lightColor;\n"
-                "    vec3 result = (ambient + diffuse + specular) * objectColor;\n"
-                "    FragColor = vec4(result, 1.0);\n"
-                "}\n"
-            )
+        string sep = "/";
+#ifdef _WIN32
+        sep = "\\";
+#endif
+        m_shader.fromFile(
+            "." + sep + "resource" + sep + "default.vs",
+            "." + sep + "resource" + sep + "default.fs"
         );
         // 如果逻辑线程计算太快，可能在下面方法注册前调用，会出错
         // 模块间通讯
@@ -139,7 +102,7 @@ namespace RenderSpace {
         if (m_meshes_map.find(mesh_id) == m_meshes_map.end()) {
             return;
         }
-        cout << "[INFO] 刷新网格: " << mesh_id << endl;
+        cout << "[INFO] refresh Drawable: " << m_meshes_map[mesh_id]->get_name() << "(" << mesh_id << ")" << endl;
         m_meshes_map[mesh_id]->ready_to_update();
     }
 

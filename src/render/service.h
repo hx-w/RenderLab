@@ -45,7 +45,7 @@ namespace RenderSpace {
         // 网格列表
         std::unordered_map<int, std::shared_ptr<MeshDrawable>> m_meshes_map;
 
-        Shader m_shader;
+        Shader m_shader; // 带光照模型的
 
         std::string m_symbol = "render";
         std::unique_ptr<fundamental::AutoBus> m_autobus;

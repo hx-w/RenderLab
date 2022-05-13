@@ -21,9 +21,9 @@ namespace RenderSpace {
 
         thread param_thread([&]() {
             m_meshdraw.load_STL("./static/STL/JawScan.stl");
-            Parameterization param(&m_meshdraw, &m_disk);
-            param.parameterize();
-            update();
+            // Parameterization param(&m_meshdraw, &m_disk);
+            // param.parameterize();
+            // update();
         });
         param_thread.detach();
     }

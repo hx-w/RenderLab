@@ -235,16 +235,6 @@ namespace RenderSpace {
     void MeshDrawable::add_triangle_raw(const Vertex& v1, const Vertex& v2, const Vertex& v3) {
         std::lock_guard<std::mutex> lk(m_mutex);
         // 查重
-        // for (auto& tri : m_triangles) {
-        //     if ((m_vertices[tri.VertexIdx.x].Position == v1.Position && m_vertices[tri.VertexIdx.y].Position == v2.Position && m_vertices[tri.VertexIdx.z].Position == v3.Position) || \
-        //         (m_vertices[tri.VertexIdx.x].Position == v1.Position && m_vertices[tri.VertexIdx.y].Position == v3.Position && m_vertices[tri.VertexIdx.z].Position == v2.Position) || \
-        //         (m_vertices[tri.VertexIdx.x].Position == v2.Position && m_vertices[tri.VertexIdx.y].Position == v1.Position && m_vertices[tri.VertexIdx.z].Position == v3.Position) || \
-        //         (m_vertices[tri.VertexIdx.x].Position == v2.Position && m_vertices[tri.VertexIdx.y].Position == v3.Position && m_vertices[tri.VertexIdx.z].Position == v1.Position) || \
-        //         (m_vertices[tri.VertexIdx.x].Position == v3.Position && m_vertices[tri.VertexIdx.y].Position == v1.Position && m_vertices[tri.VertexIdx.z].Position == v2.Position) || \
-        //         (m_vertices[tri.VertexIdx.x].Position == v3.Position && m_vertices[tri.VertexIdx.y].Position == v2.Position && m_vertices[tri.VertexIdx.z].Position == v1.Position)) {
-        //         return;
-        //     }
-        // }
         m_vertices.push_back(v1);
         m_vertices.push_back(v2);
         m_vertices.push_back(v3);

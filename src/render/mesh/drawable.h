@@ -11,6 +11,12 @@
 namespace RenderSpace {
     typedef std::pair<glm::vec3, glm::vec3> AABB; // min, max
 
+    enum DrawableType {
+        DRAWABLE_POINT,
+        DRAWABLE_LINE,
+        DRAWABLE_TRIANGLE
+    };
+
     struct Vertex {
         Vertex() = default;
         Vertex(
@@ -41,12 +47,15 @@ namespace RenderSpace {
     // base class for drawable objects
     class Drawable {
     public:
-        Drawable() = default;
-        Drawable(const std::string& name): m_name(name) { }
+        Drawable();
+        Drawable(const std::string& name, DrawableType type):
+            m_name(name), m_type(type) { }
         ~Drawable();
 
         Drawable(const Drawable&);
         Drawable& operator=(const Drawable&);
+
+        void set_type(DrawableType type);
 
         void set_shader(Shader& shader);
         std::string get_name() const {
@@ -67,9 +76,9 @@ namespace RenderSpace {
         void ready_to_update();
 
         // sync vertex/triangle data to vao vbo ebo
-        virtual void sync() = 0;
+        void sync();
 
-        virtual void draw() = 0;
+        void draw();
 
     protected:
         void _gen_vao();
@@ -94,6 +103,8 @@ namespace RenderSpace {
 
         bool _ready_to_update = false;
         bool _ready_to_draw = false;
+
+        DrawableType m_type;
     };
 }
 

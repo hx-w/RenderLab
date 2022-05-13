@@ -131,56 +131,6 @@ namespace RenderSpace {
         return true;
     }
 
-    // 基础绘制
-    void MeshDrawable::draw() {
-        if (!_ready_to_draw) return;
-        std::lock_guard<std::mutex> lk(m_mutex);
-        m_shader.use();
-        glBindVertexArray(m_vao);
-
-        // render elements
-        glm::mat4 model = glm::mat4(1.0f);
-        m_shader.setMat4("model", model);
-        glPointSize(3.0f);
-
-        if (m_ebo != 0 && m_triangles.size() > 0) {
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
-            glDrawElements(GL_TRIANGLES, m_triangles.size() * 3, GL_UNSIGNED_INT, 0);
-        }
-        else {
-            glDrawArrays(GL_POINTS, 0, m_vertices.size());
-        }
-
-        glBindVertexArray(0);
-    }
-
-
-    void MeshDrawable::sync() {
-        std::lock_guard<std::mutex> lk(m_mutex);
-        if (!_ready_to_update) return;
-        _ready_to_update = false;
-        if (m_vao == 0) {
-            _gen_vao();
-        }
-        glBindVertexArray(m_vao);
-
-        glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-        glBufferData(GL_ARRAY_BUFFER, m_vertices.size() * sizeof(Vertex), &m_vertices[0], GL_DYNAMIC_DRAW);
-        // position attribute
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
-        glEnableVertexAttribArray(0);
-        // color
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Color));
-        glEnableVertexAttribArray(1);
-        // normal
-        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
-        glEnableVertexAttribArray(2);
-
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_triangles.size() * sizeof(Triangle), &m_triangles[0], GL_DYNAMIC_DRAW);
-        _ready_to_draw = true;
-    }
-
     // 需要同步更新 center aabb radius
     void MeshDrawable::add_vertex_raw(const Vertex& v) {
         std::lock_guard<std::mutex> lk(m_mutex);

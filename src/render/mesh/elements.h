@@ -7,17 +7,18 @@ namespace RenderSpace {
     class MeshDrawable : public Drawable {
     public:
         MeshDrawable() = default;
-        MeshDrawable(const std::string& name): Drawable(name) {}
+        MeshDrawable(const std::string& name, DrawableType type):
+            Drawable(name, type) {}
         ~MeshDrawable() = default;
         // 拷贝构造不允许拷贝vao
         MeshDrawable(const MeshDrawable&) = default;
         MeshDrawable& operator=(const MeshDrawable&) = default;
 
-        void draw() override;
+        // void draw() override;
 
         bool load_STL(const std::string& filename);
 
-        void sync() override;
+        // void sync() override;
 
         // 根据原始坐标点创建顶点以及顶点索引三角形
         void add_triangle_raw(const Vertex& v1, const Vertex& v2, const Vertex& v3);

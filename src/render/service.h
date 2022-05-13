@@ -28,7 +28,7 @@ namespace RenderSpace {
         void setup();
 
         // 对外接口
-        int create_mesh(const std::string& name);
+        int create_mesh(const std::string& name, DrawableType type);
         void refresh(int mesh_id);
         void add_triangle_raw(int mesh_id, std::array<Point, 9>&& coords);
         void add_vertex_raw(int mesh_id, std::array<Point, 3>&& coords);

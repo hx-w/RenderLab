@@ -85,9 +85,9 @@ namespace ToothSpace {
         int _face1_id = 0;
         int _target_id = 0;
         {
-            auto _service = ContextHub::getInstance()->getService<int(const string&)>("render/create_mesh");
-            _face1_id = _service.sync_invoke(m_name + "[face-1]");
-            _target_id = _service.sync_invoke(m_name + "[target]");
+            auto _service = ContextHub::getInstance()->getService<int(const string&, int)>("render/create_mesh");
+            _face1_id = _service.sync_invoke(m_name + "[face-1]", 2); // 三角网格
+            _target_id = _service.sync_invoke(m_name + "[target]", 0); // 点图
         }
 
         // 原点 目标点 距离 目标面名称
@@ -232,8 +232,8 @@ namespace ToothSpace {
         // 预创建mesh
         int _face_id = 0;
         {
-            auto _service = ContextHub::getInstance()->getService<int(const string&)>("render/create_mesh");
-            _face_id = _service.sync_invoke(name);
+            auto _service = ContextHub::getInstance()->getService<int(const string&, int)>("render/create_mesh");
+            _face_id = _service.sync_invoke(name, 2);
         }
         // 添加元素
         for (int iu = 1; iu < m_scale; ++iu) {

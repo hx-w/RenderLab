@@ -15,6 +15,8 @@ namespace RenderSpace {
         // 在这里预读取
         m_meshdraw.set_shader(m_shader);
         m_disk.set_shader(m_shader);
+        m_meshdraw.set_type(DrawableType::DRAWABLE_TRIANGLE);
+        m_disk.set_type(DrawableType::DRAWABLE_TRIANGLE);
 
         thread param_thread([&]() {
             m_meshdraw.load_STL("./static/STL/JawScan.stl");
@@ -74,10 +76,10 @@ namespace RenderSpace {
         );
         // 如果逻辑线程计算太快，可能在下面方法注册前调用，会出错
         // 模块间通讯
-        m_autobus->registerMethod<int(const string& name)>(
+        m_autobus->registerMethod<int(const string&, int)>(
             m_symbol + "/create_mesh",
-            [this](const string& name)->int {
-                return create_mesh(name);
+            [this](const string& name, int drawable_type)->int {
+                return create_mesh(name, static_cast<DrawableType>(drawable_type));
             });
 
         m_autobus->registerMethod<void(int, array<Point, 3>&&)>(
@@ -136,14 +138,14 @@ namespace RenderSpace {
         m_meshes[mesh_id]->ready_to_update();
     }
 
-    int RenderService::create_mesh(const string& name) {
+    int RenderService::create_mesh(const string& name, DrawableType type) {
         int nsize = m_meshes.size();
         for (int i = 0; i < nsize; ++i) {
             if (m_meshes[i]->get_name() == name) {
                 return i;
             }
         }
-        auto new_mesh = make_shared<MeshDrawable>(name);
+        auto new_mesh = make_shared<MeshDrawable>(name, type);
         new_mesh->set_shader(m_shader);
         m_meshes.emplace_back(new_mesh);
         return nsize;

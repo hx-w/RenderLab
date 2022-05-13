@@ -7,13 +7,14 @@ namespace RenderSpace {
     class AssistPoint : public Drawable {
     public:
         AssistPoint() = default;
-        AssistPoint(const std::string& name): Drawable(name) {}
+        AssistPoint(const std::string& name, DrawableType type):
+            Drawable(name, type) {}
         ~AssistPoint();
         AssistPoint(const AssistPoint&) = default;
         AssistPoint& operator=(const AssistPoint&) = default;
 
-        void draw() override;
-        void sync() override;
+        // void draw() override;
+        // void sync() override;
     };
 }
 

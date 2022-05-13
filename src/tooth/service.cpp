@@ -77,6 +77,10 @@ namespace ToothSpace {
     }
 
     void ToothService::simulate(const string& target) {
+        // 绘制face2-4完整面
+        _draw_face(m_name + "[face-2]", 1, Point(1.0, 1.0, 0.0));
+        _draw_face(m_name + "[face-3]", 2, Point(0.0, 1.0, 1.0));
+        _draw_face(m_name + "[face-4]", 3, Point(0.7, 0.8, 0.5));
         // 创建网格
         int _face1_id = 0;
         int _target_id = 0;
@@ -221,6 +225,36 @@ namespace ToothSpace {
         else {
             // error type
             Printer::to_console("error: invalid point type");
+        }
+    }
+
+    void ToothService::_draw_face(const string& name, int faceidx, const Point& clr) {
+        // 预创建mesh
+        int _face_id = 0;
+        {
+            auto _service = ContextHub::getInstance()->getService<int(const string&)>("render/create_mesh");
+            _face_id = _service.sync_invoke(name);
+        }
+        // 添加元素
+        for (int iu = 1; iu < m_scale; ++iu) {
+            for (int iv = 1; iv < m_scale; ++iv) {
+                auto _service = ContextHub::getInstance()->getService<void(int, array<Point, 9>&&)>("render/add_triangle_raw");
+                _service.sync_invoke(_face_id, array<Point, 9>{
+                    m_faces[faceidx].get_point_by_uv(iu - 1, iv), clr, m_faces[faceidx].get_norm_by_uv(iu - 1, iv),
+                    m_faces[faceidx].get_point_by_uv(iu, iv), clr, m_faces[faceidx].get_norm_by_uv(iu, iv),
+                    m_faces[faceidx].get_point_by_uv(iu, iv - 1), clr, m_faces[faceidx].get_norm_by_uv(iu, iv - 1)
+                });
+                _service.sync_invoke(_face_id, array<Point, 9>{
+                    m_faces[faceidx].get_point_by_uv(iu - 1, iv), clr, m_faces[faceidx].get_norm_by_uv(iu - 1, iv),
+                    m_faces[faceidx].get_point_by_uv(iu, iv - 1), clr, m_faces[faceidx].get_norm_by_uv(iu, iv - 1),
+                    m_faces[faceidx].get_point_by_uv(iu - 1, iv - 1), clr, m_faces[faceidx].get_norm_by_uv(iu - 1, iv - 1)
+                });
+            }
+        }
+        // 通知渲染器 更新
+        {
+            auto _service = ContextHub::getInstance()->getService<void(int)>("render/refresh_mesh");
+            _service.sync_invoke(_face_id);
         }
     }
 }

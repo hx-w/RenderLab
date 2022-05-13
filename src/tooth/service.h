@@ -43,6 +43,8 @@ namespace ToothSpace {
         // 对算表的不同情况进行处理
         void _table_handler(UVPoint& pivot, Scalar& dist, Point& tpnt, std::string& tface);
 
+        void _draw_face(const std::string& name, int faceidx, const Point& clr);
+
     private:
         std::string m_name; // 名称
         int m_scale;

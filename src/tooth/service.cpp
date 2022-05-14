@@ -147,7 +147,7 @@ namespace ToothSpace {
                 }
 
                 // 设置target点
-                {
+                if (pivot._type() != PointType::DEFAULT) {
                     auto _service = ContextHub::getInstance()->getService<void(int, array<Point, 3>&&)>("render/add_vertex_raw");
                     _service.sync_invoke(_target_id, array<Point, 3>{
                         tpnt, _clr_target, m_faces[0].get_norm_by_uv(iu, iv)
@@ -298,8 +298,8 @@ namespace ToothSpace {
             Scalar f2dist = m_faces[1].get_nearest_point(picked_point, f2tar);
             Scalar f3dist = m_faces[2].get_nearest_point(picked_point, f3tar);
             Printer::info("PICKED in", m_name, "source:", picked_point, "f2dist:", f2dist, "f3dist:", f3dist);
-            _draw_arrow(picked_point, f2tar, Point(1.0, 1.0, 0.0));
-            _draw_arrow(picked_point, f3tar, Point(0.0, 1.0, 1.0));
+            _draw_arrow(picked_point, f2tar, Point(0.8, 0.8, 0.0));
+            _draw_arrow(picked_point, f3tar, Point(0.0, 0.8, 0.8));
         }
         else {
             Printer::info("NOT picked in", m_name);

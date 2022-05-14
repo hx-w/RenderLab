@@ -7,19 +7,21 @@
 - **Win32**: `.\build.bat && .\main.exe`
 - **MacOS**: `sh build.sh && ./main`
 
-### Usage
+### Prepare
 
 1. Move STL file to `./static/STL/`, and rename as `JawScan.stl`
 2. Build and run
 
 ---
 
+### Usage
+
 - `W, A, S, D` for moving camera `front, left, back, right`
 - `H` for hiding or showing nurbs face
 - `T` for toggle shade mode: `GL_LINE, GL_POINT, GL_FILL`
 - `Mouse pressing and moving` for rotating
 - `Mouse scrolling` for scaling
-
+- `Ctrl + Left click` for picking point in nurbs face-1
 
 > **Tips**:
 > Nurbs face will generate and show gradually,

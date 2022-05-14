@@ -51,6 +51,12 @@ namespace RenderSpace {
         if (glfwGetKey(window, GLFW_KEY_H) == GLFW_RELEASE) {
             H_down = false;
         }
+        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+            CTRL_down = true;
+        }
+        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_RELEASE) {
+            CTRL_down = false;
+        }
     }
 
     // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -66,10 +72,12 @@ namespace RenderSpace {
     // glfw: whenever the mouse moves, this callback is called
     // -------------------------------------------------------
     void RenderWindowWidget::mouse_callback(GLFWwindow* window, double xposIn, double yposIn) {
-        if (!leftMousePressed)
-            return;
         float xpos = static_cast<float>(xposIn);
         float ypos = static_cast<float>(yposIn);
+        realX = xpos;
+        realY = ypos;
+        if (!leftMousePressed)
+            return;
 
         if (firstMouse) {
             lastX = xpos;
@@ -131,6 +139,11 @@ namespace RenderSpace {
             switch(button) {
 			case GLFW_MOUSE_BUTTON_LEFT:
                 leftMousePressed = false;
+                if (CTRL_down) {
+                    glm::vec3 direction(0.0);
+                    pickingRay(glm::vec2(realX, realY), direction);
+                    m_service->notify_picking(cameraPos, direction);
+                }
 				break;
 			case GLFW_MOUSE_BUTTON_MIDDLE:
 				break;
@@ -155,5 +168,27 @@ namespace RenderSpace {
     void RenderWindowWidget::H_EventHandler() {
         m_service->set_visible(all_visible);
         all_visible = !all_visible;
+    }
+
+    void RenderWindowWidget::pickingRay(glm::vec2 screen_pos, glm::vec3& direction) {
+        // implement screen to world transform and picking ray generation
+        glm::vec3 origin(0.0);
+        screen2world(screen_pos, origin);
+        direction = origin - cameraPos;
+    }
+
+    void RenderWindowWidget::screen2world(glm::vec2 screen_pos, glm::vec3& world_pos) {
+        // implement screen to world transform
+        glm::mat4 projection = glm::perspective(glm::radians(fov), (float)m_scr_width / (float)m_scr_height, 0.1f, 100.0f);
+        glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+        glm::mat4 mvp = projection * view;
+        glm::mat4 inv_mvp = glm::inverse(mvp);
+        // convert to NDC space
+        glm::vec4 v_NDC(1.0);
+        v_NDC.x = (2.0f * screen_pos.x) / m_scr_width - 1.0f;
+        v_NDC.y = 1.0f - 2.0f * (screen_pos.y / m_scr_height);
+        glm::vec4 v_world = inv_mvp * v_NDC;
+        v_world.w = 1.0 / v_world.w;
+        world_pos = glm::vec3(v_world.x * v_world.w, v_world.y * v_world.w, v_world.z * v_world.w);
     }
 }

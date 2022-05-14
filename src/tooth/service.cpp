@@ -10,7 +10,8 @@ namespace ToothSpace {
     ToothService::ToothService(
         ToothEngine& engine,
         const string& dir, int scale
-    ) noexcept : m_engine(engine) {
+    ) noexcept : m_engine(engine), m_autobus(make_unique<AutoBus>()) {
+        _subscribe();
         _init(dir, scale);
     }
 
@@ -19,6 +20,7 @@ namespace ToothSpace {
 
     ToothService::~ToothService() {
         _reset();
+        m_autobus.reset();
     }
 
     void ToothService::_init(const string& dir, int scale) {
@@ -38,6 +40,15 @@ namespace ToothSpace {
     void ToothService::_reset() {
         m_faces.clear();
         FaceList().swap(m_faces);
+    }
+
+    void ToothService::_subscribe() {
+        // 拾取射线
+        {
+            // 需要同步信号
+            m_autobus->subscribe<void(const Point&, const Direction&)>(SignalPolicy::Sync, "render/picking_ray",
+                bind(&ToothService::_pick_from_ray, this, placeholders::_1, placeholders::_2));
+        }
     }
 
     void ToothService::retag_point() {
@@ -278,5 +289,10 @@ namespace ToothSpace {
             auto _service = ContextHub::getInstance()->getService<void(int)>("render/refresh_mesh");
             _service.sync_invoke(_arrow_id);
         }
+    }
+
+    void ToothService::_pick_from_ray(const Point& ori, const Direction& dir) {
+        Printer::info("pick:", ori, dir);
+        _draw_arrow(ori, ori + dir * 1000, Point(1.0, 0.0, 0.0));
     }
 }

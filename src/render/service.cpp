@@ -1,5 +1,6 @@
 ﻿#include "service.h"
 #include "./mesh/parameterization.h"
+#include "../infrastructure/communication/ContextHub.h"
 
 #include <iostream>
 #include <thread>
@@ -74,6 +75,11 @@ namespace RenderSpace {
             [this](int mesh_id) {
                 this->refresh(mesh_id);
             });
+    }
+
+    void RenderService::notify_picking(const glm::vec3& ori, const glm::vec3& dir) {
+        auto _event = ContextHub::getInstance()->getEventTable<void(const Point&, const Direction&)>();
+        _event->notify(m_symbol + "/picking_ray", Point(ori.x, ori.y, ori.z), Direction(dir.x, dir.y, dir.z));
     }
 
     void RenderService::draw_all() {

@@ -37,7 +37,7 @@ namespace ToothSpace {
         }
 
         template <class ...Args>
-        static void info(const Args&&... args) {
+        static void info(const Args&... args) {
             _stream(std::cout, " ", true, "[INFO]", args...);
         }
 

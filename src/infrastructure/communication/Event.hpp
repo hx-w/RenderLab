@@ -44,7 +44,7 @@ namespace fundamental {
             for (auto& func : vtrFunc) {
                 if (func.m_policy == SignalPolicy::Async) {
                     auto fn = std::bind(func, std::forward<Args>(args)...);
-                    rets.template emplace_back(fundamental::ThreadPool::getInstance()->submit(fn));
+                    rets.emplace_back(fundamental::ThreadPool::getInstance()->submit(fn));
                 }
                 else {
                     try {

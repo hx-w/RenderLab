@@ -7,7 +7,6 @@
 #include <unordered_map>
 #include "shader.hpp"
 #include "./mesh/elements.h"
-#include "./mesh/assist.h"
 #include "../libs/coords.h"
 #include "../infrastructure/communication/AutoBus.hpp"
 
@@ -25,6 +24,7 @@ namespace RenderSpace {
 
         void set_visible(bool visible);
 
+        void notify_picking(const glm::vec3& origin, const glm::vec3& direction);
     private:
         void setup();
 

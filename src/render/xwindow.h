@@ -23,6 +23,8 @@ namespace RenderSpace {
         void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
         void processInput(GLFWwindow* window);
 
+        void pickingRay(glm::vec2 screen_pos, glm::vec3& direction);
+        void screen2world(glm::vec2 screen_pos, glm::vec3& world_pos);
     public:
         unsigned int m_scr_width = 800;
         unsigned int m_scr_height = 600;
@@ -47,9 +49,12 @@ namespace RenderSpace {
         std::shared_ptr<RenderService> m_service;
         bool all_visible = true;
 
+        float realX = 0.0f;
+        float realY = 0.0f;
     private:
         bool T_down = false;
         bool H_down = false;
+        bool CTRL_down = false;
     
     private:
         void T_EventHandler();

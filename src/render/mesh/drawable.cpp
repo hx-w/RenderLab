@@ -58,7 +58,7 @@ namespace RenderSpace {
             break;
         case DrawableType::DRAWABLE_LINE:
             m_shader.setBool("ignoreLight", true);
-            glLineWidth(3.0f);
+            glLineWidth(2.0f);
             if (m_ebo != 0 && m_edges.size() > 0) {
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
                 glDrawElements(GL_LINES, m_edges.size() * 2, GL_UNSIGNED_INT, 0);

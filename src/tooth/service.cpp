@@ -292,7 +292,17 @@ namespace ToothSpace {
     }
 
     void ToothService::_pick_from_ray(const Point& ori, const Direction& dir) {
-        Printer::info("pick:", ori, dir);
-        _draw_arrow(ori, ori + dir * 1000, Point(1.0, 0.0, 0.0));
+        Point picked_point(0.0);
+        if (m_faces[0].get_intersection_by_ray(Ray(ori, dir), picked_point)) {
+            Point f2tar(0.0), f3tar(0.0);
+            Scalar f2dist = m_faces[1].get_nearest_point(picked_point, f2tar);
+            Scalar f3dist = m_faces[2].get_nearest_point(picked_point, f3tar);
+            Printer::info("PICKED in", m_name, "source:", picked_point, "f2dist:", f2dist, "f3dist:", f3dist);
+            _draw_arrow(picked_point, f2tar, Point(1.0, 1.0, 0.0));
+            _draw_arrow(picked_point, f3tar, Point(0.0, 1.0, 1.0));
+        }
+        else {
+            Printer::info("NOT picked in", m_name);
+        }
     }
 }

@@ -49,13 +49,17 @@ namespace ToothSpace {
 
         void _pick_from_ray(const Point& ori, const Direction& dir);
 
-        void _draw_face(const std::string& name, int faceidx, const Point& clr);
-        void _draw_arrow(const Point& p1, const Point& p2, const Point& clr);
+        int _draw_face(const std::string& name, int faceidx, const Point& clr);
+        int _draw_arrow(const std::string& name, const Point& p1, const Point& p2, const Point& clr);
+
+        void _clear_arrow();
     private:
         std::string m_name; // 名称
         int m_scale;
         FaceList m_faces;
         ToothEngine& m_engine;
+
+        std::vector<int> m_arrow_ids;
 
         std::unique_ptr<fundamental::AutoBus> m_autobus;
     };

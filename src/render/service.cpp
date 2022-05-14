@@ -75,11 +75,22 @@ namespace RenderSpace {
             [this](int mesh_id) {
                 this->refresh(mesh_id);
             });
+        
+        m_autobus->registerMethod<void(int)>(
+            m_symbol + "/delete_mesh",
+            [this](int mesh_id) {
+                this->delete_mesh(mesh_id);
+            });
     }
 
     void RenderService::notify_picking(const glm::vec3& ori, const glm::vec3& dir) {
         auto _event = ContextHub::getInstance()->getEventTable<void(const Point&, const Direction&)>();
         _event->notify(m_symbol + "/picking_ray", Point(ori.x, ori.y, ori.z), Direction(dir.x, dir.y, dir.z));
+    }
+
+    void RenderService::notify_clear_picking() {
+        auto _event = ContextHub::getInstance()->getEventTable<void()>();
+        _event->notify(m_symbol + "/clear_picking");
     }
 
     void RenderService::draw_all() {
@@ -104,12 +115,27 @@ namespace RenderSpace {
         }
     }
 
+    void RenderService::set_visible(int mesh_id, bool visible) {
+        if (m_meshes_map.find(mesh_id) != m_meshes_map.end()) {
+            m_meshes_map[mesh_id]->set_visible(visible);
+        }
+    }
+
     void RenderService::refresh(int mesh_id) {
         if (m_meshes_map.find(mesh_id) == m_meshes_map.end()) {
             return;
         }
         cout << "[INFO] refresh Drawable: " << m_meshes_map[mesh_id]->get_name() << "(" << mesh_id << ")" << endl;
         m_meshes_map[mesh_id]->ready_to_update();
+    }
+
+    void RenderService::delete_mesh(int mesh_id) {
+        if (m_meshes_map.find(mesh_id) == m_meshes_map.end()) {
+            return;
+        }
+        cout << "[INFO] delete Drawable: " << m_meshes_map[mesh_id]->get_name() << "(" << mesh_id << ")" << endl;
+        // m_meshes_map[mesh_id].reset();
+        m_meshes_map.erase(mesh_id);
     }
 
     int RenderService::create_mesh(const string& name, DrawableType type) {

@@ -61,7 +61,7 @@ namespace RenderSpace {
         // 面的个数
         int num_trias;
         ifs.read((char*)(&num_trias), _int_size);
-        cout << "面片数量：" << num_trias << endl;
+        // cout << "面片数量：" << num_trias << endl;
 
         float tn0, tn1, tn2;
         float v0, v1, v2;
@@ -128,7 +128,7 @@ namespace RenderSpace {
             }
         }
 
-        cout << "radius: " << m_radius << " center: " << m_center.x << "," << m_center.y << "," << m_center.z << endl;
+        // cout << "radius: " << m_radius << " center: " << m_center.x << "," << m_center.y << "," << m_center.z << endl;
         return true;
     }
 

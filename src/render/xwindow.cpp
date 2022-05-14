@@ -13,6 +13,8 @@ namespace RenderSpace {
         m_scr_width = width;
         m_scr_height = height;
         m_service = service;
+        lastX = width * 1.0 / 2;
+        lastY = height * 1.0 / 2;
     }
 
     RenderWindowWidget::~RenderWindowWidget() {
@@ -56,6 +58,17 @@ namespace RenderSpace {
         }
         if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_RELEASE) {
             CTRL_down = false;
+        }
+        if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
+            if (!R_down) {
+                R_down = !R_down;
+                if (CTRL_down) {
+                    m_service->notify_clear_picking();
+                }
+            }
+        }
+        if (glfwGetKey(window, GLFW_KEY_R) == GLFW_RELEASE) {
+            R_down = false;
         }
     }
 
@@ -166,8 +179,8 @@ namespace RenderSpace {
     }
 
     void RenderWindowWidget::H_EventHandler() {
-        m_service->set_visible(all_visible);
         all_visible = !all_visible;
+        m_service->set_visible(all_visible);
     }
 
     void RenderWindowWidget::pickingRay(glm::vec2 screen_pos, glm::vec3& direction) {

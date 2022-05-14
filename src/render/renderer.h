@@ -15,7 +15,7 @@ namespace RenderSpace {
         int exec();
     
     private:
-        void setup();
+        void setup(unsigned int w, unsigned int h);
         void update_transform();
         void draw();
 

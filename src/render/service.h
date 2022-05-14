@@ -22,15 +22,19 @@ namespace RenderSpace {
 
         void update();
 
+        // all mesh
         void set_visible(bool visible);
+        void set_visible(int mesh_id, bool visible);
 
         void notify_picking(const glm::vec3& origin, const glm::vec3& direction);
+        void notify_clear_picking(); // refresh all picking ray
     private:
         void setup();
 
         // 对外接口
         int create_mesh(const std::string& name, DrawableType type);
         void refresh(int mesh_id);
+        void delete_mesh(int mesh_id);
 
         // 添加图元
         void add_vertex_raw(int mesh_id, std::array<Point, 3>&& coords);

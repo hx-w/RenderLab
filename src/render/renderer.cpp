@@ -7,13 +7,13 @@ using namespace fundamental;
 namespace RenderSpace {
     Renderer::Renderer(RenderEngine& engine, unsigned int _width, unsigned int _height):
         m_engine(engine) {
-        setup();
+        setup(_width, _height);
         // service 中维护了 shader，需要在renderer setup之后初始化
         m_service = std::make_shared<RenderService>();
         m_win_widget.init(_width, _height, m_service);
     }
 
-    void Renderer::setup() {
+    void Renderer::setup(unsigned int w, unsigned int h) {
         glfwInit();
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -25,7 +25,7 @@ namespace RenderSpace {
 
         // glfw m_window creation
         // --------------------
-        m_window = glfwCreateWindow(m_win_widget.m_scr_width, m_win_widget.m_scr_height, "XRender", NULL, NULL);
+        m_window = glfwCreateWindow(w, h, "NURBS Render System", NULL, NULL);
         if (m_window == NULL) {
             std::cout << "Failed to create GLFW m_window" << std::endl;
             glfwTerminate();
@@ -83,13 +83,10 @@ namespace RenderSpace {
             draw();
 
             // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
-            // -------------------------------------------------------------------------------
             glfwSwapBuffers(m_window);
             glfwPollEvents();
         }
 
-        // glfw: terminate, clearing all previously allocated GLFW resources.
-        // ------------------------------------------------------------------
         glfwTerminate();
         return 0;
     }

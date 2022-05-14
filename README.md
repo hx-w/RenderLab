@@ -22,6 +22,8 @@
 - `Mouse pressing and moving` for rotating
 - `Mouse scrolling` for scaling
 - `Ctrl + Left click` for picking point in nurbs face-1
+- `Ctrl + R` for clear picked ray/point
+- `ESC` for exit
 
 > **Tips**:
 > Nurbs face will generate and show gradually,

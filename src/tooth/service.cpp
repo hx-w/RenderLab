@@ -39,16 +39,17 @@ namespace ToothSpace {
 
     void ToothService::_reset() {
         m_faces.clear();
+        m_arrow_ids.clear();
         FaceList().swap(m_faces);
     }
 
     void ToothService::_subscribe() {
         // 拾取射线
-        {
-            // 需要同步信号
-            m_autobus->subscribe<void(const Point&, const Direction&)>(SignalPolicy::Sync, "render/picking_ray",
-                bind(&ToothService::_pick_from_ray, this, placeholders::_1, placeholders::_2));
-        }
+        m_autobus->subscribe<void(const Point&, const Direction&)>(SignalPolicy::Sync, "render/picking_ray",
+            bind(&ToothService::_pick_from_ray, this, placeholders::_1, placeholders::_2));
+        // 清除拾取射线
+        m_autobus->subscribe<void()>(SignalPolicy::Sync, "render/clear_picking",
+            bind(&ToothService::_clear_arrow, this));
     }
 
     void ToothService::retag_point() {
@@ -239,7 +240,7 @@ namespace ToothSpace {
         }
     }
 
-    void ToothService::_draw_face(const string& name, int faceidx, const Point& clr) {
+    int ToothService::_draw_face(const string& name, int faceidx, const Point& clr) {
         // 预创建mesh
         int _face_id = 0;
         {
@@ -267,14 +268,15 @@ namespace ToothSpace {
             auto _service = ContextHub::getInstance()->getService<void(int)>("render/refresh_mesh");
             _service.sync_invoke(_face_id);
         }
+        return _face_id;
     }
 
-    void ToothService::_draw_arrow(const Point& p1, const Point& p2, const Point& clr) {
+    int ToothService::_draw_arrow(const string& name, const Point& p1, const Point& p2, const Point& clr) {
         // 预创建mesh
         int _arrow_id = 0;
         {
             auto _service = ContextHub::getInstance()->getService<int(const string&, int)>("render/create_mesh");
-            _arrow_id = _service.sync_invoke("arrow-test", 1);
+            _arrow_id = _service.sync_invoke(name, 1);
         }
         // 添加元素
         {
@@ -289,6 +291,18 @@ namespace ToothSpace {
             auto _service = ContextHub::getInstance()->getService<void(int)>("render/refresh_mesh");
             _service.sync_invoke(_arrow_id);
         }
+        return _arrow_id;
+    }
+
+    void ToothService::_clear_arrow() {
+        // 通知渲染器 清除
+        {
+            auto _service = ContextHub::getInstance()->getService<void(int)>("render/delete_mesh");
+            for (auto& _id : m_arrow_ids) {
+                _service.sync_invoke(_id);
+            }
+            m_arrow_ids.clear();
+        }
     }
 
     void ToothService::_pick_from_ray(const Point& ori, const Direction& dir) {
@@ -298,8 +312,10 @@ namespace ToothSpace {
             Scalar f2dist = m_faces[1].get_nearest_point(picked_point, f2tar);
             Scalar f3dist = m_faces[2].get_nearest_point(picked_point, f3tar);
             Printer::info("PICKED in", m_name, "source:", picked_point, "f2dist:", f2dist, "f3dist:", f3dist);
-            _draw_arrow(picked_point, f2tar, Point(0.8, 0.8, 0.0));
-            _draw_arrow(picked_point, f3tar, Point(0.0, 0.8, 0.8));
+            int _idf2 = _draw_arrow(m_name + "[f1_to_f2]", picked_point, f2tar, Point(0.8, 0.8, 0.0));
+            int _idf3 = _draw_arrow(m_name + "[f1_to_f3]", picked_point, f3tar, Point(0.0, 0.8, 0.8));
+            m_arrow_ids.push_back(_idf2);
+            m_arrow_ids.push_back(_idf3);
         }
         else {
             Printer::info("NOT picked in", m_name);

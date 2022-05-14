@@ -3,16 +3,19 @@
 [![CodeFactor](https://www.codefactor.io/repository/github/hx-w/nurbs/badge/master?s=9cf2a9b2a039e7494297917727036504ef3f21d4)](https://www.codefactor.io/repository/github/hx-w/nurbs/overview/master)
 
 ### Build and run
+Move STL file to `./static/STL/`, and rename as `JawScan.stl`
 
 - **Win32**: `.\build.bat && .\main.exe`
 - **MacOS**: `sh build.sh && ./main`
 
-### Prepare
+### Introduction
 
-1. Move STL file to `./static/STL/`, and rename as `JawScan.stl`
-2. Build and run
+- Each nurbs tooth contains 4 nurbs surface (`face1, face2, face3, face4`)
+- `face1` with color `white`(DEFAULT), `green`(ON EDGE), `blue`(IN EDGE)
+- `face2` with color `yellow`
+- `face3` with color `light blue`
+- `face4` with color `light green`
 
----
 
 ### Usage
 
@@ -28,6 +31,7 @@
 > **Tips**:
 > Nurbs face will generate and show gradually,
 > You will see those faces below initial camera position.
+
 
 ### Reference
 

@@ -5,7 +5,7 @@
 ### Build and run
 
 - **Win32**: `.\build.bat && .\main.exe`
-- **MacOS**: `sh build.sh && .\main`
+- **MacOS**: `sh build.sh && ./main`
 
 ### Usage
 

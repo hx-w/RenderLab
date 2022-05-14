@@ -10,6 +10,7 @@ namespace RenderSpace {
         m_mutex.lock();
         ifstream ifs(filename);
         if (!ifs.good()) {
+            cout << "[ERROR] " << "Can't open file: " << filename << endl;
             return false;
         }
         string headStr;

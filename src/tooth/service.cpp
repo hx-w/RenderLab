@@ -81,9 +81,6 @@ namespace ToothSpace {
         _draw_face(m_name + "[face-2]", 1, Point(1.0, 1.0, 0.0));
         _draw_face(m_name + "[face-3]", 2, Point(0.0, 1.0, 1.0));
         _draw_face(m_name + "[face-4]", 3, Point(0.7, 0.8, 0.5));
-        // 测试 绘制箭头
-        _draw_arrow(Point(0.0), Point(5.0), Point(0.8, 0.0, 0.0));
-        _draw_arrow(Point(5.0), Point(5.0, 5.0, 0.0), Point(0.8, 0.0, 0.0));
         // 创建网格
         int _face1_id = 0;
         int _target_id = 0;

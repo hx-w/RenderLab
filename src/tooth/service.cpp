@@ -296,13 +296,11 @@ namespace ToothSpace {
 
     void ToothService::_clear_arrow() {
         // 通知渲染器 清除
-        {
-            auto _service = ContextHub::getInstance()->getService<void(int)>("render/delete_mesh");
-            for (auto& _id : m_arrow_ids) {
-                _service.sync_invoke(_id);
-            }
-            m_arrow_ids.clear();
+        auto _service = ContextHub::getInstance()->getService<void(int)>("render/delete_mesh");
+        for (auto& _id : m_arrow_ids) {
+            _service.sync_invoke(_id);
         }
+        m_arrow_ids.clear();
     }
 
     void ToothService::_pick_from_ray(const Point& ori, const Direction& dir) {

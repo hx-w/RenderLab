@@ -3,11 +3,13 @@
 using namespace std;
 
 namespace ToothSpace {
-    void Printer::save_buffer() {
-        if (m_ofs.good()) {
-            m_ofs.close();
-            m_ofs.open(m_filename.c_str(), std::ios::app);
+    Printer::Printer(const string& filename, bool bin) {
+        if (bin) {
+            m_ofs.open(filename, std::ios::binary);
+        } else {
+            m_ofs.open(filename);
         }
+        assert(m_ofs.is_open());
     }
 
     void Printer::show_percient(const string& desc, double percent) {

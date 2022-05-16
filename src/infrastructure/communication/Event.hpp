@@ -31,8 +31,11 @@ namespace fundamental {
 
         template<typename _Func, typename... Args>
         int subscribe(SignalPolicy policy, const std::string& signal, _Func&& _func, Args&& ... args) {
-            return _subscribe(std::is_convertible<_Func, Func>::type(), policy,
-                              signal, std::forward<_Func>(_func), std::forward<Args>(args)...);
+            return _subscribe(
+                std::bool_constant<std::is_convertible<_Func, Func>::value>(),
+                policy,
+                signal, std::forward<_Func>(_func), std::forward<Args>(args)...
+            );
         }
 
         template<typename... Args>

@@ -19,6 +19,8 @@ namespace RenderSpace {
         m_meshdraw.set_type(DrawableType::DRAWABLE_TRIANGLE);
         m_disk.set_type(DrawableType::DRAWABLE_TRIANGLE);
 
+        m_text_renderer = make_unique<TextRenderer>(m_shader_text);
+
         thread param_thread([&]() {
             m_meshdraw.load_STL("./static/STL/JawScan.stl");
             // Parameterization param(&m_meshdraw, &m_disk);
@@ -30,14 +32,12 @@ namespace RenderSpace {
 
     void RenderService::setup() {
         // 初始化 shader
-        string sep = "/";
+        string shader_dir = "./resource/shader/";
 #ifdef _WIN32
-        sep = "\\";
+        shader_dir = ".\\resource\\shader\\";
 #endif
-        m_shader.fromFile(
-            "." + sep + "resource" + sep + "default.vs",
-            "." + sep + "resource" + sep + "default.fs"
-        );
+        m_shader.fromFile(shader_dir + "default.vs", shader_dir + "default.fs");
+        m_shader_text.fromFile(shader_dir + "text.vs", shader_dir + "text.fs");
         // 如果逻辑线程计算太快，可能在下面方法注册前调用，会出错
         // 模块间通讯
         m_autobus->registerMethod<int(const string&, int)>(

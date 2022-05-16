@@ -6,6 +6,7 @@
 #include <array>
 #include <unordered_map>
 #include "shader.hpp"
+#include "./text/character.h"
 #include "./mesh/elements.h"
 #include "../libs/coords.h"
 #include "../infrastructure/communication/AutoBus.hpp"
@@ -48,8 +49,11 @@ namespace RenderSpace {
         MeshDrawable m_disk; // target
         // 网格列表
         std::unordered_map<int, std::shared_ptr<MeshDrawable>> m_meshes_map;
+        // 文本渲染器
+        std::unique_ptr<TextRenderer> m_text_renderer;
 
         Shader m_shader; // 带光照模型的
+        Shader m_shader_text;
 
         std::string m_symbol = "render";
         std::unique_ptr<fundamental::AutoBus> m_autobus;

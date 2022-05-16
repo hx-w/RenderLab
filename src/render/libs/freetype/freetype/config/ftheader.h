@@ -114,7 +114,7 @@
    *
    */
 #ifndef FT_CONFIG_CONFIG_H
-#define FT_CONFIG_CONFIG_H  <freetype/config/ftconfig.h>
+#define FT_CONFIG_CONFIG_H "./config/ftconfig.h"
 #endif
 
 
@@ -129,7 +129,7 @@
    *
    */
 #ifndef FT_CONFIG_STANDARD_LIBRARY_H
-#define FT_CONFIG_STANDARD_LIBRARY_H  <freetype/config/ftstdlib.h>
+#define FT_CONFIG_STANDARD_LIBRARY_H  "ftstdlib.h"
 #endif
 
 
@@ -144,7 +144,7 @@
    *
    */
 #ifndef FT_CONFIG_OPTIONS_H
-#define FT_CONFIG_OPTIONS_H  <freetype/config/ftoption.h>
+#define FT_CONFIG_OPTIONS_H  "ftoption.h"
 #endif
 
 
@@ -177,7 +177,7 @@
    *   base FreeType~2 API.
    *
    */
-#define FT_FREETYPE_H  <freetype/freetype.h>
+#define FT_FREETYPE_H  "../libs/freetype/freetype/freetype.h"
 
 
   /**************************************************************************

@@ -18,7 +18,7 @@ namespace RenderSpace {
 
     class TextRenderer {
     public:
-
+        TextRenderer() = delete;
         TextRenderer(Shader& shader);
         ~TextRenderer();
 

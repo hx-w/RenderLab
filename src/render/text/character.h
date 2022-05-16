@@ -24,6 +24,7 @@ namespace RenderSpace {
 
         void render_text(const std::string& text, float x, float y, float scale, glm::vec3 color);
 
+        uint32_t get_csize() const;
     private:
         void _load_characters();
 
@@ -31,6 +32,7 @@ namespace RenderSpace {
         std::map<char, Character> Characters;
         unsigned int m_vao, m_vbo;
         Shader m_shader;
+        uint32_t m_csize; // 默认36
     };
 }
 #endif

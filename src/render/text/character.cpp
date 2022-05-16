@@ -7,13 +7,17 @@ using namespace std;
 
 namespace RenderSpace {
     TextRenderer::TextRenderer(Shader& shader)
-        : m_shader(shader) {
+        : m_shader(shader), m_csize(32) {
         _load_characters();
     }
 
     TextRenderer::~TextRenderer() {
         glDeleteVertexArrays(1, &m_vao);
         glDeleteBuffers(1, &m_vbo);
+    }
+
+    uint32_t TextRenderer::get_csize() const {
+        return m_csize;
     }
 
     void TextRenderer::_load_characters() {
@@ -29,7 +33,7 @@ namespace RenderSpace {
             std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
 
         // Set size to load glyphs as
-        FT_Set_Pixel_Sizes(face, 0, 36);
+        FT_Set_Pixel_Sizes(face, 0, m_csize);
 
         // Disable byte-alignment restriction
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1); 

@@ -19,7 +19,8 @@ namespace RenderSpace {
         m_meshdraw.set_type(DrawableType::DRAWABLE_TRIANGLE);
         m_disk.set_type(DrawableType::DRAWABLE_TRIANGLE);
 
-        m_text_renderer = make_unique<TextRenderer>(m_shader_text);
+        // 文本渲染器
+        m_text_service = make_unique<TextService>(m_shader_text);
 
         thread param_thread([&]() {
             m_meshdraw.load_STL("./static/STL/JawScan.stl");
@@ -58,12 +59,7 @@ namespace RenderSpace {
             [this](int mesh_id, array<Point, 6>&& coords) {
                 this->add_edge_raw(mesh_id, move(coords));
             });
-        // m_autobus->registerMethod<void(unsigned int, unsigned int, unsigned int)>(
-        //     m_symbol + "/add_triangle_by_idx",
-        //     [this](unsigned int v1, unsigned int v2, unsigned int v3) {
-        //         m_nurbs.add_triangle_by_idx(Triangle(v1, v2, v3));
-        //     });
-        
+
         // { Point1, Color1, Normal1, Point2, Color2, Normal2, Point3, Color3, Normal3 }
         m_autobus->registerMethod<void(int, array<Point, 9>&&)>(
             m_symbol + "/add_triangle_raw",
@@ -101,6 +97,8 @@ namespace RenderSpace {
         m_shader_text.use();
         glm::mat4 projection = glm::ortho(0.0f, static_cast<GLfloat>(width), 0.0f, static_cast<GLfloat>(height));
         m_shader_text.setMat4("projection", projection);
+
+        m_text_service->update_window_size(width, height);
     }
 
     void RenderService::draw_all() {
@@ -109,7 +107,8 @@ namespace RenderSpace {
         for (auto [id, ptr]: m_meshes_map) {
             ptr->draw();
         }
-        m_text_renderer->render_text("test", 100, 100, 0.5, glm::vec3(1.0, 1.0, 1.0));
+        m_text_service->draw();
+        // m_text_renderer->render_text("16:25:20", 20, 20, 0.5, glm::vec3(0.75, 0.75, 0.75));
     }
 
     void RenderService::update() {

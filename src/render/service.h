@@ -6,7 +6,7 @@
 #include <array>
 #include <unordered_map>
 #include "shader.hpp"
-#include "./text/character.h"
+#include "./text/textbox.h"
 #include "./mesh/elements.h"
 #include "../libs/coords.h"
 #include "../infrastructure/communication/AutoBus.hpp"
@@ -51,7 +51,7 @@ namespace RenderSpace {
         // 网格列表
         std::unordered_map<int, std::shared_ptr<MeshDrawable>> m_meshes_map;
         // 文本渲染器
-        std::unique_ptr<TextRenderer> m_text_renderer;
+        std::unique_ptr<TextService> m_text_service;
 
         Shader m_shader; // 带光照模型的
         Shader m_shader_text; // 文本渲染着色器

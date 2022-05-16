@@ -98,8 +98,7 @@ namespace RenderSpace {
 
         // Iterate through all characters
         std::string::const_iterator c;
-        for (c = text.begin(); c != text.end(); c++)
-        {
+        for (c = text.begin(); c != text.end(); ++c) {
             Character ch = Characters[*c];
 
             GLfloat xpos = x + ch.Bearing.x * scale;

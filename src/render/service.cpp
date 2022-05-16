@@ -38,6 +38,7 @@ namespace RenderSpace {
 #endif
         m_shader.fromFile(shader_dir + "default.vs", shader_dir + "default.fs");
         m_shader_text.fromFile(shader_dir + "text.vs", shader_dir + "text.fs");
+
         // 如果逻辑线程计算太快，可能在下面方法注册前调用，会出错
         // 模块间通讯
         m_autobus->registerMethod<int(const string&, int)>(
@@ -93,12 +94,22 @@ namespace RenderSpace {
         _event->notify(m_symbol + "/clear_picking");
     }
 
+    void RenderService::notify_window_resize(uint32_t width, uint32_t height) {
+        // auto _event = ContextHub::getInstance()->getEventTable<void(uint32_t, uint32_t)>();
+        // _event->notify(m_symbol + "/window_resize", width, height);
+        // 更新文本渲染器 正交投影
+        m_shader_text.use();
+        glm::mat4 projection = glm::ortho(0.0f, static_cast<GLfloat>(width), 0.0f, static_cast<GLfloat>(height));
+        m_shader_text.setMat4("projection", projection);
+    }
+
     void RenderService::draw_all() {
         m_meshdraw.draw();
         m_disk.draw();
         for (auto [id, ptr]: m_meshes_map) {
             ptr->draw();
         }
+        m_text_renderer->render_text("test", 100, 100, 0.5, glm::vec3(1.0, 1.0, 1.0));
     }
 
     void RenderService::update() {

@@ -15,6 +15,8 @@ namespace RenderSpace {
         m_service = service;
         lastX = width * 1.0 / 2;
         lastY = height * 1.0 / 2;
+
+        m_service->notify_window_resize(width, height);
     }
 
     RenderWindowWidget::~RenderWindowWidget() {
@@ -78,8 +80,9 @@ namespace RenderSpace {
         // make sure the viewport matches the new window dimensions; note that width and 
         // height will be significantly larger than specified on retina displays.
         glViewport(0, 0, width, height);
-        m_scr_width = width;
-        m_scr_height = height;
+        m_scr_width = width / 2; // 为什么有二倍关系
+        m_scr_height = height / 2;
+        m_service->notify_window_resize(m_scr_width, m_scr_height);
     }
 
     // glfw: whenever the mouse moves, this callback is called

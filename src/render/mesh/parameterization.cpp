@@ -35,11 +35,7 @@ namespace RenderSpace {
         // 将边缘点赋值到m_tar
         m_tar->set_type(DrawableType::DRAWABLE_LINE); // 设置为线段
         size_t sz = param_bound.size();
-        cout << "sz: " << sz << endl;
         for (size_t idx = 0; idx < sz; ++idx) {
-            if (idx < 10) {
-                cout << "param_bound[" << idx << "]: " << param_bound[idx].x << ", " << param_bound[idx].y << endl;
-            }
             glm::vec3 pos = glm::vec3(param_bound[idx].x, param_bound[idx].y, 0.0f);
             glm::vec3 pos_next = glm::vec3(param_bound[(idx + 1) % sz].x, param_bound[(idx + 1) % sz].y, 0.0f);
             m_tar->add_edge_raw(

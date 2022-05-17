@@ -133,8 +133,9 @@ namespace RenderSpace {
     }
 
     bool MeshDrawable::load_OBJ(const std::string& filename) {
-        lock_guard<mutex> lk(m_mutex);
         _reset();
+        _ready_to_draw = false;
+        _ready_to_update = false;
         ifstream ifs(filename);
         if (!ifs.good()) {
             cout << "[ERROR] " << "Can't open file: " << filename << endl;

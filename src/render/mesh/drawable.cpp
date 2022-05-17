@@ -135,7 +135,7 @@ namespace RenderSpace {
     }
 
     void Drawable::ready_to_update() {
-        // std::lock_guard<std::mutex> lk(m_mutex);
+        std::lock_guard<std::mutex> lk(m_mutex);
         _ready_to_update = true;
     }
 

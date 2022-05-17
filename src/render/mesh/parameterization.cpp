@@ -1,22 +1,13 @@
 ﻿#include "parameterization.h"
-#include <iostream>
 #include <set>
+#include <map>
+#include <iostream>
 #include <unordered_set>
-#include <unordered_map>
 #include <algorithm>
 #include <utility>
 
 #include "../../tooth/printer.h"
 using namespace std;
-
-struct pair_hash {
-    template <class T1, class T2>
-    std::size_t operator() (const std::pair<T1,T2> &p) const {
-        auto h1 = std::hash<T1>{}(p.first);
-        auto h2 = std::hash<T2>{}(p.second);
-        return h1 ^ h2;  
-    }
-};
 
 namespace RenderSpace {
     Parameterization::Parameterization(MeshDrawable* ori, MeshDrawable* tar):
@@ -35,10 +26,11 @@ namespace RenderSpace {
         vector<glm::vec2> param_bound;
         _parameterize_bound(edge_bound, param_bound);
         ToothSpace::Printer::info("param_bound mapping finished");
-        // 初始化weight
+        // 初始化weights
         // weight[(i, j)] = weight[(j, i)], 故存储时令i < j
         // 这里元素量太大，可以使用map进行优化，但是map对于key的查找有问题(?)
-        unordered_map<OrderedEdge, float, pair_hash> weight;
+        unordered_map<OrderedEdge, float, pair_hash> weights;
+        _init_weights(edge_bound, edge_inner, weights);
         // 将边集 转换为 点集 保存映射的顺序关系
         // 其中边缘点的顺序不能变，应与param_bound一致
         vector<int> vt_bound;
@@ -144,6 +136,63 @@ namespace RenderSpace {
             float _theta = 2 * M_PI * _accumulate_length / m_bound_length;
             param_bound.push_back(glm::vec2(sin(_theta), cos(_theta)));
         }
+    }
+
+    void Parameterization::_init_weights(
+        const vector<OrderedEdge>& edge_bound,
+        const vector<OrderedEdge>& edge_inner,
+        unordered_map<OrderedEdge, float, pair_hash>& weights
+    ) {
+        /**
+         * weights 的计算满足以下约束
+         * 1. weights的key记作(vi, vj)，满足vi <= vj
+         * 2. vi与vj不会都是边缘点
+         * 
+         * weights[(vi, vj)] 的计算方法如下
+         * 存在以边(vi, vj)为公共边的两个三角形△(vi, vl, vj)，△(vj, vk, vi)
+         * 定义角度\alpha(vi, vj) = angle(vec(vi, vl), vec(vl, vj))
+         *        \alpha(vj, vi) = angle(vec(vj, vk), vec(vk, vi))
+         * weights[(vi, vj)] = [cot(\alpha(vi, vj)) + cot(\alpha(vj, vi))] / 2
+         */
+        const auto& vertices = m_ori->get_vertices();
+        // 模型中存在 f v1, v2, v3
+        //           f v2, v3, v4
+
+        int c2 = 0;
+        int c3 = 0;
+        for (auto& edge : edge_inner) {
+            int vi = min(edge.first, edge.second);
+            int vj = max(edge.first, edge.second);
+            vector<int> adj_vt; // 应该有两个邻接点
+            for (auto& vt : adj_list[vi]) {
+                // 判断vt的邻接点是否包含vj
+                if (adj_list[vt].count(vj) != 0) {
+                    adj_vt.push_back(vt);
+                }
+            }
+            if (adj_vt.size() != 2) {
+                c3 ++;
+                // cout << "vi: " << vi << " vj: " << vj << " adj: ";
+                // for (auto& vt : adj_vt) {
+                //     cout << vt << " ";
+                // }
+                // cout << endl;
+            }
+            else {
+                c2 ++;
+                // cout << "vi: " << vi << " vj: " << vj << " adj: ";
+                // for (auto& vt : adj_vt) {
+                //     cout << vt << " ";
+                // }
+                // cout << endl;
+            }
+        }
+
+        cout << "c2 = " << c2 << " c3 = " << c3 << endl;
+        set<OrderedEdge> edge_bound_set(edge_bound.begin(), edge_bound.end());
+        set<OrderedEdge> edge_inner_set(edge_inner.begin(), edge_inner.end());
+
+        cout << "CHECK " << edge_bound_set.count(OrderedEdge(99936, 100024)) << " " << edge_inner_set.count(OrderedEdge(99936, 100024)) << endl;
     }
 
     void Parameterization::_convert_edge_to_vertex(

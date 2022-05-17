@@ -37,11 +37,14 @@ namespace RenderSpace {
         // 解方程组 L_{I, I} * f(I) = -L_{B, B} * f(B)
         // or L_{B, B} * f(B) = -L_{B, I} * f(I)
         void _solve_Laplacian_equation(
-            std::vector<int>& r_idx_1, std::vector<int> c_idx_1,
+            const std::vector<int>& r_idx_1,
+            const std::vector<int>& c_idx_1,
             std::vector<glm::vec2>& f_1,  // 结果保存在这里
-            std::vector<int>& r_idx_2, std::vector<int>& c_idx_2,
-            std::vector<glm::vec2>& f_2
+            const std::vector<int>& r_idx_2,
+            const std::vector<int>& c_idx_2,
+            const std::vector<glm::vec2>& f_2
         );
+
     private:
         // 中间结果
         float m_bound_length; // 边缘总长度

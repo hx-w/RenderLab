@@ -5,6 +5,8 @@
 #include <unordered_map>
 #include <algorithm>
 #include <utility>
+
+#include "../../tooth/printer.h"
 using namespace std;
 
 struct pair_hash {
@@ -32,12 +34,20 @@ namespace RenderSpace {
         // 参数平面 边缘点 根据edge_bound 顺序计算得到
         vector<glm::vec2> param_bound;
         _parameterize_bound(edge_bound, param_bound);
+        ToothSpace::Printer::info("param_bound mapping finished");
+        // 初始化weight
+        // weight[(i, j)] = weight[(j, i)], 故存储时令i < j
+        // 这里元素量太大，可以使用map进行优化，但是map对于key的查找有问题(?)
+        unordered_map<OrderedEdge, float, pair_hash> weight;
         // 将边集 转换为 点集 保存映射的顺序关系
         // 其中边缘点的顺序不能变，应与param_bound一致
         vector<int> vt_bound;
         vector<int> vt_inner;
         _convert_edge_to_vertex(move(edge_bound), move(edge_inner), vt_bound, vt_inner);
-
+        // 解方程组
+        vector<glm::vec2> param_inner;
+        ToothSpace::Printer::info("solving Laplacian equation");
+        _solve_Laplacian_equation(vt_inner, vt_inner, param_inner, vt_bound, vt_bound, param_bound);
 
         // 将边缘点赋值到m_tar
         m_tar->set_type(DrawableType::DRAWABLE_LINE); // 设置为线段
@@ -181,10 +191,12 @@ namespace RenderSpace {
     }
 
     void Parameterization::_solve_Laplacian_equation(
-        vector<int>& r_idx_1, std::vector<int> c_idx_1,
+        const vector<int>& r_idx_1,
+        const vector<int>& c_idx_1,
         vector<glm::vec2>& f_1,  // 结果保存在这里
-        vector<int>& r_idx_2, std::vector<int>& c_idx_2,
-        vector<glm::vec2>& f_2
+        const vector<int>& r_idx_2,
+        const vector<int>& c_idx_2,
+        const vector<glm::vec2>& f_2
     ) {
         //
     }

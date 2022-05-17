@@ -30,6 +30,7 @@ namespace RenderSpace {
         else {
             success =  _read_STL_Binary(filename);
         }
+        cout << "[INFO] tri nums: " << m_triangles.size() << endl;
         if (success) {
             ready_to_update();
         }
@@ -170,6 +171,23 @@ namespace RenderSpace {
             }
         }
         ifs.close();
+
+        // 计算法线
+        for (int i = 0; i < m_triangles.size(); ++i) {
+            Triangle& tri = m_triangles[i];
+            glm::vec3 v1 = m_vertices[tri.VertexIdx.x].Position;
+            glm::vec3 v2 = m_vertices[tri.VertexIdx.y].Position;
+            glm::vec3 v3 = m_vertices[tri.VertexIdx.z].Position;
+            glm::vec3 normal = glm::normalize(glm::cross(v2 - v1, v3 - v1));
+            m_vertices[tri.VertexIdx.x].Normal += normal;
+            m_vertices[tri.VertexIdx.y].Normal += normal;
+            m_vertices[tri.VertexIdx.z].Normal += normal;
+            // normalize normal
+            m_vertices[tri.VertexIdx.x].Normal = glm::normalize(m_vertices[tri.VertexIdx.x].Normal);
+            m_vertices[tri.VertexIdx.y].Normal = glm::normalize(m_vertices[tri.VertexIdx.y].Normal);
+            m_vertices[tri.VertexIdx.z].Normal = glm::normalize(m_vertices[tri.VertexIdx.z].Normal);
+        }
+        cout << "[INFO] " << "tri nums: " << m_triangles.size() << endl;
         ready_to_update();
         return true;
     }

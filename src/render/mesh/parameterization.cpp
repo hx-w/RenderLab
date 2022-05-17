@@ -1,9 +1,10 @@
 ﻿#include "parameterization.h"
 #include <iostream>
+#include <set>
+#include <unordered_set>
 #include <unordered_map>
 #include <algorithm>
 #include <utility>
-#include <set>
 using namespace std;
 
 struct pair_hash {
@@ -31,6 +32,12 @@ namespace RenderSpace {
         // 参数平面 边缘点 根据edge_bound 顺序计算得到
         vector<glm::vec2> param_bound;
         _parameterize_bound(edge_bound, param_bound);
+        // 将边集 转换为 点集 保存映射的顺序关系
+        // 其中边缘点的顺序不能变，应与param_bound一致
+        vector<int> vt_bound;
+        vector<int> vt_inner;
+        _convert_edge_to_vertex(move(edge_bound), move(edge_inner), vt_bound, vt_inner);
+
 
         // 将边缘点赋值到m_tar
         m_tar->set_type(DrawableType::DRAWABLE_LINE); // 设置为线段
@@ -127,5 +134,58 @@ namespace RenderSpace {
             float _theta = 2 * M_PI * _accumulate_length / m_bound_length;
             param_bound.push_back(glm::vec2(sin(_theta), cos(_theta)));
         }
+    }
+
+    void Parameterization::_convert_edge_to_vertex(
+        vector<OrderedEdge>&& edge_bound,
+        vector<OrderedEdge>&& edge_inner,
+        vector<int>& vt_bound,
+        vector<int>& vt_inner
+    ) {
+        vt_bound.clear();
+        vt_inner.clear();
+        // 计算vt_bound
+        // 由于边缘边拓扑有序，所以尽量避免在vt_bound中查重操作
+        const auto sz = edge_bound.size();
+        // 最后一个边包含的两个点都应已经被包含在vt_bound中
+        vt_bound.emplace_back(edge_bound[0].first);
+        for (size_t eidx = 0; eidx < sz - 1; ++eidx) {
+            const int _last_vt = vt_bound.back();
+            if (edge_bound[eidx].first == _last_vt) {
+                vt_bound.emplace_back(edge_bound[eidx].second);
+            }
+            else if (edge_bound[eidx].second == _last_vt) {
+                vt_bound.emplace_back(edge_bound[eidx].first);
+            }
+            else {
+                cout << "Error: edge_bound is not topology sorted" << endl;
+            }
+        }
+        // 计算vt_inner
+        // 先将vt_bound 构造成集合，查找效率高 (vt_bound元素少，使用基于hash的unordered_set)
+        unordered_set<int> vt_bound_set(vt_bound.begin(), vt_bound.end());
+        set<int> vt_inner_set;
+        for (auto& edge : edge_inner) {
+            if (vt_bound_set.count(edge.first) == 0) {
+                vt_inner_set.insert(edge.first);
+            }
+            if (vt_bound_set.count(edge.second) == 0) {
+                vt_inner_set.insert(edge.second);
+            }
+        }
+
+        vt_inner.assign(vt_inner_set.begin(), vt_inner_set.end());
+        // 释放内存
+        vector<OrderedEdge>().swap(edge_bound);
+        vector<OrderedEdge>().swap(edge_inner);
+    }
+
+    void Parameterization::_solve_Laplacian_equation(
+        vector<int>& r_idx_1, std::vector<int> c_idx_1,
+        vector<glm::vec2>& f_1,  // 结果保存在这里
+        vector<int>& r_idx_2, std::vector<int>& c_idx_2,
+        vector<glm::vec2>& f_2
+    ) {
+        //
     }
 }

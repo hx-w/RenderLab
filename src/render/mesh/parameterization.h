@@ -21,8 +21,12 @@ namespace RenderSpace {
     private:
         // 标记ori面中的边缘与非边缘
         void _remark_edges(std::vector<OrderedEdge>&, std::vector<OrderedEdge>&);
-        void _topology_reorder(std::vector<OrderedEdge>&); // 对边缘边
-        void _parameterize_bound(std::vector<OrderedEdge>&, std::vector<glm::vec2>&); // 参数平面 边缘点
+        // 对边缘边，从第一个边缘点开始 按拓扑关系进行重新排序
+        void _topology_reorder(std::vector<OrderedEdge>&);
+        // 将排序后的边缘边参数化到二维单位圆边缘
+        void _parameterize_bound(std::vector<OrderedEdge>&, std::vector<glm::vec2>&);
+        // 初始化 计算weights
+        
 
         // edge to vertex
         // 非边缘边需要依赖边缘边的数据，因为非边缘边内存在边缘点

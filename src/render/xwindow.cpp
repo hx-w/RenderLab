@@ -72,6 +72,12 @@ namespace RenderSpace {
         if (glfwGetKey(window, GLFW_KEY_R) == GLFW_RELEASE) {
             R_down = false;
         }
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+            cameraPos -= cameraSpeed * glm::vec3(0.0f, 1.0f, 0.0f);
+        }
+        if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+            cameraPos += cameraSpeed * glm::vec3(0.0f, 1.0f, 0.0f);
+        }
     }
 
     // glfw: whenever the window size changed (by OS or user resize) this callback function executes

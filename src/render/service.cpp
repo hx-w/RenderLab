@@ -108,7 +108,6 @@ namespace RenderSpace {
             ptr->draw();
         }
         m_text_service->draw();
-        // m_text_renderer->render_text("16:25:20", 20, 20, 0.5, glm::vec3(0.75, 0.75, 0.75));
     }
 
     void RenderService::update() {

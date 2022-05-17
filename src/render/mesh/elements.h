@@ -14,11 +14,8 @@ namespace RenderSpace {
         MeshDrawable(const MeshDrawable&) = default;
         MeshDrawable& operator=(const MeshDrawable&) = default;
 
-        // void draw() override;
-
         bool load_STL(const std::string& filename);
-
-        // void sync() override;
+        bool load_OBJ(const std::string& filename);
 
         // 根据原始坐标点创建顶点以及顶点索引三角形
         void add_triangle_raw(const Vertex& v1, const Vertex& v2, const Vertex& v3);
@@ -31,6 +28,7 @@ namespace RenderSpace {
         void _deepcopy(const MeshDrawable&);
         bool _read_STL_ASCII(const std::string& filename);
         bool _read_STL_Binary(const std::string& filename);
+        void _split_words(const std::string& line, std::vector<std::string>& words, const char delim=' ');
     };
 }
 

@@ -23,7 +23,8 @@ namespace RenderSpace {
         m_text_service = make_unique<TextService>(m_shader_text);
 
         thread param_thread([&]() {
-            m_meshdraw.load_STL("./static/STL/JawScan.stl");
+            // m_meshdraw.load_STL("./static/models/JawScan.stl");
+            m_meshdraw.load_OBJ("./static/models/model.obj");
             // Parameterization param(&m_meshdraw, &m_disk);
             // param.parameterize();
             // update();
@@ -102,12 +103,12 @@ namespace RenderSpace {
     }
 
     void RenderService::draw_all() {
+        m_text_service->draw();
         m_meshdraw.draw();
         m_disk.draw();
         for (auto [id, ptr]: m_meshes_map) {
             ptr->draw();
         }
-        m_text_service->draw();
     }
 
     void RenderService::update() {

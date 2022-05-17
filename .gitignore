@@ -1,5 +1,5 @@
 *.pdf
-STL/
+models/
 *.csv
 main
 main_table

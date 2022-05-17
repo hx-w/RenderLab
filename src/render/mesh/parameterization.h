@@ -2,7 +2,7 @@
 #define PARAMETERIZATION_H
 
 #include "elements.h"
-#include <vector>
+#include <set>
 
 namespace RenderSpace {
     class Parameterization {
@@ -16,7 +16,7 @@ namespace RenderSpace {
 
     private:
         // 标记ori面中的边缘点与非边缘点索引
-        void _remark_vertices(std::vector<int>&, std::vector<int>&);
+        void _remark_vertices(std::set<int>&, std::set<int>&);
 
     private:
         MeshDrawable* m_ori;

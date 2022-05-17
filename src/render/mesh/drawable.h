@@ -10,6 +10,7 @@
 
 namespace RenderSpace {
     typedef std::pair<glm::vec3, glm::vec3> AABB; // min, max
+    typedef std::pair<int, int> OrderedEdge; // v1, v2; v1<v2
 
     enum DrawableType {
         DRAWABLE_POINT,
@@ -29,11 +30,18 @@ namespace RenderSpace {
         glm::vec3 Normal;
     };
 
-    // 独立边
     struct Edge {
         Edge() = default;
         Edge(int v0idx, int v1idx):
             VertexIdx(glm::uvec2(v0idx, v1idx)) { }
+        bool operator==(const Edge& other) const {
+            return (VertexIdx.x == other.VertexIdx.x && VertexIdx.y == other.VertexIdx.y) \
+                || (VertexIdx.x == other.VertexIdx.y && VertexIdx.y == other.VertexIdx.x);
+        }
+        bool operator<(const Edge& other) const {
+            return VertexIdx.x < other.VertexIdx.x || (VertexIdx.x == other.VertexIdx.x && VertexIdx.y < other.VertexIdx.y);
+        }
+
         glm::uvec2 VertexIdx;
     };
 

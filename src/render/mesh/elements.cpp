@@ -30,7 +30,6 @@ namespace RenderSpace {
         else {
             success =  _read_STL_Binary(filename);
         }
-        cout << "[INFO] tri nums: " << m_triangles.size() << endl;
         if (success) {
             ready_to_update();
         }
@@ -187,7 +186,6 @@ namespace RenderSpace {
             m_vertices[tri.VertexIdx.y].Normal = glm::normalize(m_vertices[tri.VertexIdx.y].Normal);
             m_vertices[tri.VertexIdx.z].Normal = glm::normalize(m_vertices[tri.VertexIdx.z].Normal);
         }
-        cout << "[INFO] " << "tri nums: " << m_triangles.size() << endl;
         ready_to_update();
         return true;
     }

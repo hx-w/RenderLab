@@ -71,7 +71,16 @@ namespace RenderSpace {
             const std::vector<glm::vec2>& f_2
         );
 
-        float _Laplacian_val(int i, int j) const;
+        // Gauss-Seidel 迭代求解方程组
+        void Gauss_Seidel_Iteration(
+            const std::vector<int>& r_idx,
+            const std::vector<int>& c_idx,
+            std::vector<glm::vec2>& f,
+            const std::vector<glm::vec2>& b,
+            const float epsilon // 允许的误差
+        );
+
+        float _Laplacian_val(int i, int j);
 
         // cotangent
         float _cot(float) const;

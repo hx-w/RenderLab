@@ -5,6 +5,7 @@
 #include <unordered_set>
 #include <algorithm>
 #include <utility>
+#include <cassert>
 
 #include "../../tooth/printer.h"
 using namespace std;
@@ -38,7 +39,7 @@ namespace RenderSpace {
         // 解方程组
         vector<glm::vec2> param_inner;
         ToothSpace::Printer::info("solving Laplacian equation");
-        _solve_Laplacian_equation(vt_inner, vt_inner, param_inner, vt_bound, vt_bound, param_bound);
+        _solve_Laplacian_equation(vt_inner, vt_inner, param_inner, vt_inner, vt_bound, param_bound);
 
         // 将边缘点赋值到m_tar
         m_tar->set_type(DrawableType::DRAWABLE_LINE); // 设置为线段
@@ -263,10 +264,51 @@ namespace RenderSpace {
         const vector<int>& c_idx_2,
         const vector<glm::vec2>& f_2
     ) {
-        
+        // 约束 c_idx_2.size() == f_2.size()
+        //     r_idx_1.size() == c_idx_1.size() 即矩阵1为方阵
+        // 变量初始化
+        const int mat1_row_count = r_idx_1.size();
+        const int mat1_col_count = c_idx_1.size();
+        const int mat2_row_count = r_idx_2.size();
+        const int mat2_col_count = c_idx_2.size();
+        assert(mat2_col_count == f_2.size());
+        // L(r1, c1) * f1 = -L(r2, c2) * f2
+        // 令 _value_mat = -L(r2, c2) * f2
+        vector<glm::vec2> _value_mat;
+        for (int ir = 0; ir < mat2_row_count; ++ir) {
+            if (ir % 1000 == 0) {
+                cout << "iter: " << ir << " / " << mat2_row_count << endl;
+            }
+            glm::vec2 _row_vec;
+            for (int ic = 0; ic < mat2_col_count; ++ic) {
+                _row_vec += f_2[ic] * _Laplacian_val(r_idx_2[ir], c_idx_2[ic]);
+            }
+            _value_mat.push_back(-_row_vec);
+        }
+        // 设置迭代初值 (0.0, 0.0)
+        f_1.resize(mat1_col_count, glm::vec2(0.0f));
+        // 进行迭代求解
+        Gauss_Seidel_Iteration(r_idx_1, c_idx_1, f_1, _value_mat, 0.0001f);
+    }
+
+    void Parameterization::Gauss_Seidel_Iteration(
+        const vector<int>& r_idx,
+        const vector<int>& c_idx,
+        vector<glm::vec2>& f,
+        const vector<glm::vec2>& b,
+        const float epsilon // 允许的误差
+    ) {
+        const int row_max = r_idx.size();
+        const int col_max = c_idx.size();
+        const int _max_iter = 100; // 最大迭代次数
+        for (int _iter_count = 0; _iter_count < _max_iter; ++_iter_count) {
+            cout << "iteration: " << _iter_count << " / " << _max_iter << endl;
+
+        }
     }
 
     float Parameterization::_Laplacian_val(int i, int j) {
+        if (i > j) swap(i, j);
         return (i == j ? 1 : -1) * m_weights[OrderedEdge(i, j)];
     }
 

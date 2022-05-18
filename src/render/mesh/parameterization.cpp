@@ -29,8 +29,7 @@ namespace RenderSpace {
         // 初始化weights
         // weight[(i, j)] = weight[(j, i)], 故存储时令i < j
         // 这里元素量太大，可以使用map进行优化，但是map对于key的查找有问题(?)
-        unordered_map<OrderedEdge, float, pair_hash> weights;
-        _init_weights(edge_bound, edge_inner, weights);
+        _init_weights(edge_bound, edge_inner);
         // 将边集 转换为 点集 保存映射的顺序关系
         // 其中边缘点的顺序不能变，应与param_bound一致
         vector<int> vt_bound;
@@ -146,8 +145,7 @@ namespace RenderSpace {
 
     void Parameterization::_init_weights(
         const vector<OrderedEdge>& edge_bound,
-        const vector<OrderedEdge>& edge_inner,
-        unordered_map<OrderedEdge, float, pair_hash>& weights
+        const vector<OrderedEdge>& edge_inner
     ) {
         /**
          * weights 的计算满足以下约束
@@ -185,7 +183,6 @@ namespace RenderSpace {
             adj_list[edge.second].insert(edge.first);
         }
 
-        // 当i!=j时
         // weights只需从inner构造
         for (auto& edge : edge_inner) {
             int vi = edge.first;
@@ -205,11 +202,13 @@ namespace RenderSpace {
             int vl = adj_vt[1];
             float cot_ij = _cot(_angle_between(vertices[vi].Position, vertices[vj].Position, vertices[vl].Position));
             float cot_ji = _cot(_angle_between(vertices[vi].Position, vertices[vj].Position, vertices[vk].Position));
-            weights[OrderedEdge(vi, vj)] = (cot_ij + cot_ji) / 2;
+            float _weight = (cot_ij + cot_ji) / 2;
+            m_weights[OrderedEdge(vi, vj)] = _weight;
+            // weights中 i=j无意义，但是可以预存ij相等的情况，方便Laplacian matrix的计算
+            // 默认值是0
+            m_weights[OrderedEdge(vi, vi)] += _weight;
+            m_weights[OrderedEdge(vj, vj)] += _weight;
         }
-        // 当i=j时
-
-        cout << "weight: " << weights[OrderedEdge(6, 26)] << endl;
     }
 
     void Parameterization::_convert_edge_to_vertex(
@@ -264,7 +263,11 @@ namespace RenderSpace {
         const vector<int>& c_idx_2,
         const vector<glm::vec2>& f_2
     ) {
-        //
+        
+    }
+
+    float Parameterization::_Laplacian_val(int i, int j) {
+        return (i == j ? 1 : -1) * m_weights[OrderedEdge(i, j)];
     }
 
     float Parameterization::_cot(float rad) const {

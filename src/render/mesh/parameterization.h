@@ -47,8 +47,7 @@ namespace RenderSpace {
         // 初始化 计算weights
         void _init_weights(
             const std::vector<OrderedEdge>&,
-            const std::vector<OrderedEdge>&,
-            std::unordered_map<OrderedEdge, float, pair_hash>&
+            const std::vector<OrderedEdge>&
         );
 
         // edge to vertex
@@ -72,6 +71,8 @@ namespace RenderSpace {
             const std::vector<glm::vec2>& f_2
         );
 
+        float _Laplacian_val(int i, int j) const;
+
         // cotangent
         float _cot(float) const;
         float _angle_between(const glm::vec3&, const glm::vec3&, const glm::vec3&) const;
@@ -79,6 +80,7 @@ namespace RenderSpace {
     private:
         // 中间结果
         float m_bound_length; // 边缘总长度
+        std::unordered_map<OrderedEdge, float, pair_hash> m_weights; // 边缘权重
 
     private:
         MeshDrawable* m_ori;

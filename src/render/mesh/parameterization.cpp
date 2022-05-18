@@ -300,10 +300,31 @@ namespace RenderSpace {
     ) {
         const int row_max = r_idx.size();
         const int col_max = c_idx.size();
+        const int f_max = f.size();
+        // row_max == col_max == f_max
+        assert(row_max == col_max);
+        assert(row_max == f_max);
+
         const int _max_iter = 100; // 最大迭代次数
         for (int _iter_count = 0; _iter_count < _max_iter; ++_iter_count) {
             cout << "iteration: " << _iter_count << " / " << _max_iter << endl;
-
+            float _residual = 0.0f;
+            // 对于x_{f_max}^{_iter_count}
+            for (int ir = 0; ir < f_max; ++ir) {
+                glm::vec2 _val(0.0);
+                for (int ic = 0; ic < f_max; ++ic) {
+                    if (ir == ic) continue;
+                    _val += _Laplacian_val(r_idx[ir], c_idx[ic]) * f[ic];
+                }
+                _val -= b[ir];
+                _val *= 1.0 / _Laplacian_val(r_idx[ir], c_idx[ir]);
+                _residual = max(_residual, glm::length(_val - f[ir]));
+                f[ir] = _val;
+            }
+            cout << "residual: " << _residual << endl;
+            if (_residual < epsilon) {
+                break;
+            }
         }
     }
 

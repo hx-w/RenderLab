@@ -3,6 +3,7 @@
 #include <mutex>
 #include <vector>
 #include <string>
+#include <algorithm>
 #include "../shader.hpp"
 #include "../libs/glm/glm.hpp"
 #include "../libs/glm/gtc/matrix_transform.hpp"
@@ -47,8 +48,21 @@ namespace RenderSpace {
 
     struct Triangle {
         Triangle() = default;
-        Triangle(const int v0, const int v1, const int v2):
+        // 顶点顺序不能变
+        Triangle(int v0, int v1, int v2):
             VertexIdx(glm::uvec3(v0, v1, v2)) { }
+        bool operator==(const Triangle& other) const {
+            return (VertexIdx.x == other.VertexIdx.x && VertexIdx.y == other.VertexIdx.y && VertexIdx.z == other.VertexIdx.z) \
+                || (VertexIdx.x == other.VertexIdx.x && VertexIdx.y == other.VertexIdx.z && VertexIdx.z == other.VertexIdx.y) \
+                || (VertexIdx.x == other.VertexIdx.y && VertexIdx.y == other.VertexIdx.z && VertexIdx.z == other.VertexIdx.x) \
+                || (VertexIdx.x == other.VertexIdx.y && VertexIdx.y == other.VertexIdx.x && VertexIdx.z == other.VertexIdx.z) \
+                || (VertexIdx.x == other.VertexIdx.z && VertexIdx.y == other.VertexIdx.x && VertexIdx.z == other.VertexIdx.y) \
+                || (VertexIdx.x == other.VertexIdx.z && VertexIdx.y == other.VertexIdx.y && VertexIdx.z == other.VertexIdx.x);
+        }
+        bool operator<(const Triangle& other) const {
+            return VertexIdx.x < other.VertexIdx.x;
+        }
+
         glm::uvec3 VertexIdx;
     };
 

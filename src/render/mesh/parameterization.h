@@ -19,6 +19,15 @@ namespace RenderSpace {
         }
     };
 
+    struct trias_hash {
+        std::size_t operator() (const Triangle& tri) const {
+            auto h1 = std::hash<uint32_t>{}(tri.VertexIdx.x);
+            auto h2 = std::hash<uint32_t>{}(tri.VertexIdx.y);
+            auto h3 = std::hash<uint32_t>{}(tri.VertexIdx.z);
+            return h1 ^ h2 ^ h3;
+        }
+    };
+
     class Parameterization {
     public:
         Parameterization() = default;
@@ -62,6 +71,10 @@ namespace RenderSpace {
             const std::vector<int>& c_idx_2,
             const std::vector<glm::vec2>& f_2
         );
+
+        // cotangent
+        float _cot(float) const;
+        float _angle_between(const glm::vec3&, const glm::vec3&, const glm::vec3&) const;
 
     private:
         // 中间结果

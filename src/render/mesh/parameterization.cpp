@@ -96,10 +96,12 @@ namespace RenderSpace {
             adj_list[edge.first].push_back(edge.second);
             adj_list[edge.second].push_back(edge.first);
         }
+    
         // 理论上， 所有边缘点构成一个环，所有adj个数都为2
         vector<OrderedEdge> edge_bound_reorder;
         // 从任一点触发，构造一个拓扑序列
         int vidx = edge_bound[0].first;
+        int vidx_reserved = vidx;
         set<int> visited;
 
         // 顺带计算边缘总长度
@@ -110,12 +112,16 @@ namespace RenderSpace {
             visited.insert(vidx);
             int vidx_next = adj_list[vidx][0];
             if (visited.count(adj_list[vidx][0]) != 0) {
-                vidx_next = adj_list[vidx][1];
+                // 判断是否首尾相接
+                if (visited.count(adj_list[vidx][1]) != 0) {
+                    vidx_next = vidx_reserved;
+                }
+                else {
+                    vidx_next = adj_list[vidx][1];
+                }
             }
             edge_bound_reorder.push_back(OrderedEdge(vidx, vidx_next));
-
             m_bound_length += glm::distance(vertices[vidx].Position, vertices[vidx_next].Position);
-
             vidx = vidx_next;
         }
         edge_bound.swap(edge_bound_reorder);
@@ -155,44 +161,55 @@ namespace RenderSpace {
          * weights[(vi, vj)] = [cot(\alpha(vi, vj)) + cot(\alpha(vj, vi))] / 2
          */
         const auto& vertices = m_ori->get_vertices();
-        // 模型中存在 f v1, v2, v3
-        //           f v2, v3, v4
-
-        int c2 = 0;
-        int c3 = 0;
+        const auto& triangles = m_ori->get_triangles();
+        unordered_set<Triangle, trias_hash> trias_set(triangles.begin(), triangles.end());
+        /** 存在这样一个事实：
+         *  vi的邻接点中有vk, vk的邻接点中有vj，可能并不存在三角形(vi, vj, vk)
+         * (vi) --------------(vk)
+         *  | \           /  /
+         *  |  \        /  /
+         *  |    -(vl)-  /
+         *  |     /    / 
+         *  |   /    /
+         *  | /   /
+         * (vj)-
+         */
+        // 构造邻接表 快速索引
+        unordered_map<int, set<int>> adj_list;
+        for (auto& edge : edge_bound) {
+            adj_list[edge.first].insert(edge.second);
+            adj_list[edge.second].insert(edge.first);
+        }
         for (auto& edge : edge_inner) {
-            int vi = min(edge.first, edge.second);
-            int vj = max(edge.first, edge.second);
-            vector<int> adj_vt; // 应该有两个邻接点
-            for (auto& vt : adj_list[vi]) {
-                // 判断vt的邻接点是否包含vj
-                if (adj_list[vt].count(vj) != 0) {
-                    adj_vt.push_back(vt);
+            adj_list[edge.first].insert(edge.second);
+            adj_list[edge.second].insert(edge.first);
+        }
+
+        // 当i!=j时
+        // weights只需从inner构造
+        for (auto& edge : edge_inner) {
+            int vi = edge.first;
+            int vj = edge.second;
+            vector<int> adj_vt;
+            for (auto& adj_v : adj_list[vi]) {
+                // 判断(adj_v, vj, vi)是否构成三角形
+                if (adj_v != vj && trias_set.count(Triangle(vi, vj, adj_v)) != 0) {
+                    adj_vt.push_back(adj_v);
                 }
             }
             if (adj_vt.size() != 2) {
-                c3 ++;
-                // cout << "vi: " << vi << " vj: " << vj << " adj: ";
-                // for (auto& vt : adj_vt) {
-                //     cout << vt << " ";
-                // }
-                // cout << endl;
+                cout << "Error: edge_inner " << vi << " " << vj << endl;
+                continue;
             }
-            else {
-                c2 ++;
-                // cout << "vi: " << vi << " vj: " << vj << " adj: ";
-                // for (auto& vt : adj_vt) {
-                //     cout << vt << " ";
-                // }
-                // cout << endl;
-            }
+            int vk = adj_vt[0];
+            int vl = adj_vt[1];
+            float cot_ij = _cot(_angle_between(vertices[vi].Position, vertices[vj].Position, vertices[vl].Position));
+            float cot_ji = _cot(_angle_between(vertices[vi].Position, vertices[vj].Position, vertices[vk].Position));
+            weights[OrderedEdge(vi, vj)] = (cot_ij + cot_ji) / 2;
         }
+        // 当i=j时
 
-        cout << "c2 = " << c2 << " c3 = " << c3 << endl;
-        set<OrderedEdge> edge_bound_set(edge_bound.begin(), edge_bound.end());
-        set<OrderedEdge> edge_inner_set(edge_inner.begin(), edge_inner.end());
-
-        cout << "CHECK " << edge_bound_set.count(OrderedEdge(99936, 100024)) << " " << edge_inner_set.count(OrderedEdge(99936, 100024)) << endl;
+        cout << "weight: " << weights[OrderedEdge(6, 26)] << endl;
     }
 
     void Parameterization::_convert_edge_to_vertex(
@@ -248,5 +265,17 @@ namespace RenderSpace {
         const vector<glm::vec2>& f_2
     ) {
         //
+    }
+
+    float Parameterization::_cot(float rad) const {
+        return 1.0f / tan(rad);
+    }
+
+    float Parameterization::_angle_between(
+        const glm::vec3& va, const glm::vec3& vb, const glm::vec3& ori
+    ) const {
+        glm::vec3 da = glm::normalize(va-ori);
+        glm::vec3 db = glm::normalize(vb-ori);
+        return glm::acos(glm::dot(da, db));
     }
 }

@@ -19,10 +19,14 @@ namespace RenderSpace {
         m_meshdraw.set_type(DrawableType::DRAWABLE_TRIANGLE);
         m_disk.set_type(DrawableType::DRAWABLE_TRIANGLE);
 
+        // 文本渲染器
+        m_text_service = make_unique<TextService>(m_shader_text);
+
         thread param_thread([&]() {
-            m_meshdraw.load_STL("./static/STL/JawScan.stl");
-            // Parameterization param(&m_meshdraw, &m_disk);
-            // param.parameterize();
+            // m_meshdraw.load_STL("./static/models/JawScan.stl");
+            m_meshdraw.load_OBJ("./static/models/model.obj");
+            Parameterization param(&m_meshdraw, &m_disk);
+            param.parameterize();
             // update();
         });
         param_thread.detach();
@@ -30,14 +34,13 @@ namespace RenderSpace {
 
     void RenderService::setup() {
         // 初始化 shader
-        string sep = "/";
+        string shader_dir = "./resource/shader/";
 #ifdef _WIN32
-        sep = "\\";
+        shader_dir = ".\\resource\\shader\\";
 #endif
-        m_shader.fromFile(
-            "." + sep + "resource" + sep + "default.vs",
-            "." + sep + "resource" + sep + "default.fs"
-        );
+        m_shader.fromFile(shader_dir + "default.vs", shader_dir + "default.fs");
+        m_shader_text.fromFile(shader_dir + "text.vs", shader_dir + "text.fs");
+
         // 如果逻辑线程计算太快，可能在下面方法注册前调用，会出错
         // 模块间通讯
         m_autobus->registerMethod<int(const string&, int)>(
@@ -57,12 +60,7 @@ namespace RenderSpace {
             [this](int mesh_id, array<Point, 6>&& coords) {
                 this->add_edge_raw(mesh_id, move(coords));
             });
-        // m_autobus->registerMethod<void(unsigned int, unsigned int, unsigned int)>(
-        //     m_symbol + "/add_triangle_by_idx",
-        //     [this](unsigned int v1, unsigned int v2, unsigned int v3) {
-        //         m_nurbs.add_triangle_by_idx(Triangle(v1, v2, v3));
-        //     });
-        
+
         // { Point1, Color1, Normal1, Point2, Color2, Normal2, Point3, Color3, Normal3 }
         m_autobus->registerMethod<void(int, array<Point, 9>&&)>(
             m_symbol + "/add_triangle_raw",
@@ -93,7 +91,19 @@ namespace RenderSpace {
         _event->notify(m_symbol + "/clear_picking");
     }
 
+    void RenderService::notify_window_resize(uint32_t width, uint32_t height) {
+        // auto _event = ContextHub::getInstance()->getEventTable<void(uint32_t, uint32_t)>();
+        // _event->notify(m_symbol + "/window_resize", width, height);
+        // 更新文本渲染器 正交投影
+        m_shader_text.use();
+        glm::mat4 projection = glm::ortho(0.0f, static_cast<GLfloat>(width), 0.0f, static_cast<GLfloat>(height));
+        m_shader_text.setMat4("projection", projection);
+
+        m_text_service->update_window_size(width, height);
+    }
+
     void RenderService::draw_all() {
+        m_text_service->draw();
         m_meshdraw.draw();
         m_disk.draw();
         for (auto [id, ptr]: m_meshes_map) {

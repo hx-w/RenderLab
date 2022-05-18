@@ -6,6 +6,7 @@
 #include <array>
 #include <unordered_map>
 #include "shader.hpp"
+#include "./text/textbox.h"
 #include "./mesh/elements.h"
 #include "../libs/coords.h"
 #include "../infrastructure/communication/AutoBus.hpp"
@@ -28,6 +29,7 @@ namespace RenderSpace {
 
         void notify_picking(const glm::vec3& origin, const glm::vec3& direction);
         void notify_clear_picking(); // refresh all picking ray
+        void notify_window_resize(uint32_t width, uint32_t height);
     private:
         void setup();
 
@@ -48,8 +50,11 @@ namespace RenderSpace {
         MeshDrawable m_disk; // target
         // 网格列表
         std::unordered_map<int, std::shared_ptr<MeshDrawable>> m_meshes_map;
+        // 文本渲染器
+        std::unique_ptr<TextService> m_text_service;
 
         Shader m_shader; // 带光照模型的
+        Shader m_shader_text; // 文本渲染着色器
 
         std::string m_symbol = "render";
         std::unique_ptr<fundamental::AutoBus> m_autobus;

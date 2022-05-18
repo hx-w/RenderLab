@@ -14,10 +14,7 @@ namespace ToothSpace {
         Printer() = default;
         Printer(const Printer&) = delete;
         Printer& operator=(const Printer&) = delete;
-        Printer(const string& filename): m_filename(filename) {
-            m_ofs.open(filename);
-            assert(m_ofs.is_open());
-        };
+        Printer(const string& filename, bool bin=false);
         ~Printer() {
             if (m_ofs.is_open()) {
                 m_ofs.close();
@@ -29,11 +26,14 @@ namespace ToothSpace {
             _stream(m_ofs, ",", true, args...);
         }
 
-        void save_buffer();
-
         template <class ...Args>
         static void to_console(const Args&... args) {
             _stream(std::cout, ", ", true, args...);
+        }
+
+        template <class T>
+        void to_data(const T& data) {
+            m_ofs.write(reinterpret_cast<const char*>(&data), sizeof(T));
         }
 
         template <class ...Args>
@@ -59,7 +59,6 @@ namespace ToothSpace {
         }
 
     private:
-        std::string m_filename;
         std::ofstream m_ofs;
     };
 }

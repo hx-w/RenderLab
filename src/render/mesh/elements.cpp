@@ -132,6 +132,65 @@ namespace RenderSpace {
         return true;
     }
 
+    bool MeshDrawable::load_OBJ(const std::string& filename) {
+        _reset();
+        _ready_to_draw = false;
+        _ready_to_update = false;
+        ifstream ifs(filename);
+        if (!ifs.good()) {
+            cout << "[ERROR] " << "Can't open file: " << filename << endl;
+            return false;
+        }
+
+        string line;
+        while (getline(ifs, line)) {
+            if (line.empty()) {
+                continue;
+            }
+            if (line[0] == '#') {
+                continue;
+            }
+            vector<string> words;
+            _split_words(line, words);
+            if (words[0] == "v") {
+                m_vertices.emplace_back(
+                    glm::vec3(
+                        stof(words[1]),
+                        stof(words[2]),
+                        stof(words[3])
+                    ),
+                    glm::vec3(1.0, 1.0, 1.0),
+                    glm::vec3(0.0, 0.0, 0.0)
+                );
+            }
+            else if (words[0] == "f") {
+                int v1 = stoi(words[1]) - 1;
+                int v2 = stoi(words[2]) - 1;
+                int v3 = stoi(words[3]) - 1;
+                m_triangles.emplace_back(Triangle(v1, v2, v3));
+            }
+        }
+        ifs.close();
+
+        // 计算法线
+        for (int i = 0; i < m_triangles.size(); ++i) {
+            Triangle& tri = m_triangles[i];
+            glm::vec3 v1 = m_vertices[tri.VertexIdx.x].Position;
+            glm::vec3 v2 = m_vertices[tri.VertexIdx.y].Position;
+            glm::vec3 v3 = m_vertices[tri.VertexIdx.z].Position;
+            glm::vec3 normal = glm::normalize(glm::cross(v2 - v1, v3 - v1));
+            m_vertices[tri.VertexIdx.x].Normal += normal;
+            m_vertices[tri.VertexIdx.y].Normal += normal;
+            m_vertices[tri.VertexIdx.z].Normal += normal;
+            // normalize normal
+            m_vertices[tri.VertexIdx.x].Normal = glm::normalize(m_vertices[tri.VertexIdx.x].Normal);
+            m_vertices[tri.VertexIdx.y].Normal = glm::normalize(m_vertices[tri.VertexIdx.y].Normal);
+            m_vertices[tri.VertexIdx.z].Normal = glm::normalize(m_vertices[tri.VertexIdx.z].Normal);
+        }
+        ready_to_update();
+        return true;
+    }
+
     // 需要同步更新 center aabb radius
     void MeshDrawable::add_vertex_raw(const Vertex& v) {
         std::lock_guard<std::mutex> lk(m_mutex);
@@ -158,5 +217,13 @@ namespace RenderSpace {
         m_vertices.push_back(v1);
         m_vertices.push_back(v2);
         m_edges.push_back(Edge(m_vertices.size() - 2, m_vertices.size() - 1));
+    }
+
+    void MeshDrawable::_split_words(const string& line, vector<string>& words, const char delim) {
+        stringstream ss(line);
+        string word;
+        while (getline(ss, word, delim)) {
+            words.push_back(word);
+        }
     }
 }

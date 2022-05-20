@@ -5,6 +5,10 @@
 
 using namespace std;
 
+void EchoFunc(std::string&& s){
+    std::cout << "test : " << s << endl;
+}
+
 int main() {
     cout << "main thread ID: " << this_thread::get_id() << endl;
 

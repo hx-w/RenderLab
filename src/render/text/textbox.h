@@ -17,7 +17,15 @@ namespace RenderSpace {
         uint32_t Size;
     };
 
-    typedef std::vector<TextSegment> RenderLine;
+    struct RenderLine {
+        RenderLine() = default;
+        RenderLine(const TextSegment& tseg, int fr) :
+            frame_remain(fr) {
+                Segments.emplace_back(tseg);
+            }
+        std::vector<TextSegment> Segments;
+        int frame_remain = -1; // 剩余帧数
+    };
 
     // 分为四个区域，分别是左上角，右上角，右下角，左下角
     enum BoxRegion {
@@ -65,6 +73,8 @@ namespace RenderSpace {
         void update_window_size(uint32_t width, uint32_t height);
         void draw();
     
+        void add_text(BoxRegion region, RenderLine&& rtext);
+
     private:
         std::string _time_now() const;
         uint32_t _fps(); // 需要每帧调用

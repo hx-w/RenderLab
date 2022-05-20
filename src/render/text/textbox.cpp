@@ -26,7 +26,7 @@ namespace RenderSpace {
         uint32_t _height = 0;
         for (const auto& line : m_lines) {
             uint32_t _cwidth = 0;
-            for (const auto& seg : line) {
+            for (const auto& seg : line.Segments) {
                 _cwidth += seg.Size * seg.Text.length();
                 _height += seg.Size;
             }
@@ -41,12 +41,13 @@ namespace RenderSpace {
         m_lines.push_back(rtext);
         uint32_t _width = 0;
         uint32_t _height = 0;
-        for (const auto& seg : rtext) {
+        for (const auto& seg : rtext.Segments) {
             _width += seg.Size * seg.Text.length(); 
-            _height += seg.Size;     
+            _height += seg.Size;
         }
         m_width = std::max(m_width, _width);
         m_height = std::max(m_height, _height);
+        cout << "text size: " << m_height << endl;
     }
 
     void TextBox::update_text(int index, RenderLine&& rtext) {
@@ -54,8 +55,9 @@ namespace RenderSpace {
         if (index < 0 || index >= m_lines.size()) {
             return;
         }
-        m_lines[index].clear();
-        m_lines[index].assign(rtext.begin(), rtext.end());
+        m_lines[index].Segments.clear();
+        m_lines[index].Segments.assign(rtext.Segments.begin(), rtext.Segments.end());
+        m_lines[index].frame_remain = rtext.frame_remain;
         _refresh_size();
     }
 
@@ -95,14 +97,24 @@ namespace RenderSpace {
         uint32_t _last_h = 0;
         for (auto& line : m_lines) {
             xpos = _pivot.x;
-            ypos += _last_h;
+            ypos -= _last_h;
             uint32_t _last_w = 0;
             _last_h = 0;
-            for (auto& segment : line) {
+            for (auto& segment : line.Segments) {
                 float _scale = float(segment.Size) / text_renderer->get_csize();
                 text_renderer->render_text(segment.Text, xpos, ypos, _scale, segment.Color);
                 _last_w = segment.Size * segment.Text.length();
                 _last_h = std::max(_last_h, segment.Size);
+            }
+            if (line.frame_remain > 0) {
+                line.frame_remain--;
+            }
+        }
+        for (auto iter = m_lines.begin(); iter != m_lines.end();) {
+            if (!iter->frame_remain) {
+                iter = m_lines.erase(iter);
+            } else {
+                ++iter;
             }
         }
     }
@@ -115,8 +127,8 @@ namespace RenderSpace {
         m_boxes[BOX_RIGHT_TOP] = TextBox(BOX_RIGHT_TOP, shader);
 
         // 左下角时间显示
-        m_boxes[BOX_LEFT_BOTTOM].add_text(RenderLine{TextSegment{_time_now(), glm::vec3(0.7f, 0.7f, 0.7f), 20}});
-        m_boxes[BOX_LEFT_TOP].add_text(RenderLine{TextSegment{to_string(_fps()) + " FPS", glm::vec3(0.7f, 0.7f, 0.7f), 16}});
+        m_boxes[BOX_LEFT_BOTTOM].add_text(RenderLine(TextSegment{_time_now(), glm::vec3(0.7f, 0.7f, 0.7f), 20}, -1));
+        m_boxes[BOX_LEFT_TOP].add_text(RenderLine(TextSegment{to_string(_fps()) + " FPS", glm::vec3(0.7f, 0.7f, 0.7f), 16}, -1));
         
         m_timepoint = chrono::system_clock::now();
     }
@@ -147,12 +159,16 @@ namespace RenderSpace {
     void TextService::draw() {
         auto _fr = _fps();
         if ((m_counter++) % 60 == 0 && m_counter > 1) {
-            m_boxes[BOX_LEFT_BOTTOM].update_text(0, RenderLine{TextSegment{_time_now(), glm::vec3(0.7f, 0.7f, 0.7f), 22}});
-            m_boxes[BOX_LEFT_TOP].update_text(0, RenderLine{TextSegment{to_string(_fr) + " FPS", glm::vec3(0.7f, 0.7f, 0.7f), 16}});
+            m_boxes[BOX_LEFT_BOTTOM].update_text(0, RenderLine(TextSegment{_time_now(), glm::vec3(0.7f, 0.7f, 0.7f), 22}, -1));
+            m_boxes[BOX_LEFT_TOP].update_text(0, RenderLine(TextSegment{to_string(_fr) + " FPS", glm::vec3(0.7f, 0.7f, 0.7f), 16}, -1));
             m_counter = 0;
         }
         for (auto& [_region, _box] : m_boxes) {
             _box.draw(m_text_render, m_width, m_height);
         }
+    }
+
+    void TextService::add_text(BoxRegion region, RenderLine&& rtext) {
+        m_boxes[region].add_text(move(rtext));
     }
 }

@@ -157,42 +157,6 @@ namespace RenderSpace {
         const auto& vertices = m_ori->get_vertices();
         // 模型中存在 f v1, v2, v3
         //           f v2, v3, v4
-
-        int c2 = 0;
-        int c3 = 0;
-        for (auto& edge : edge_inner) {
-            int vi = min(edge.first, edge.second);
-            int vj = max(edge.first, edge.second);
-            vector<int> adj_vt; // 应该有两个邻接点
-            for (auto& vt : adj_list[vi]) {
-                // 判断vt的邻接点是否包含vj
-                if (adj_list[vt].count(vj) != 0) {
-                    adj_vt.push_back(vt);
-                }
-            }
-            if (adj_vt.size() != 2) {
-                c3 ++;
-                // cout << "vi: " << vi << " vj: " << vj << " adj: ";
-                // for (auto& vt : adj_vt) {
-                //     cout << vt << " ";
-                // }
-                // cout << endl;
-            }
-            else {
-                c2 ++;
-                // cout << "vi: " << vi << " vj: " << vj << " adj: ";
-                // for (auto& vt : adj_vt) {
-                //     cout << vt << " ";
-                // }
-                // cout << endl;
-            }
-        }
-
-        cout << "c2 = " << c2 << " c3 = " << c3 << endl;
-        set<OrderedEdge> edge_bound_set(edge_bound.begin(), edge_bound.end());
-        set<OrderedEdge> edge_inner_set(edge_inner.begin(), edge_inner.end());
-
-        cout << "CHECK " << edge_bound_set.count(OrderedEdge(99936, 100024)) << " " << edge_inner_set.count(OrderedEdge(99936, 100024)) << endl;
     }
 
     void Parameterization::_convert_edge_to_vertex(

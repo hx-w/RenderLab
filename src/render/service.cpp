@@ -1,5 +1,5 @@
 ﻿#include "service.h"
-#include "./mesh/parameterization.h"
+// #include "./mesh/parameterization.h"
 #include "../infrastructure/communication/ContextHub.h"
 
 #include <iostream>
@@ -22,14 +22,14 @@ namespace RenderSpace {
         // 文本渲染器
         m_text_service = make_unique<TextService>(m_shader_text);
 
-        thread param_thread([&]() {
+        // thread param_thread([&]() {
             // m_meshdraw.load_STL("./static/models/JawScan.stl");
             // m_meshdraw.load_OBJ("./static/models/model.obj");
             // Parameterization param(&m_meshdraw, &m_disk);
             // param.parameterize();
             // update();
-        });
-        param_thread.detach();
+        // });
+        // param_thread.detach();
     }
 
     void RenderService::setup() {

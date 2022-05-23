@@ -45,7 +45,9 @@ namespace ToothSpace {
         }
 
         // 对算表的不同情况进行处理
-        void _table_handler(UVPoint& pivot, Scalar& dist, Point& tpnt, std::string& tface);
+        void _dist_seek(UVPoint& pivot, Scalar& dist, Point& tpnt, std::string& tface);
+
+        void _send_uvpoint_to_render(UVPoint& pivot, Point& tpnt, int face1_id, int target_id);
 
         void _pick_from_ray(const Point& ori, const Direction& dir);
 
@@ -53,6 +55,9 @@ namespace ToothSpace {
         int _draw_arrow(const std::string& name, const Point& p1, const Point& p2, const Point& clr);
 
         void _clear_arrow();
+
+        Scalar _angle_between(const Direction& d1, const Direction& d2);
+
     private:
         std::string m_name; // 名称
         int m_scale;

@@ -19,7 +19,7 @@ int main() {
         // };
         for (auto& source : source_list) {
             auto service = ToothSpace::make_service(
-                "static/" + string(source), scale
+                "static/nurbs/" + string(source), scale
             );
             service->retag_point();
             service->simulate("test.csv");

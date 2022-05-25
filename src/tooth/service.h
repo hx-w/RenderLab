@@ -58,6 +58,7 @@ namespace ToothSpace {
 
         Scalar _angle_between(const Direction& d1, const Direction& d2);
 
+        void _save_edgeline_to_csv(const std::string& target);
     private:
         std::string m_name; // 名称
         int m_scale;

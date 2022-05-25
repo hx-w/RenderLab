@@ -7,7 +7,7 @@ namespace ToothSpace {
         if (bin) {
             m_ofs.open(filename, std::ios::binary);
         } else {
-            m_ofs.open(filename);
+            m_ofs.open(filename, std::ios::app);
         }
         assert(m_ofs.is_open());
     }

@@ -152,6 +152,9 @@ namespace ToothSpace {
             _service.sync_invoke(_face1_id);
             _service.sync_invoke(_target_id);
         }
+
+        // 保存边缘线
+        _save_edgeline_to_csv("edge_line.csv");
         Printer::info(m_name + " -> done");
     }
 
@@ -175,9 +178,10 @@ namespace ToothSpace {
             if (rb) {
                 dist = pivot.dist(tpnt);
             }
-            else { // 在face1 边缘线上，但法线与face4无交
-                pivot._type() = PointType::SPECIAL;
-                tface = "SPECIAL";
+            else {
+                // 在face1 边缘线上，但法线与face4无交，不设为SPECIAL
+                // pivot._type() = PointType::SPECIAL;
+                // tface = "SPECIAL";
                 dist = m_faces[3].get_nearest_point(pivot, tpnt);
             }
         }
@@ -360,5 +364,18 @@ namespace ToothSpace {
             return 0.0;
         }
         return acos(dir1.dot(dir2) / (dir1.mag() * dir2.mag()));
+    }
+
+    void ToothService::_save_edgeline_to_csv(const string& filename) {
+        Printer printer("static/dataset/" + filename);
+        printer.to_csv("u", "v");
+        for (int iu = 0; iu < m_scale; ++iu) {
+            for (int iv = 0; iv < m_scale; ++iv) {
+                UVPoint& pivot = m_faces[0]._cached_point(iu, iv);
+                if (pivot.type() == PointType::ON_EDGE) {
+                    printer.to_csv(iu * 1.0 / m_scale, iv * 1.0 / m_scale);
+                }
+            }
+        }
     }
 }

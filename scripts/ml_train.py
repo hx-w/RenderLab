@@ -6,26 +6,37 @@ from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.metrics import mean_squared_error
 from sklearn.externals import joblib
 
-target_file = 'uv_pivot.csv'
-df = pd.read_csv(os.path.join('static', 'dataset', target_file))
+def train_test_uv_pivot(filename):
+    df = pd.read_csv(os.path.join('static', 'dataset', filename))
+    # 按列分割数据
+    df_X = df.iloc[:, :-3]
+    df_Y = df.iloc[:, -3:]
+    X_train, X_test, Y_train, Y_test = train_test_split(df_X, df_Y, test_size=0.2, random_state=42)
+    # 多输出 梯度下降
+    multi_gbr = MultiOutputRegressor(
+        GradientBoostingRegressor(n_estimators=100, learning_rate=0.1, max_depth=1, random_state=0, loss='ls')
+    )
+    multi_gbr.fit(X_train, Y_train)
+    Y_pred = multi_gbr.predict(X_test)
+    rmse = mean_squared_error(Y_test, Y_pred)
+    print('[RMSE] uv_pivot:', rmse)
+    joblib.dump(multi_gbr, os.path.join('static', 'dataset', 'uv_pivot.pkl'))
 
-# 按列分割数据
-df_X = df.iloc[:, :-3]
-df_Y = df.iloc[:, -3:]
+def train_test_edgeline(filename):
+    df = pd.read_csv(os.path.join('static', 'dataset', filename))
+    # 按列分割数据
+    df_X = df.iloc[:, :-1]
+    df_Y = df.iloc[:, -1:]
+    X_train, X_test, Y_train, Y_test = train_test_split(df_X, df_Y, test_size=0.2, random_state=42)
+    # 单输出 梯度下降
+    gbr = GradientBoostingRegressor(n_estimators=100, learning_rate=0.1, max_depth=1, random_state=0, loss='ls')
+    gbr.fit(X_train, Y_train)
+    Y_pred = gbr.predict(X_test)
+    rmse = mean_squared_error(Y_test, Y_pred)
+    print('[RMSE] edgeline:', rmse)
+    joblib.dump(gbr, os.path.join('static', 'dataset', 'edge_line.pkl'))
 
-X_train, X_test, Y_train, Y_test = train_test_split(df_X, df_Y, test_size=0.2, random_state=42)
 
-# 多输出 梯度下降
-multi_gbr = MultiOutputRegressor(
-    GradientBoostingRegressor(n_estimators=100, learning_rate=0.1, max_depth=1, random_state=0, loss='ls')
-)
-
-multi_gbr.fit(X_train, Y_train)
-
-Y_pred = multi_gbr.predict(X_test)
-
-rmse = mean_squared_error(Y_test, Y_pred)
-
-print('RMSE: ', rmse)
-
-joblib.dump(multi_gbr, os.path.join('static', 'dataset', 'multi_gbr.pkl'))
+if __name__ == '__main__':
+    train_test_uv_pivot('uv_pivot.csv')
+    train_test_edgeline('edge_line.csv')

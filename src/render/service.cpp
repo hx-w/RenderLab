@@ -1,5 +1,5 @@
 ﻿#include "service.h"
-#include "./mesh/parameterization.h"
+// #include "./mesh/parameterization.h"
 #include "../infrastructure/communication/ContextHub.h"
 
 #include <iostream>
@@ -24,14 +24,14 @@ namespace RenderSpace {
         m_text_service->add_text(BOX_RIGHT_TOP, RenderLine(TextSegment{"test", glm::vec3(1, 0, 0), 20}, 300));
         m_text_service->add_text(BOX_RIGHT_TOP, RenderLine(TextSegment{"test1", glm::vec3(1, 1, 0), 20}, 600));
 
-        thread param_thread([&]() {
+        // thread param_thread([&]() {
             // m_meshdraw.load_STL("./static/models/JawScan.stl");
-            m_meshdraw.load_OBJ("./static/models/model.obj");
+            // m_meshdraw.load_OBJ("./static/models/model.obj");
             // Parameterization param(&m_meshdraw, &m_disk);
             // param.parameterize();
             // update();
-        });
-        param_thread.detach();
+        // });
+        // param_thread.detach();
     }
 
     void RenderService::setup() {

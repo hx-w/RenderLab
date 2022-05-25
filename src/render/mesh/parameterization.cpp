@@ -160,56 +160,8 @@ namespace RenderSpace {
          * weights[(vi, vj)] = [cot(\alpha(vi, vj)) + cot(\alpha(vj, vi))] / 2
          */
         const auto& vertices = m_ori->get_vertices();
-        const auto& triangles = m_ori->get_triangles();
-        unordered_set<Triangle, trias_hash> trias_set(triangles.begin(), triangles.end());
-        /** 存在这样一个事实：
-         *  vi的邻接点中有vk, vk的邻接点中有vj，可能并不存在三角形(vi, vj, vk)
-         * (vi) --------------(vk)
-         *  | \           /  /
-         *  |  \        /  /
-         *  |    -(vl)-  /
-         *  |     /    / 
-         *  |   /    /
-         *  | /   /
-         * (vj)-
-         */
-        // 构造邻接表 快速索引
-        unordered_map<int, set<int>> adj_list;
-        for (auto& edge : edge_bound) {
-            adj_list[edge.first].insert(edge.second);
-            adj_list[edge.second].insert(edge.first);
-        }
-        for (auto& edge : edge_inner) {
-            adj_list[edge.first].insert(edge.second);
-            adj_list[edge.second].insert(edge.first);
-        }
-
-        // weights只需从inner构造
-        for (auto& edge : edge_inner) {
-            int vi = edge.first;
-            int vj = edge.second;
-            vector<int> adj_vt;
-            for (auto& adj_v : adj_list[vi]) {
-                // 判断(adj_v, vj, vi)是否构成三角形
-                if (adj_v != vj && trias_set.count(Triangle(vi, vj, adj_v)) != 0) {
-                    adj_vt.push_back(adj_v);
-                }
-            }
-            if (adj_vt.size() != 2) {
-                cout << "Error: edge_inner " << vi << " " << vj << endl;
-                continue;
-            }
-            int vk = adj_vt[0];
-            int vl = adj_vt[1];
-            float cot_ij = _cot(_angle_between(vertices[vi].Position, vertices[vj].Position, vertices[vl].Position));
-            float cot_ji = _cot(_angle_between(vertices[vi].Position, vertices[vj].Position, vertices[vk].Position));
-            float _weight = (cot_ij + cot_ji) / 2;
-            m_weights[OrderedEdge(vi, vj)] = _weight;
-            // weights中 i=j无意义，但是可以预存ij相等的情况，方便Laplacian matrix的计算
-            // 默认值是0
-            m_weights[OrderedEdge(vi, vi)] += _weight;
-            m_weights[OrderedEdge(vj, vj)] += _weight;
-        }
+        // 模型中存在 f v1, v2, v3
+        //           f v2, v3, v4
     }
 
     void Parameterization::_convert_edge_to_vertex(

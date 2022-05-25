@@ -1,5 +1,6 @@
 ﻿#include "service.h"
 #include "printer.h"
+#include <cmath>
 #include <functional>
 #include <array>
 
@@ -108,52 +109,41 @@ namespace ToothSpace {
         Scalar dist = 0.0;
         string tface = "";
 
+        Printer saver("static/dataset/uv_pivot.csv");
+        saver.to_csv("pos_u", "pos_v", "angle_u", "angle_v", "length_u", "length_v", "dist_x", "dist_y", "dist_z");
+
         for (int iu = 0; iu < m_scale; ++iu) {
             for (int iv = 0; iv < m_scale; ++iv) {
                 pivot = m_faces[0]._cached_point(iu, iv);
 
-                _table_handler(pivot, dist, tpnt, tface);
+                _dist_seek(pivot, dist, tpnt, tface);
+   
+                // 将原点与目标点绘制
+                _send_uvpoint_to_render(pivot, tpnt, _face1_id, _target_id);
+                // 将原点记录到数据集
+                if (pivot.type() != PointType::DEFAULT)
+                    continue; // 只收集到face2的点
+                // 记录angle，因为是相对信息，用法线做记录可能需要前置条件一致
+                const Direction& _dir_left = (iu == 0) ? m_faces[0].get_norm_by_uv(iu, iv) /* 临界点用法线做边界，只算了角度的一半 */ \
+                    : (m_faces[0]._cached_point(iu - 1, iv) - pivot);
+                const Direction& _dir_right = (iu == m_scale - 1) ? m_faces[0].get_norm_by_uv(iu, iv) \
+                    : (m_faces[0]._cached_point(iu + 1, iv) - pivot);
+                const Direction& _dir_top = (iv == 0) ? m_faces[0].get_norm_by_uv(iu, iv) \
+                    : (m_faces[0]._cached_point(iu, iv - 1) - pivot);
+                const Direction& _dir_bottom = (iv == m_scale - 1) ? m_faces[0].get_norm_by_uv(iu, iv) \
+                    : (m_faces[0]._cached_point(iu, iv + 1) - pivot);
+                Scalar _angle_u = _angle_between(_dir_left, _dir_right);
+                Scalar _angle_v = _angle_between(_dir_top, _dir_bottom);
+                if (iu == 0 || iu == m_scale - 1) _angle_u *= 2;
+                if (iv == 0 || iv == m_scale - 1) _angle_v *= 2;
 
-                Point _clr_pivot(0.0);
-                Point _clr_target(0.0);
-                if (pivot._type() == PointType::DEFAULT) {
-                    _clr_pivot = Point(1.0, 1.0, 1.0);
-                    _clr_target = Point(1.0, 1.0, 0.0);
-                }
-                else if (pivot._type() == PointType::ON_EDGE) {
-                    _clr_pivot = Point(0.0, 1.0, 0.0);
-                    _clr_target = Point(0.0, 1.0, 0.0);
-                }
-                else if (pivot._type() == PointType::IN_EDGE) {
-                    _clr_pivot = Point(0.0, 0.0, 1.0);
-                    _clr_target = Point(0.0, 0.0, 1.0);
-                }
-                else {
-                    _clr_pivot = Point(1.0, 0.0, 0.0);
-                    _clr_target = Point(1.0, 0.0, 0.0);
-                }
-
-                if (iu > 0 && iv > 0) {
-                    auto _service = ContextHub::getInstance()->getService<void(int, array<Point, 9>&&)>("render/add_triangle_raw");
-                    _service.sync_invoke(_face1_id, array<Point, 9>{
-                        m_faces[0].get_point_by_uv(iu - 1, iv), _clr_pivot, m_faces[0].get_norm_by_uv(iu - 1, iv),
-                        m_faces[0].get_point_by_uv(iu, iv), _clr_pivot, m_faces[0].get_norm_by_uv(iu, iv),
-                        m_faces[0].get_point_by_uv(iu, iv - 1), _clr_pivot, m_faces[0].get_norm_by_uv(iu, iv - 1)
-                    });
-                    _service.sync_invoke(_face1_id, array<Point, 9>{
-                        m_faces[0].get_point_by_uv(iu - 1, iv), _clr_pivot, m_faces[0].get_norm_by_uv(iu - 1, iv),
-                        m_faces[0].get_point_by_uv(iu, iv - 1), _clr_pivot, m_faces[0].get_norm_by_uv(iu, iv - 1),
-                        m_faces[0].get_point_by_uv(iu - 1, iv - 1), _clr_pivot, m_faces[0].get_norm_by_uv(iu - 1, iv - 1)
-                    });
-                }
-
-                // 设置target点
-                if (pivot._type() != PointType::DEFAULT) {
-                    auto _service = ContextHub::getInstance()->getService<void(int, array<Point, 3>&&)>("render/add_vertex_raw");
-                    _service.sync_invoke(_target_id, array<Point, 3>{
-                        tpnt, _clr_target, m_faces[0].get_norm_by_uv(iu, iv)
-                    });
-                }
+                // 计算length_u, length_v
+                Scalar _length_u = (static_cast<int>(iu != 0) * _dir_left.mag() + static_cast<int>(iu != m_scale - 1) * _dir_right.mag()) / \
+                    (static_cast<int>(iu != 0) + static_cast<int>(iu != m_scale - 1));
+                Scalar _length_v = (static_cast<int>(iv != 0) * _dir_top.mag() + static_cast<int>(iv != m_scale - 1) * _dir_bottom.mag()) / \
+                    (static_cast<int>(iv != 0) + static_cast<int>(iv != m_scale - 1));
+                Direction dist_target = tpnt - pivot;
+                saver.to_csv(iu * 1.0 / m_scale, iv * 1.0 / m_scale, _angle_u, _angle_v, _length_u, _length_v, dist_target.x(), dist_target.y(), dist_target.z());
             }
         }
 
@@ -165,7 +155,7 @@ namespace ToothSpace {
         Printer::info(m_name + " -> done");
     }
 
-    void ToothService::_table_handler(UVPoint& pivot, Scalar& dist, Point& tpnt, string& tface) {
+    void ToothService::_dist_seek(UVPoint& pivot, Scalar& dist, Point& tpnt, string& tface) {
         const int iu = pivot.u();
         const int iv = pivot.v();
         if (pivot.type() == PointType::UNKNOWN) {
@@ -237,6 +227,51 @@ namespace ToothSpace {
         else {
             // error type
             Printer::to_console("error: invalid point type");
+        }
+    }
+
+    void ToothService::_send_uvpoint_to_render(UVPoint& pivot, Point& tpnt, int face1_id, int target_id) {
+        const int iu = pivot.u();
+        const int iv = pivot.v();
+        Point _clr_pivot(0.0);
+        Point _clr_target(0.0);
+        if (pivot._type() == PointType::DEFAULT) {
+        _clr_pivot = Point(1.0, 1.0, 1.0);
+            _clr_target = Point(1.0, 1.0, 0.0);
+        }
+        else if (pivot._type() == PointType::ON_EDGE) {
+            _clr_pivot = Point(0.0, 1.0, 0.0);
+            _clr_target = Point(0.0, 1.0, 0.0);
+        }
+        else if (pivot._type() == PointType::IN_EDGE) {
+            _clr_pivot = Point(0.0, 0.0, 1.0);
+            _clr_target = Point(0.0, 0.0, 1.0);
+        }
+        else {
+            _clr_pivot = Point(1.0, 0.0, 0.0);
+            _clr_target = Point(1.0, 0.0, 0.0);
+        }
+
+        if (iu > 0 && iv > 0) {
+            auto _service = ContextHub::getInstance()->getService<void(int, array<Point, 9>&&)>("render/add_triangle_raw");
+            _service.sync_invoke(face1_id, array<Point, 9>{
+                m_faces[0].get_point_by_uv(iu - 1, iv), _clr_pivot, m_faces[0].get_norm_by_uv(iu - 1, iv),
+                m_faces[0].get_point_by_uv(iu, iv), _clr_pivot, m_faces[0].get_norm_by_uv(iu, iv),
+                m_faces[0].get_point_by_uv(iu, iv - 1), _clr_pivot, m_faces[0].get_norm_by_uv(iu, iv - 1)
+            });
+            _service.sync_invoke(face1_id, array<Point, 9>{
+                m_faces[0].get_point_by_uv(iu - 1, iv), _clr_pivot, m_faces[0].get_norm_by_uv(iu - 1, iv),
+                m_faces[0].get_point_by_uv(iu, iv - 1), _clr_pivot, m_faces[0].get_norm_by_uv(iu, iv - 1),
+                m_faces[0].get_point_by_uv(iu - 1, iv - 1), _clr_pivot, m_faces[0].get_norm_by_uv(iu - 1, iv - 1)
+            });
+        }
+
+        // 设置target点
+        if (pivot._type() != PointType::DEFAULT) {
+            auto _service = ContextHub::getInstance()->getService<void(int, array<Point, 3>&&)>("render/add_vertex_raw");
+            _service.sync_invoke(target_id, array<Point, 3>{
+                tpnt, _clr_target, m_faces[0].get_norm_by_uv(iu, iv)
+            });
         }
     }
 
@@ -318,5 +353,12 @@ namespace ToothSpace {
         else {
             Printer::info("NOT picked in", m_name);
         }
+    }
+
+    Scalar ToothService::_angle_between(const Direction& dir1, const Direction& dir2) {
+        if (dir1.mag() == 0.0 || dir2.mag() == 0.0) {
+            return 0.0;
+        }
+        return acos(dir1.dot(dir2) / (dir1.mag() * dir2.mag()));
     }
 }

@@ -61,8 +61,6 @@ void execute(const char* cmd) {
     if ((ptr = popen(ps, "r")) != NULL) {
         while (fgets(buf_ps, 1024, ptr) != NULL) {
             printf("%s\n", buf_ps);
-            if (g_stop == 1)
-                break;
         }
         pclose(ptr);
         ptr = NULL;

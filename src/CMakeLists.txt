@@ -6,6 +6,6 @@ list(APPEND LIBS NURBS_LIB INFRASTRUCTURE TOOTH_ENGINE XRENDER)
 
 set_target_properties(${TARGET} PROPERTIES COMPILE_FLAGS "-pthread" LINK_FLAGS "-pthread")
 
-add_executable(${PROJECT_NAME} main.cpp execute.hpp)
+add_executable(${PROJECT_NAME} main.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBS}) 
 target_include_directories(${PROJECT_NAME} PUBLIC "${PROJECT_BINARY_DIR}")

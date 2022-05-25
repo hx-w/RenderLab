@@ -29,6 +29,9 @@ namespace ToothSpace {
         // 对face1，计算边缘点，更新点种类
         void retag_point();
 
+        // 根据机器学习模型，计算每个点的类型
+        void retag_point_by_ml();
+
         // 计算结果 保存到csv
         void simulate();
 

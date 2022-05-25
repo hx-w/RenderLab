@@ -1,8 +1,10 @@
 ﻿#include "service.h"
 #include "printer.h"
+#include "execute.h"
 #include <cmath>
 #include <functional>
 #include <array>
+#include <string>
 
 using namespace std;
 using namespace fundamental;
@@ -84,6 +86,27 @@ namespace ToothSpace {
                     m_faces[0]._cached_point(iu, iv + 1).type() != PointType::DEFAULT
                 ) {
                     f1pnt._type() = PointType::IN_EDGE;
+                }
+            }
+        }
+    }
+
+    void ToothService::retag_point_by_ml() {
+        // 对每个u计算预测边缘线v
+        for (int iu = 0; iu < m_scale; ++iu) {
+            // for valid check
+            string cmd = "curl -s -G http://localhost:8848/api/edge_line/predict?u=" + to_string(iu * 1.0 / m_scale);
+            string v_str = execute_short(cmd);
+            int edge_v = static_cast<int>(stof(v_str) * m_scale);
+            for (int iv = 0; iv < m_scale; ++iv) {
+                if (iv < edge_v) {
+                    m_faces[0]._cached_point(iu, iv)._type() = PointType::IN_EDGE;
+                }
+                else if (iv == edge_v) {
+                    m_faces[0]._cached_point(iu, iv)._type() = PointType::ON_EDGE;
+                }
+                else {
+                    m_faces[0]._cached_point(iu, iv)._type() = PointType::DEFAULT;
                 }
             }
         }

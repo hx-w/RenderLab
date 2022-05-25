@@ -1,6 +1,4 @@
-#ifndef NURBS_EXECUTE_HPP
-#define NURBS_EXECUTE_HPP
-
+#include "execute.h"
 #include <iostream>
 
 #ifdef _WIN32
@@ -53,22 +51,40 @@ int execute(const LPTSTR childexe) {
 
 #else
 
-void execute(const char* cmd) {
-    char buf_ps[1024];
+FILE* execute_base(const char* cmd) {
     char ps[1024] = {0};
     FILE* ptr;
     strcpy(ps, cmd);
-    if ((ptr = popen(ps, "r")) != NULL) {
-        while (fgets(buf_ps, 1024, ptr) != NULL) {
-            printf("%s\n", buf_ps);
-        }
+    ptr = popen(ps, "r");
+    if (ptr == NULL) {
+        printf("popen error\n");
+    }
+    return ptr;
+}
+
+void execute(const std::string& cmd) {
+    FILE* ptr = execute_base(cmd.c_str());
+    char buffer[1024] = {0};
+    while (fgets(buffer, 1024, ptr) != NULL) {
+        printf("%s", buffer);
+    }
+    if (ptr != NULL) {
         pclose(ptr);
-        ptr = NULL;
-    } else {
-        printf("popen %s error\n", ps);
     }
 }
 
-#endif
+std::string execute_short(const std::string& cmd) {
+    FILE* ptr = execute_base(cmd.c_str());
+    char buffer[1024] = {0};
+    while (fgets(buffer, 1024, ptr) != NULL) {
+        if (strlen(buffer) != 0 && isdigit(buffer[0])) {
+            break; // one line output
+        }
+    }
+    if (ptr != NULL) {
+        pclose(ptr);
+    }
+    return std::string(buffer);
+}
 
 #endif

@@ -17,12 +17,6 @@ ml_server = FastAPI()
 
 ml_models = {}
 
-def preset():
-    global ml_models
-    ml_models['edge_line'] = pickle.load(open(os.path.join('static', 'dataset', 'edge_line.pkl'), 'rb'))
-    ml_models['uv_pivot'] = pickle.load(open(os.path.join('static', 'dataset', 'uv_pivot.pkl'), 'rb'))
-
-
 @ml_server.get('/api/edge_line/predict')
 async def predict_edgeline(u: float) -> dict:
     '''
@@ -30,8 +24,11 @@ async def predict_edgeline(u: float) -> dict:
     '''
     try:
         global ml_models
-        v_pred = ml_models['edge_line'].predict([[u]])
-        return {'v': v_pred[0]}
+        if 'edge_line' not in ml_models:
+            ml_models['edge_line'] = pickle.load(open(os.path.join('static', 'dataset', 'edge_line.pkl'), 'rb'))
+
+        v_pred = ml_models['edge_line'].predict(X=[[u]])
+        return v_pred[0]
     except Exception as ept:
         raise HTTPException(status_code=500, detail=str(ept))
 
@@ -46,10 +43,13 @@ async def predict_uv_pivot(
     '''
     try:
         global ml_models
+        if 'uv_pivot' not in ml_models:
+            ml_models['uv_pivot'] = pickle.load(open(os.path.join('static', 'dataset', 'uv_pivot.pkl'), 'rb'))
+
         dist_pred = ml_models['uv_pivot'].predict([
             [pos_u, pos_v, angle_u, angle_v, length_u, length_v]
         ])
-        return {'dist_xyz': list(dist_pred[0])}
+        return list(dist_pred[0])
     except Exception as ept:
         raise HTTPException(status_code=500, detail=str(ept))
 
@@ -60,5 +60,6 @@ async def quit_env():
 
 
 if __name__ == '__main__':
-    preset()
-    uvicorn.run(ml_server, host='localhost', port=8848, log_level="info")
+    ml_models['edge_line'] = pickle.load(open(os.path.join('static', 'dataset', 'edge_line.pkl'), 'rb'))
+    ml_models['uv_pivot'] = pickle.load(open(os.path.join('static', 'dataset', 'uv_pivot.pkl'), 'rb'))
+    uvicorn.run(ml_server, host='localhost', port=8848, log_level="warning")

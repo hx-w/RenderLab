@@ -10,8 +10,8 @@ created in 2022-05-25 by Hex
 
 import os
 import uvicorn
+import pickle
 from fastapi import FastAPI, HTTPException
-from sklearn.externals import joblib
 
 ml_server = FastAPI()
 
@@ -19,8 +19,8 @@ ml_models = {}
 
 def preset():
     global ml_models
-    ml_models['uv_pivot'] = joblib.load(os.path.join('static', 'dataset', 'uv_pivot.pkl'))
-    ml_models['edge_line'] = joblib.load(os.path.join('static', 'dataset', 'edge_line.pkl'))
+    ml_models['edge_line'] = pickle.load(open(os.path.join('static', 'dataset', 'edge_line.pkl'), 'rb'))
+    ml_models['uv_pivot'] = pickle.load(open(os.path.join('static', 'dataset', 'uv_pivot.pkl'), 'rb'))
 
 
 @ml_server.get('/api/edge_line/predict')
@@ -54,6 +54,11 @@ async def predict_uv_pivot(
         raise HTTPException(status_code=500, detail=str(ept))
 
 
+@ml_server.get('/api/quit')
+async def quit_env():
+    os._exit(0)
+
+
 if __name__ == '__main__':
     preset()
-    uvicorn.run(ml_server, host='localhost', port=8848, log_level="warning")
+    uvicorn.run(ml_server, host='localhost', port=8848, log_level="info")

@@ -89,7 +89,7 @@ namespace ToothSpace {
         }
     }
 
-    void ToothService::simulate(const string& target) {
+    void ToothService::simulate() {
         // 绘制face2-4完整面
         _draw_face(m_name + "[face-2]", 1, Point(1.0, 1.0, 0.0));
         _draw_face(m_name + "[face-3]", 2, Point(0.0, 1.0, 1.0));

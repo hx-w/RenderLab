@@ -47,7 +47,6 @@ namespace RenderSpace {
         }
         m_width = std::max(m_width, _width);
         m_height = std::max(m_height, _height);
-        cout << "text size: " << m_height << endl;
     }
 
     void TextBox::update_text(int index, RenderLine&& rtext) {

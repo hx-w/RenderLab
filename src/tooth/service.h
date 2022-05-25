@@ -30,7 +30,7 @@ namespace ToothSpace {
         void retag_point();
 
         // 计算结果 保存到csv
-        void simulate(const std::string& target);
+        void simulate();
 
     private:
         void _reset();

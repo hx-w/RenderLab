@@ -5,6 +5,7 @@
 #include <functional>
 #include <array>
 #include <string>
+#include <regex>
 
 using namespace std;
 using namespace fundamental;
@@ -147,26 +148,14 @@ namespace ToothSpace {
                 if (pivot.type() != PointType::DEFAULT)
                     continue; // 只收集到face2的点
                 // 记录angle，因为是相对信息，用法线做记录可能需要前置条件一致
-                const Direction& _dir_left = (iu == 0) ? m_faces[0].get_norm_by_uv(iu, iv) /* 临界点用法线做边界，只算了角度的一半 */ \
-                    : (m_faces[0]._cached_point(iu - 1, iv) - pivot);
-                const Direction& _dir_right = (iu == m_scale - 1) ? m_faces[0].get_norm_by_uv(iu, iv) \
-                    : (m_faces[0]._cached_point(iu + 1, iv) - pivot);
-                const Direction& _dir_top = (iv == 0) ? m_faces[0].get_norm_by_uv(iu, iv) \
-                    : (m_faces[0]._cached_point(iu, iv - 1) - pivot);
-                const Direction& _dir_bottom = (iv == m_scale - 1) ? m_faces[0].get_norm_by_uv(iu, iv) \
-                    : (m_faces[0]._cached_point(iu, iv + 1) - pivot);
-                Scalar _angle_u = _angle_between(_dir_left, _dir_right);
-                Scalar _angle_v = _angle_between(_dir_top, _dir_bottom);
-                if (iu == 0 || iu == m_scale - 1) _angle_u *= 2;
-                if (iv == 0 || iv == m_scale - 1) _angle_v *= 2;
+                Scalar angle_u = 0.0;
+                Scalar angle_v = 0.0;
+                Scalar length_u = 0.0;
+                Scalar length_v = 0.0;
+                _get_face1_info(pivot, angle_u, angle_v, length_u, length_v);
 
-                // 计算length_u, length_v
-                Scalar _length_u = (static_cast<int>(iu != 0) * _dir_left.mag() + static_cast<int>(iu != m_scale - 1) * _dir_right.mag()) / \
-                    (static_cast<int>(iu != 0) + static_cast<int>(iu != m_scale - 1));
-                Scalar _length_v = (static_cast<int>(iv != 0) * _dir_top.mag() + static_cast<int>(iv != m_scale - 1) * _dir_bottom.mag()) / \
-                    (static_cast<int>(iv != 0) + static_cast<int>(iv != m_scale - 1));
                 Direction dist_target = tpnt - pivot;
-                saver.to_csv(iu * 1.0 / m_scale, iv * 1.0 / m_scale, _angle_u, _angle_v, _length_u, _length_v, dist_target.x(), dist_target.y(), dist_target.z());
+                saver.to_csv(iu * 1.0 / m_scale, iv * 1.0 / m_scale, angle_u, angle_v, length_u, length_v, dist_target.x(), dist_target.y(), dist_target.z());
             }
         }
 
@@ -201,11 +190,36 @@ namespace ToothSpace {
         Scalar dist = 0.0;
         string tface = "";
 
+        regex _pattern("\\[(.+?),(.+?),(.+?)\\]");
         for (int iu = 0; iu < m_scale; ++iu) {
             for (int iv = 0; iv < m_scale; ++iv) {
                 pivot = m_faces[0]._cached_point(iu, iv);
+                tpnt = pivot;
+                // 对face2做预测
+                if (pivot.type() == PointType::DEFAULT) {
+                    Scalar angle_u = 0.0;
+                    Scalar angle_v = 0.0;
+                    Scalar length_u = 0.0;
+                    Scalar length_v = 0.0;
+                    _get_face1_info(pivot, angle_u, angle_v, length_u, length_v);
+                    char buffer[256] = {0};
+                    snprintf(
+                        buffer,
+                        sizeof(buffer),
+                        "curl -s -G \"http://localhost:8848/api/uv_pivot/predict?pos_u=%lf&pos_v=%lf&angle_u=%lf&angle_v=%lf&length_u=%lf&length_v=%lf\"",
+                        iu * 1.0 / m_scale,
+                        iv * 1.0 / m_scale,
+                        angle_u, angle_v, length_u, length_v
+                    );
+                    string v_str = execute_short(buffer);
+                    // 解析结果
+                    smatch _match;
+                    if (regex_search(v_str, _match, _pattern)) {
+                        tpnt = pivot + Point(stod(_match[1]), stod(_match[2]), stod(_match[3]));
+                    }
+                }
                 // 将原点与目标点绘制
-                _send_uvpoint_to_render(pivot, tpnt, _face1_id, _target_id);
+                _send_uvpoint_to_render(pivot, tpnt, _face1_id, _target_id, true);
             }
         }
 
@@ -295,14 +309,14 @@ namespace ToothSpace {
         }
     }
 
-    void ToothService::_send_uvpoint_to_render(UVPoint& pivot, Point& tpnt, int face1_id, int target_id) {
+    void ToothService::_send_uvpoint_to_render(UVPoint& pivot, Point& tpnt, int face1_id, int target_id, bool show_default) {
         const int iu = pivot.u();
         const int iv = pivot.v();
         Point _clr_pivot(0.0);
         Point _clr_target(0.0);
         if (pivot._type() == PointType::DEFAULT) {
         _clr_pivot = Point(1.0, 1.0, 1.0);
-            _clr_target = Point(1.0, 1.0, 0.0);
+            _clr_target = Point(0.0, 0.0, 0.0);
         }
         else if (pivot._type() == PointType::ON_EDGE) {
             _clr_pivot = Point(0.0, 1.0, 0.0);
@@ -332,7 +346,7 @@ namespace ToothSpace {
         }
 
         // 设置target点
-        if (pivot._type() != PointType::DEFAULT) {
+        if (show_default || pivot._type() != PointType::DEFAULT) {
             auto _service = ContextHub::getInstance()->getService<void(int, array<Point, 3>&&)>("render/add_vertex_raw");
             _service.sync_invoke(target_id, array<Point, 3>{
                 tpnt, _clr_target, m_faces[0].get_norm_by_uv(iu, iv)
@@ -438,5 +452,28 @@ namespace ToothSpace {
                 }
             }
         }
+    }
+
+    void ToothService::_get_face1_info(const UVPoint& pivot, Scalar& angle_u, Scalar& angle_v, Scalar& length_u, Scalar& length_v) {
+        int iu = pivot.u();
+        int iv = pivot.v();
+        const Direction& _dir_left = (iu == 0) ? m_faces[0].get_norm_by_uv(iu, iv) /* 临界点用法线做边界，只算了角度的一半 */ \
+            : (m_faces[0]._cached_point(iu - 1, iv) - pivot);
+        const Direction& _dir_right = (iu == m_scale - 1) ? m_faces[0].get_norm_by_uv(iu, iv) \
+            : (m_faces[0]._cached_point(iu + 1, iv) - pivot);
+        const Direction& _dir_top = (iv == 0) ? m_faces[0].get_norm_by_uv(iu, iv) \
+            : (m_faces[0]._cached_point(iu, iv - 1) - pivot);
+        const Direction& _dir_bottom = (iv == m_scale - 1) ? m_faces[0].get_norm_by_uv(iu, iv) \
+            : (m_faces[0]._cached_point(iu, iv + 1) - pivot);
+        angle_u = _angle_between(_dir_left, _dir_right);
+        angle_v = _angle_between(_dir_top, _dir_bottom);
+        if (iu == 0 || iu == m_scale - 1) angle_u *= 2;
+        if (iv == 0 || iv == m_scale - 1) angle_v *= 2;
+
+        // 计算length_u, length_v
+        length_u = (static_cast<int>(iu != 0) * _dir_left.mag() + static_cast<int>(iu != m_scale - 1) * _dir_right.mag()) / \
+            (static_cast<int>(iu != 0) + static_cast<int>(iu != m_scale - 1));
+        length_v = (static_cast<int>(iv != 0) * _dir_top.mag() + static_cast<int>(iv != m_scale - 1) * _dir_bottom.mag()) / \
+            (static_cast<int>(iv != 0) + static_cast<int>(iv != m_scale - 1));
     }
 }

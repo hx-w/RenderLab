@@ -52,7 +52,7 @@ namespace ToothSpace {
         // 对算表的不同情况进行处理
         void _dist_seek(UVPoint& pivot, Scalar& dist, Point& tpnt, std::string& tface);
 
-        void _send_uvpoint_to_render(UVPoint& pivot, Point& tpnt, int face1_id, int target_id);
+        void _send_uvpoint_to_render(UVPoint& pivot, Point& tpnt, int face1_id, int target_id, bool show_default=false);
 
         void _pick_from_ray(const Point& ori, const Direction& dir);
 
@@ -64,6 +64,9 @@ namespace ToothSpace {
         Scalar _angle_between(const Direction& d1, const Direction& d2);
 
         void _save_edgeline_to_csv(const std::string& target);
+
+        // 获取face1上的angle_u/angle_v/length_u/length_v
+        void _get_face1_info(const UVPoint& pivot, Scalar& angle_u, Scalar& angle_v, Scalar& length_u, Scalar& length_v);
     private:
         std::string m_name; // 名称
         int m_scale;

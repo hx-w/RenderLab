@@ -11,11 +11,11 @@ int Coords<T>::hash() const {
 
 template <typename T>
 Coords<T> Coords<T>::normalize() const {
-    T m = mag();
+    T m = static_cast<T>(mag());
     if (almostZero(m)) {
         return Coords(0, 0, 0);
     }
-    return *this / mag();
+    return *this / m;
 }
 
 

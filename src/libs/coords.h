@@ -16,7 +16,7 @@ inline bool almostEqual(Scalar x, Scalar y) { return almostZero(x - y); }
 template <typename T>
 class Coords {
 public:
-    Coords() { pt[0] = pt[1] = pt[2] = 0.0; }
+    Coords() { pt[0] = pt[1] = pt[2] = static_cast<T>(0.0); }
     Coords(T x, T y, T z) { pt[0] = x; pt[1] = y; pt[2] = z; }
     Coords(T num) { pt[0] = pt[1] = pt[2] = num; }
     Coords(const Coords& c) { pt[0] = c.pt[0]; pt[1] = c.pt[1]; pt[2] = c.pt[2]; }
@@ -102,7 +102,7 @@ public:
         return (pt[0] - c.pt[0]) * (pt[0] - c.pt[0]) + (pt[1] - c.pt[1]) * (pt[1] - c.pt[1]) + (pt[2] - c.pt[2]) * (pt[2] - c.pt[2]);
     }
     T dist(const Coords& c) const {
-        return sqrt(dist2(c));
+        return static_cast<T>(sqrt(dist2(c)));
     }
 
     Coords cross(const Coords& c) const {
@@ -120,7 +120,11 @@ public:
     }
 
     Coords abs() const {
-        return Coords(fabs(pt[0]), fabs(pt[1]), fabs(pt[2]));
+        return Coords(
+            static_cast<T>(fabs(pt[0])),
+            static_cast<T>(fabs(pt[1])),
+            static_cast<T>(fabs(pt[2]))
+        );
     }
 
     Coords normalize() const;

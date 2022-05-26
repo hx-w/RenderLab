@@ -3,6 +3,8 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.multioutput import MultiOutputRegressor
 from sklearn.ensemble import GradientBoostingRegressor
+# import svm regressor
+from sklearn.svm import SVR
 from sklearn.metrics import mean_squared_error
 import pickle
 
@@ -33,13 +35,14 @@ def train_test_edgeline(filename):
     df_X = df.iloc[:, :-1]
     df_Y = df.iloc[:, -1:]
     X_train, X_test, Y_train, Y_test = train_test_split(df_X, df_Y, test_size=0.2, random_state=42)
-    # 单输出 梯度下降
-    gbr = GradientBoostingRegressor(n_estimators=100, learning_rate=0.1, max_depth=1, random_state=0, loss='squared_error')
-    gbr.fit(X_train.values, Y_train.values)
-    Y_pred = gbr.predict(X_test.values)
+    # 单输出 svm
+    svr = SVR(kernel='rbf', C=1e3, gamma=0.1)
+    # gbr = GradientBoostingRegressor(n_estimators=100, learning_rate=0.1, max_depth=1, random_state=0, loss='squared_error')
+    svr.fit(X_train.values, Y_train.values)
+    Y_pred = svr.predict(X_test.values)
     rmse = mean_squared_error(Y_test, Y_pred)
     print('[RMSE] edgeline:', rmse)
-    save_model(gbr, 'edge_line.pkl')
+    save_model(svr, 'edge_line.pkl')
 
 
 if __name__ == '__main__':

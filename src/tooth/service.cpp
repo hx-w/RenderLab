@@ -133,7 +133,7 @@ namespace ToothSpace {
         string tface = "";
 
         Printer saver("static/dataset/uv_pivot.csv");
-        saver.to_csv("pos_u", "pos_v", "angle_u", "angle_v", "length_u", "length_v", "dist_x", "dist_y", "dist_z");
+        // saver.to_csv("pos_u", "pos_v", "angle_u", "angle_v", "length_u", "length_v", "dist_x", "dist_y", "dist_z");
 
         for (int iu = 0; iu < m_scale; ++iu) {
             for (int iv = 0; iv < m_scale; ++iv) {
@@ -178,6 +178,44 @@ namespace ToothSpace {
 
         // 保存边缘线
         _save_edgeline_to_csv("edge_line.csv");
+        Printer::info(m_name + " -> done");
+    }
+
+    void ToothService::simulate_by_ml() {
+        // 绘制face2-4完整面
+        _draw_face(m_name + "[face-2]", 1, Point(1.0, 1.0, 0.0));
+        _draw_face(m_name + "[face-3]", 2, Point(0.0, 1.0, 1.0));
+        _draw_face(m_name + "[face-4]", 3, Point(0.7, 0.8, 0.5));
+        // 创建网格
+        int _face1_id = 0;
+        int _target_id = 0;
+        {
+            auto _service = ContextHub::getInstance()->getService<int(const string&, int)>("render/create_mesh");
+            _face1_id = _service.sync_invoke(m_name + "[face-1]", 2); // 三角网格
+            _target_id = _service.sync_invoke(m_name + "[target]", 0); // 点图
+        }
+
+        // 原点 目标点 距离 目标面名称
+        UVPoint pivot;
+        Point tpnt(0.0);
+        Scalar dist = 0.0;
+        string tface = "";
+
+        for (int iu = 0; iu < m_scale; ++iu) {
+            for (int iv = 0; iv < m_scale; ++iv) {
+                pivot = m_faces[0]._cached_point(iu, iv);
+                // 将原点与目标点绘制
+                _send_uvpoint_to_render(pivot, tpnt, _face1_id, _target_id);
+            }
+        }
+
+        {
+            auto _service = ContextHub::getInstance()->getService<void(int)>("render/refresh_mesh");
+            _service.sync_invoke(_face1_id);
+            _service.sync_invoke(_target_id);
+        }
+
+        // 保存边缘线
         Printer::info(m_name + " -> done");
     }
 
@@ -391,7 +429,7 @@ namespace ToothSpace {
 
     void ToothService::_save_edgeline_to_csv(const string& filename) {
         Printer printer("static/dataset/" + filename);
-        printer.to_csv("u", "v");
+        // printer.to_csv("u", "v");
         for (int iu = 0; iu < m_scale; ++iu) {
             for (int iv = 0; iv < m_scale; ++iv) {
                 UVPoint& pivot = m_faces[0]._cached_point(iu, iv);

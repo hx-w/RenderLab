@@ -35,6 +35,8 @@ namespace ToothSpace {
         // 计算结果 保存到csv
         void simulate();
 
+        void simulate_by_ml();
+
     private:
         void _reset();
 

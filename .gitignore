@@ -1,5 +1,6 @@
 *.pdf
 models/
+*.pkl
 *.csv
 main
 main_table

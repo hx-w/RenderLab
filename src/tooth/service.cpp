@@ -115,6 +115,7 @@ namespace ToothSpace {
 
     void ToothService::simulate() {
         // 绘制face2-4完整面
+#if 0
         _draw_face(m_name + "[face-2]", 1, Point(1.0, 1.0, 0.0));
         _draw_face(m_name + "[face-3]", 2, Point(0.0, 1.0, 1.0));
         _draw_face(m_name + "[face-4]", 3, Point(0.7, 0.8, 0.5));
@@ -126,6 +127,7 @@ namespace ToothSpace {
             _face1_id = _service.sync_invoke(m_name + "[face-1]", 2); // 三角网格
             _target_id = _service.sync_invoke(m_name + "[target]", 0); // 点图
         }
+#endif
 
         // 原点 目标点 距离 目标面名称
         UVPoint pivot;
@@ -143,7 +145,9 @@ namespace ToothSpace {
                 _dist_seek(pivot, dist, tpnt, tface);
    
                 // 将原点与目标点绘制
+#if 0
                 _send_uvpoint_to_render(pivot, tpnt, _face1_id, _target_id);
+#endif
                 // 将原点记录到数据集
                 if (pivot.type() != PointType::DEFAULT)
                     continue; // 只收集到face2的点
@@ -158,13 +162,13 @@ namespace ToothSpace {
                 saver.to_csv(iu * 1.0 / m_scale, iv * 1.0 / m_scale, angle_u, angle_v, length_u, length_v, dist_target.x(), dist_target.y(), dist_target.z());
             }
         }
-
+#if 0
         {
             auto _service = ContextHub::getInstance()->getService<void(int)>("render/refresh_mesh");
             _service.sync_invoke(_face1_id);
             _service.sync_invoke(_target_id);
         }
-
+#endif
         // 保存边缘线
         _save_edgeline_to_csv("edge_line.csv");
         Printer::info(m_name + " -> done");

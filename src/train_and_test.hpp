@@ -89,9 +89,9 @@ void train_and_test(int scale) {
     });
     ml_train_thread.join();
 
-    cout << "[INFO] ml predict..." << endl;
     thread ml_predict_thread([&test_set, scale](){
         this_thread::sleep_for(1000ms);
+        cout << "[INFO] ml predict..." << endl;
         for (auto& source : test_set) {
             auto service = ToothSpace::make_service(source, scale);
             service->retag_point_by_ml();

@@ -100,8 +100,8 @@ void train_and_test(int scale) {
     });
     ml_predict_thread.detach();
 
-    cout << "[INFO] start ml server..." << endl;
     thread ml_server_thread([](){
+        cout << "[INFO] start ml server..." << endl;
         execute("python3 scripts/ml_server.py");
     });
     ml_server_thread.join(); // background

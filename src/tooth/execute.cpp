@@ -1,10 +1,11 @@
 #include "execute.h"
 #include <iostream>
 
-#ifdef _WIN32
-#include <windows.h>
+using namespace std;
 
-int execute(const LPTSTR childexe) {
+#ifdef _WIN32
+
+HANDLE execute_base(const char* cmd) {
     SECURITY_ATTRIBUTES sa = {0};
     HANDLE hRead = NULL, hWrite = NULL;
     sa.nLength = sizeof(SECURITY_ATTRIBUTES);
@@ -25,28 +26,44 @@ int execute(const LPTSTR childexe) {
     si.wShowWindow = SW_HIDE;
     si.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
     if (!CreateProcess(
-        NULL, childexe, NULL, NULL, TRUE, NULL, NULL, NULL, &si, &pi
+        NULL, (char*)cmd, NULL, NULL, TRUE, NULL, NULL, NULL, &si, &pi
     )) {
         CloseHandle(hWrite);
         CloseHandle(hRead);
-        return false;
+        return NULL;
     }
-
     CloseHandle(hWrite);
-    char ReadBuff[256] = {0};
-    DWORD ReadNum = 0;
-    while (ReadFile(hRead, ReadBuff, 256, &ReadNum, NULL)) {
-        ReadBuff[ReadNum] = '\0';
-        std::cout << ReadBuff;
-    }
-    return 0;
+    return hRead;
+}
 
-    // WaitForSingleObject(pi.hProcess,INFINITE);
-    // CloseHandle(pi.hProcess);
-    // CloseHandle(pi.hThread);
-    // CloseHandle(hWrite);
-    // ReadFile(hRead, buffer, MAX_PATH_LENGTH, &bytesRead, NULL);
-    // CloseHandle(hRead);
+int execute(const string& cmd) {
+    HANDLE hProcess = execute_base(cmd.c_str());
+    if (hProcess == NULL)
+        return -1;
+    WaitForSingleObject(hProcess, INFINITE);
+    DWORD exitCode;
+    GetExitCodeProcess(hProcess, &exitCode);
+    CloseHandle(hProcess);
+    return exitCode;
+}
+
+string execute_short(const string& cmd) {
+    HANDLE hProcess = execute_base(cmd.c_str());
+    if (hProcess == NULL)
+        return "";
+    string result;
+    char buf[1024];
+    DWORD read;
+    while (ReadFile(hProcess, buf, sizeof(buf), &read, NULL)) {
+        if (strlen(buf) != 0) {
+            buf[read] = '\0';
+            result = string(buf);
+            break;
+        }
+    }
+    // check handle valid
+    CloseHandle(hProcess);
+    return result;
 }
 
 #else

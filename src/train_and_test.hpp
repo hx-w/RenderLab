@@ -4,9 +4,12 @@
 #include <string>
 #include <vector>
 #include <random>
+#include <memory>
 #include "tooth/execute.h"
+#include "render/service.h"
 
 using namespace std;
+using namespace RenderSpace;
 
 // 获取指定目录下的子目录
 #ifdef _WIN32
@@ -67,10 +70,44 @@ void train_test_split(vector<string>& train_set, vector<string>& test_set, doubl
     }
 }
 
-void train_and_test(int scale) {
+void text_preset(shared_ptr<RenderService> rservice) {
+    // text preset
+    {
+        RenderLine rline;
+        rline.frame_remain = -1;
+        rline.Segments.emplace_back(TextSegment{"[data generating] ", glm::vec3(0.7f, 0.7f, 0.7f), 20});
+        rline.Segments.emplace_back(TextSegment{"0.00%", glm::vec3(0.7f, 0.7f, 0.7f), 20});
+        rservice->add_text(BoxRegion::BOX_RIGHT_TOP, move(rline));
+    }
+    {
+        RenderLine rline;
+        rline.frame_remain = -1;
+        rline.Segments.emplace_back(TextSegment{"[ml training] ", glm::vec3(0.7f, 0.7f, 0.7f), 20});
+        rline.Segments.emplace_back(TextSegment{"0.00%", glm::vec3(0.7f, 0.7f, 0.7f), 20});
+        rservice->add_text(BoxRegion::BOX_RIGHT_TOP, move(rline));
+    }
+    {
+        RenderLine rline;
+        rline.frame_remain = -1;
+        rline.Segments.emplace_back(TextSegment{"[server deploying] ", glm::vec3(0.7f, 0.7f, 0.7f), 20});
+        rline.Segments.emplace_back(TextSegment{"0.00%", glm::vec3(0.7f, 0.7f, 0.7f), 20});
+        rservice->add_text(BoxRegion::BOX_RIGHT_TOP, move(rline));
+    }
+    {
+        RenderLine rline;
+        rline.frame_remain = -1;
+        rline.Segments.emplace_back(TextSegment{"[mesh reconstruction] ", glm::vec3(0.7f, 0.7f, 0.7f), 20});
+        rline.Segments.emplace_back(TextSegment{"0.00%", glm::vec3(0.7f, 0.7f, 0.7f), 20});
+        rservice->add_text(BoxRegion::BOX_RIGHT_TOP, move(rline));
+    }
+}
+
+void train_and_test(int scale, shared_ptr<RenderService> rservice) {
     vector<string> train_set;
     vector<string> test_set;
     train_test_split(train_set, test_set, 0.2);
+
+    text_preset(rservice);
 
     // 创建单独线程进行训练
     remove("static/dataset/edge_line.csv");

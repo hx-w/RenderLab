@@ -30,6 +30,13 @@ namespace RenderSpace {
         void notify_picking(const glm::vec3& origin, const glm::vec3& direction);
         void notify_clear_picking(); // refresh all picking ray
         void notify_window_resize(uint32_t width, uint32_t height);
+
+        // show text
+        void clear_text(BoxRegion region);
+        void add_text(BoxRegion region, RenderLine&& rtext);
+        void update_text(BoxRegion region, int index, RenderLine&& rtext);
+        void delete_text(BoxRegion region, int index);
+
     private:
         void setup();
 

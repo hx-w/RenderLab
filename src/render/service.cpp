@@ -21,8 +21,6 @@ namespace RenderSpace {
 
         // 文本渲染器
         m_text_service = make_unique<TextService>(m_shader_text);
-        // m_text_service->add_text(BOX_RIGHT_TOP, RenderLine(TextSegment{"test", glm::vec3(1, 0, 0), 20}, 300));
-        // m_text_service->add_text(BOX_RIGHT_TOP, RenderLine(TextSegment{"test1", glm::vec3(1, 1, 0), 20}, 600));
 
         // thread param_thread([&]() {
             // m_meshdraw.load_STL("./static/models/JawScan.stl");
@@ -213,5 +211,21 @@ namespace RenderSpace {
     int RenderService::gen_id() {
         std::lock_guard<std::mutex> lock(m_mutex);
         return m_id_gen++;
+    }
+
+    void RenderService::clear_text(BoxRegion region) {
+        m_text_service->clear_text(region);
+    }
+
+    void RenderService::add_text(BoxRegion region, RenderLine&& line) {
+        m_text_service->add_text(region, move(line));
+    }
+
+    void RenderService::update_text(BoxRegion region, int line_id, RenderLine&& line) {
+        m_text_service->update_text(region, line_id, move(line));
+    }
+
+    void RenderService::delete_text(BoxRegion region, int line_id) {
+        m_text_service->delete_text(region, line_id);
     }
 }

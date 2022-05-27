@@ -1,5 +1,8 @@
 /**
  * 文本渲染管理器
+ * @brief `TextSegment` 是文字渲染的基本单位
+ *        `RenderLine` 包含多个 `TextSegment`
+ *        `TextBox` 包含多个 `RenderLine`
  */
 #ifndef TEXTBOX_H
 #define TEXTBOX_H
@@ -73,7 +76,10 @@ namespace RenderSpace {
         void update_window_size(uint32_t width, uint32_t height);
         void draw();
     
+        void clear_text(BoxRegion region);
         void add_text(BoxRegion region, RenderLine&& rtext);
+        void update_text(BoxRegion region, int index, RenderLine&& rtext);
+        void delete_text(BoxRegion region, int index);
 
     private:
         std::string _time_now() const;

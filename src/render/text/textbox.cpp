@@ -32,7 +32,7 @@ namespace RenderSpace {
             }
             _width = max(_width, _cwidth);
         }
-        m_width = _width;
+        m_width = _width / 1.7;
         m_height = _height;
     }
 
@@ -45,7 +45,7 @@ namespace RenderSpace {
             _width += seg.Size * seg.Text.length(); 
             _height += seg.Size;
         }
-        m_width = std::max(m_width, _width);
+        m_width = std::max(m_width, _width) / 1.7;
         m_height = std::max(m_height, _height);
     }
 
@@ -74,18 +74,19 @@ namespace RenderSpace {
         // screen zero at left-bottom
         // get text box left top pivot
         glm::vec2 _pivot = glm::vec2(0.0f, 0.0f);
+        float _shift = 25.0f;
         switch (m_region) {
         case BOX_LEFT_TOP:
-            _pivot = glm::vec2(20.0f, win_height - 20.0f);
+            _pivot = glm::vec2(_shift, win_height - _shift);
             break;
         case BOX_RIGHT_TOP:
-            _pivot = glm::vec2(win_width - 20.0f - m_width, win_height - 20.0f);
+            _pivot = glm::vec2(win_width - _shift - m_width, win_height - _shift);
             break;
         case BOX_RIGHT_BOTTOM:
-            _pivot = glm::vec2(win_width - 20.0f - m_width, 20.0f);
+            _pivot = glm::vec2(win_width - _shift - m_width, _shift);
             break;
         case BOX_LEFT_BOTTOM:
-            _pivot = glm::vec2(20.0f, 20.0f);
+            _pivot = glm::vec2(_shift, _shift);
             break;
         default:
             // error region type
@@ -96,14 +97,15 @@ namespace RenderSpace {
         uint32_t _last_h = 0;
         for (auto& line : m_lines) {
             xpos = _pivot.x;
-            ypos -= _last_h;
-            uint32_t _last_w = 0;
+            ypos -= _last_h + 3.0; // disturb
             _last_h = 0;
+            float _last_w = 0.0f;
             for (auto& segment : line.Segments) {
+                xpos += _last_w;
                 float _scale = float(segment.Size) / text_renderer->get_csize();
                 text_renderer->render_text(segment.Text, xpos, ypos, _scale, segment.Color);
-                _last_w = segment.Size * segment.Text.length();
                 _last_h = std::max(_last_h, segment.Size);
+                _last_w += segment.Size * segment.Text.length() * 1.0 / 1.7;
             }
             if (line.frame_remain > 0) {
                 line.frame_remain--;
@@ -167,7 +169,19 @@ namespace RenderSpace {
         }
     }
 
+    void TextService::clear_text(BoxRegion region) {
+        m_boxes[region].clear();
+    }
+
     void TextService::add_text(BoxRegion region, RenderLine&& rtext) {
         m_boxes[region].add_text(move(rtext));
+    }
+
+    void TextService::update_text(BoxRegion region, int index, RenderLine&& rtext) {
+        m_boxes[region].update_text(index, move(rtext));
+    }
+
+    void TextService::delete_text(BoxRegion region, int index) {
+        m_boxes[region].delete_text(index);
     }
 }

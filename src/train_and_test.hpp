@@ -102,6 +102,45 @@ void text_preset(shared_ptr<RenderService> rservice) {
     }
 }
 
+void text_update(shared_ptr<RenderService> rservice, int index, double ratio) {
+    string header;
+    glm::vec3 color;
+    switch (index) {
+        case 0:
+            header = "[data generating] ";
+            break;
+        case 1:
+            header = "[ml training] ";
+            break;
+        case 2:
+            header = "[server deploying] ";
+            break;
+        case 3:
+            header = "[mesh reconstruction] ";
+            break;
+        default:
+            break;
+    }
+    char buffer[32] = {0};
+    if (ratio < 0.5) {
+        color = glm::vec3(1.0, 0.7, 0.7);
+        snprintf(buffer, sizeof(buffer), "%2.2f%%", ratio * 100);
+    }
+    else if (ratio < 0.98) {
+        color = glm::vec3(0.7, 1.0, 0.7);
+        snprintf(buffer, sizeof(buffer), "%2.2f%%", ratio * 100);
+    }
+    else {
+        color = glm::vec3(0.0, 1.0, 0.0);
+        snprintf(buffer, sizeof(buffer), "%s", "success");
+    }
+    RenderLine rline;
+    rline.frame_remain = -1;
+    rline.Segments.emplace_back(TextSegment{header, glm::vec3(0.7, 0.7, 0.7), 20});
+    rline.Segments.emplace_back(TextSegment{buffer, color, 20});
+    rservice->update_text(BoxRegion::BOX_RIGHT_TOP, index, move(rline));
+}
+
 void train_and_test(int scale, shared_ptr<RenderService> rservice) {
     vector<string> train_set;
     vector<string> test_set;
@@ -113,32 +152,44 @@ void train_and_test(int scale, shared_ptr<RenderService> rservice) {
     remove("static/dataset/edge_line.csv");
     remove("static/dataset/uv_point.csv");
 
-    thread ml_train_thread([&train_set, scale](){
+
+    thread ml_train_thread([&](){
         // gen data
-        for (auto& source : train_set) {
-            auto service = ToothSpace::make_service(source, scale);
+        auto train_size = train_set.size();
+        for (auto id = 0; id < train_size; ++id) {
+            text_update(rservice, 0, id * 1.0 / train_size);
+            auto service = ToothSpace::make_service(train_set[id], scale);
             service->retag_point();
+            text_update(rservice, 0, (id + 0.5) * 1.0 / train_size);
             service->simulate();
+            text_update(rservice, 0, (id + 1.0) * 1.0 / train_size);
         }
         // train
         cout << "[INFO] train ml model..." << endl;
+        text_update(rservice, 1, 0.0);
         execute("python3 scripts/ml_train.py");
+        text_update(rservice, 1, 1.0);
     });
     ml_train_thread.join();
 
-    thread ml_predict_thread([&test_set, scale](){
+    thread ml_predict_thread([&](){
         this_thread::sleep_for(1000ms);
         cout << "[INFO] ml predict..." << endl;
-        for (auto& source : test_set) {
-            auto service = ToothSpace::make_service(source, scale);
+        auto test_size = test_set.size();
+        for (auto id = 0; id < test_size; ++id) {
+            text_update(rservice, 3, id * 1.0 / test_size);
+            auto service = ToothSpace::make_service(test_set[id], scale);
             service->retag_point_by_ml();
+            text_update(rservice, 3, (id + 0.5) * 1.0 / test_size);
             service->simulate_by_ml();
+            text_update(rservice, 3, (id + 1.0) * 1.0 / test_size);
         }
     });
     ml_predict_thread.detach();
 
-    thread ml_server_thread([](){
+    thread ml_server_thread([&](){
         cout << "[INFO] start ml server..." << endl;
+        text_update(rservice, 2, 1.0);
         execute("python3 scripts/ml_server.py");
     });
     ml_server_thread.join(); // background

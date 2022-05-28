@@ -149,28 +149,28 @@ void train_and_test(int scale, shared_ptr<RenderService> rservice) {
     text_preset(rservice);
 
     // 创建单独线程进行训练
-    remove("static/dataset/edge_line.csv");
-    remove("static/dataset/uv_point.csv");
+    // remove("static/dataset/edge_line.csv");
+    // remove("static/dataset/uv_point.csv");
 
 
-    thread ml_train_thread([&](){
-        // gen data
-        auto train_size = train_set.size();
-        for (auto id = 0; id < train_size; ++id) {
-            text_update(rservice, 0, id * 1.0 / train_size);
-            auto service = ToothSpace::make_service(train_set[id], scale);
-            service->retag_point();
-            text_update(rservice, 0, (id + 0.5) * 1.0 / train_size);
-            service->simulate();
-            text_update(rservice, 0, (id + 1.0) * 1.0 / train_size);
-        }
-        // train
-        cout << "[INFO] train ml model..." << endl;
-        text_update(rservice, 1, 0.0);
-        execute("python3 scripts/ml_train.py");
-        text_update(rservice, 1, 1.0);
-    });
-    ml_train_thread.join();
+    // thread ml_train_thread([&](){
+    //     // gen data
+    //     auto train_size = train_set.size();
+    //     for (auto id = 0; id < train_size; ++id) {
+    //         text_update(rservice, 0, id * 1.0 / train_size);
+    //         auto service = ToothSpace::make_service(train_set[id], scale);
+    //         service->retag_point();
+    //         text_update(rservice, 0, (id + 0.5) * 1.0 / train_size);
+    //         service->simulate();
+    //         text_update(rservice, 0, (id + 1.0) * 1.0 / train_size);
+    //     }
+    //     // train
+    //     cout << "[INFO] train ml model..." << endl;
+    //     text_update(rservice, 1, 0.0);
+    //     execute("python3 scripts/ml_train.py");
+    //     text_update(rservice, 1, 1.0);
+    // });
+    // ml_train_thread.join();
 
     thread ml_predict_thread([&](){
         this_thread::sleep_for(1000ms);
@@ -185,14 +185,20 @@ void train_and_test(int scale, shared_ptr<RenderService> rservice) {
             text_update(rservice, 3, (id + 1.0) * 1.0 / test_size);
         }
     });
-    ml_predict_thread.detach();
 
     thread ml_server_thread([&](){
         cout << "[INFO] start ml server..." << endl;
         text_update(rservice, 2, 1.0);
         execute("python3 scripts/ml_server.py");
     });
+
+#ifdef _WIN32
+    ml_server_thread.detach(); // background
+    ml_predict_thread.join();
+#else
+    ml_predict_thread.detach();
     ml_server_thread.join(); // background
+#endif
 }
 
 

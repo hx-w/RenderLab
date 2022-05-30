@@ -14,17 +14,19 @@ namespace RenderSpace {
         setup();
 
         // 在这里预读取
-        m_meshdraw.set_shader(m_shader);
-        m_disk.set_shader(m_shader);
-        m_sample.set_shader(m_shader);
-        m_meshdraw.set_type(DrawableType::DRAWABLE_TRIANGLE);
-        m_disk.set_type(DrawableType::DRAWABLE_TRIANGLE);
-        m_sample.set_type(DrawableType::DRAWABLE_POINT);
+        m_param_items["uns_mesh"] = MeshDrawable("uns_mesh", DrawableType::DRAWABLE_TRIANGLE);
+        m_param_items["param_mesh"] = MeshDrawable("param_mesh", DrawableType::DRAWABLE_TRIANGLE);
+        m_param_items["sample_mesh"] = MeshDrawable("sample_mesh", DrawableType::DRAWABLE_POINT);
+        m_param_items["str_mesh"] = MeshDrawable("str_mesh", DrawableType::DRAWABLE_POINT); 
+        for (auto& [name, mesh] : m_param_items) {
+            mesh.set_shader(m_shader);
+        }
 
         thread model_thread([&]() {
-            m_meshdraw.load_OBJ("static/models/uns.obj");
-            m_disk.load_OBJ("static/models/param.obj");
-            m_sample.load_OBJ("static/models/sample.obj");
+            string param_list[4]{ "uns", "param", "sample", "str" };
+            for (auto& item: param_list) {
+                m_param_items.at(item + "_mesh").load_OBJ("static/models/" + item + ".obj");
+            }
         });
         model_thread.detach();
 
@@ -104,18 +106,18 @@ namespace RenderSpace {
 
     void RenderService::draw_all() {
         m_text_service->draw();
-        m_meshdraw.draw();
-        m_disk.draw();
-        m_sample.draw();
+        for (auto& [name, mesh]: m_param_items) {
+            mesh.draw();
+        }
         for (auto [id, ptr]: m_meshes_map) {
             ptr->draw();
         }
     }
 
     void RenderService::update() {
-        m_meshdraw.sync();
-        m_disk.sync();
-        m_sample.sync();
+        for (auto& [name, mesh]: m_param_items) {
+            mesh.sync();
+        }
         for (auto [id, ptr]: m_meshes_map) {
             ptr->sync();
         }

@@ -53,9 +53,7 @@ namespace RenderSpace {
         int gen_id();
 
     private:
-        MeshDrawable m_meshdraw; // uns mesh
-        MeshDrawable m_disk; // param mesh
-        MeshDrawable m_sample; // sample mesh
+        std::map<std::string, MeshDrawable> m_param_items; // mesh for parameterizations
 
         // 网格列表
         std::unordered_map<int, std::shared_ptr<MeshDrawable>> m_meshes_map;

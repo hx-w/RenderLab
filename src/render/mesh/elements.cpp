@@ -171,7 +171,6 @@ namespace RenderSpace {
             }
         }
         ifs.close();
-
         // 计算法线
         for (int i = 0; i < m_triangles.size(); ++i) {
             Triangle& tri = m_triangles[i];

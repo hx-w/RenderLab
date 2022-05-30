@@ -16,20 +16,20 @@ namespace RenderSpace {
         // 在这里预读取
         m_meshdraw.set_shader(m_shader);
         m_disk.set_shader(m_shader);
+        m_sample.set_shader(m_shader);
         m_meshdraw.set_type(DrawableType::DRAWABLE_TRIANGLE);
         m_disk.set_type(DrawableType::DRAWABLE_TRIANGLE);
+        m_sample.set_type(DrawableType::DRAWABLE_POINT);
+
+        thread model_thread([&]() {
+            m_meshdraw.load_OBJ("static/models/uns.obj");
+            m_disk.load_OBJ("static/models/param.obj");
+            m_sample.load_OBJ("static/models/sample.obj");
+        });
+        model_thread.detach();
 
         // 文本渲染器
         m_text_service = make_unique<TextService>(m_shader_text);
-
-        // thread param_thread([&]() {
-            // m_meshdraw.load_STL("./static/models/JawScan.stl");
-            // m_meshdraw.load_OBJ("./static/models/model.obj");
-            // Parameterization param(&m_meshdraw, &m_disk);
-            // param.parameterize();
-            // update();
-        // });
-        // param_thread.detach();
     }
 
     void RenderService::setup() {
@@ -106,6 +106,7 @@ namespace RenderSpace {
         m_text_service->draw();
         m_meshdraw.draw();
         m_disk.draw();
+        m_sample.draw();
         for (auto [id, ptr]: m_meshes_map) {
             ptr->draw();
         }
@@ -114,6 +115,7 @@ namespace RenderSpace {
     void RenderService::update() {
         m_meshdraw.sync();
         m_disk.sync();
+        m_sample.sync();
         for (auto [id, ptr]: m_meshes_map) {
             ptr->sync();
         }

@@ -69,7 +69,8 @@ namespace RenderSpace {
             glLineWidth(1.0f);
             break;
         case DrawableType::DRAWABLE_TRIANGLE:
-            m_shader.setBool("ignoreLight", false);
+            m_shader.setBool("ignoreLight", true);
+            glLineWidth(2.0f);
             if (m_ebo != 0 && m_triangles.size() > 0) {
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
                 glDrawElements(GL_TRIANGLES, m_triangles.size() * 3, GL_UNSIGNED_INT, 0);
@@ -77,6 +78,7 @@ namespace RenderSpace {
             else {
                 glDrawArrays(GL_TRIANGLES, 0, m_vertices.size());
             }
+            glLineWidth(1.0f);
             break;
         default:
             m_shader.setBool("ignoreLight", false);

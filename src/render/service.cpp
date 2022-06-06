@@ -17,7 +17,7 @@ namespace RenderSpace {
         m_param_items["uns_mesh"] = MeshDrawable("uns_mesh", DrawableType::DRAWABLE_TRIANGLE);
         m_param_items["param_mesh"] = MeshDrawable("param_mesh", DrawableType::DRAWABLE_TRIANGLE);
         m_param_items["sample_mesh"] = MeshDrawable("sample_mesh", DrawableType::DRAWABLE_POINT);
-        m_param_items["str_mesh"] = MeshDrawable("str_mesh", DrawableType::DRAWABLE_POINT); 
+        m_param_items["str_mesh"] = MeshDrawable("str_mesh", DrawableType::DRAWABLE_TRIANGLE); 
         for (auto& [name, mesh] : m_param_items) {
             mesh.set_shader(m_shader);
         }

@@ -13,22 +13,21 @@ namespace RenderSpace {
         m_autobus(make_unique<AutoBus>()) {
         setup();
 
-        // 在这里预读取
-        m_param_items["uns_mesh"] = MeshDrawable("uns_mesh", DrawableType::DRAWABLE_TRIANGLE);
-        m_param_items["param_mesh"] = MeshDrawable("param_mesh", DrawableType::DRAWABLE_TRIANGLE);
-        m_param_items["sample_mesh"] = MeshDrawable("sample_mesh", DrawableType::DRAWABLE_POINT);
-        m_param_items["str_mesh"] = MeshDrawable("str_mesh", DrawableType::DRAWABLE_TRIANGLE); 
-        for (auto& [name, mesh] : m_param_items) {
-            mesh.set_shader(m_shader);
-        }
+        auto _id_uns = create_mesh("uns_mesh", DrawableType::DRAWABLE_TRIANGLE);
+        auto _id_param = create_mesh("param_mesh", DrawableType::DRAWABLE_TRIANGLE);
+        auto _id_str = create_mesh("str_mesh", DrawableType::DRAWABLE_TRIANGLE);
 
-        thread model_thread([&]() {
-            string param_list[4]{ "uns", "param", "sample", "str" };
-            for (auto& item: param_list) {
-                m_param_items.at(item + "_mesh").load_OBJ("static/models/" + item + ".obj");
-            }
+        m_meshes_map.at(_id_uns)->load_OBJ("static/models/uns.obj");
+        thread param_thread([&]() {
+            Parameterization pmethod(
+                m_meshes_map.at(_id_uns),
+                m_meshes_map.at(_id_param),
+                m_meshes_map.at(_id_str)
+            );
+            pmethod.parameterize(ParamMethod::Spring);
+            pmethod.resample(50);
         });
-        model_thread.detach();
+        param_thread.detach();
 
         // 文本渲染器
         m_text_service = make_unique<TextService>(m_shader_text);
@@ -106,18 +105,12 @@ namespace RenderSpace {
 
     void RenderService::draw_all() {
         m_text_service->draw();
-        for (auto& [name, mesh]: m_param_items) {
-            mesh.draw();
-        }
         for (auto [id, ptr]: m_meshes_map) {
             ptr->draw();
         }
     }
 
     void RenderService::update() {
-        for (auto& [name, mesh]: m_param_items) {
-            mesh.sync();
-        }
         for (auto [id, ptr]: m_meshes_map) {
             ptr->sync();
         }

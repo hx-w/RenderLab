@@ -53,8 +53,6 @@ namespace RenderSpace {
         int gen_id();
 
     private:
-        std::map<std::string, MeshDrawable> m_param_items; // mesh for parameterizations
-
         // 网格列表
         std::unordered_map<int, std::shared_ptr<MeshDrawable>> m_meshes_map;
         // 文本渲染器

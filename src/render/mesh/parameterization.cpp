@@ -15,8 +15,11 @@ using namespace std;
 using namespace glm;
 
 namespace RenderSpace {
-Parameterization::Parameterization(MeshDrawable* uns_mesh, MeshDrawable* param_mesh, MeshDrawable* str_mesh)
-    : m_uns_mesh(uns_mesh), m_param_mesh(param_mesh), m_str_mesh(str_mesh), m_scale(10) {}
+Parameterization::Parameterization(
+    shared_ptr<MeshDrawable> uns_mesh,
+    shared_ptr<MeshDrawable> param_mesh,
+    shared_ptr<MeshDrawable> str_mesh
+    ): m_uns_mesh(uns_mesh), m_param_mesh(param_mesh), m_str_mesh(str_mesh), m_scale(10) {}
 
 Parameterization::~Parameterization() {}
 
@@ -52,10 +55,9 @@ void Parameterization::parameterize(ParamMethod pmodel) {
 }
 
 void Parameterization::resample(uint32_t num_samples) {
-    MeshDrawable sample_mesh;
     auto& uns_vertices = m_uns_mesh->get_vertices();
     auto& param_vertices = m_param_mesh->get_vertices();
-    auto& sample_vertices = sample_mesh.get_vertices();
+    vector<RenderSpace::Vertex> sample_vertices;
     auto& str_vertices = m_str_mesh->get_vertices();
     auto& str_trias = m_str_mesh->get_triangles();
 
@@ -64,7 +66,7 @@ void Parameterization::resample(uint32_t num_samples) {
             // 在参数平面上的点
             auto x = m_scale * (ic + 0.5) / num_samples - m_scale / 2;
             auto y = m_scale * (ir + 0.5) / num_samples - m_scale / 2;
-            sample_vertices.push_back(Vertex(vec3(x, y, 0), vec3(1.0), vec3(0.0)));
+            sample_vertices.push_back(Vertex(vec3(x, y, 0), vec3(0.0), vec3(0.0)));
             // 逆映射到三维空间
             const Triangle spot_trias = _which_trias_in(vec2(x, y));
             auto tot_area = _trias_area(param_vertices[spot_trias.VertexIdx.x].Position,
@@ -85,7 +87,7 @@ void Parameterization::resample(uint32_t num_samples) {
             
             // shift
             str_point += vec3(10.0, 0.0, 0.0);
-            str_vertices.push_back(Vertex(str_point, vec3(1.0), vec3(0.0)));
+            str_vertices.push_back(Vertex(str_point, vec3(0.0), vec3(0.0)));
             /**
              *  retopology
              *  [idx-max_col-1] ----- [idx-max_col]
@@ -99,8 +101,7 @@ void Parameterization::resample(uint32_t num_samples) {
             }
         }
     }
-
-    // sample_mesh.save_OBJ("models/sample.obj");
+    m_str_mesh->ready_to_update();
 }
 
 void Parameterization::_remark_edges(vector<OrderedEdge>& edge_bound,
@@ -418,7 +419,7 @@ void Parameterization::Jacobi_Iteration(const vector<int>& r_idx,
     assert(row_max == col_max);
     assert(row_max == f_max);
 
-    const int _max_iter = 1000;  // 最大迭代次数
+    const int _max_iter = 100;  // 最大迭代次数
     for (int _iter_count = 0; _iter_count < _max_iter; ++_iter_count) {
         float _residual = 0.0f;
         auto start = chrono::system_clock::now();
@@ -454,7 +455,6 @@ void Parameterization::_build_param_mesh(const vector<int>& vt_inner,
                                    const vector<int>& vt_bound,
                                    const vector<vec2>& param_inner,
                                    const vector<vec2>& param_bound) {
-    cout << "[DEBUG] rebuilding" << endl;
     // 对vt_inner, vt_bound构建倒排索引
     map<int, int> vt_inner_idx;
     map<int, int> vt_bound_idx;
@@ -486,8 +486,10 @@ void Parameterization::_build_param_mesh(const vector<int>& vt_inner,
             cout << "[ERROR] 发现非法顶点索引" << endl;
         }
         tar_vertices.push_back(
-            Vertex(vec3(_v.x, _v.y, 0.0), vec3(1.0), vec3(1.0)));
+            Vertex(vec3(_v.x, _v.y, 0.0), vec3(0.0), vec3(1.0)));
     }
+    cout << "[INFO] building param mesh done" << endl;
+    m_param_mesh->ready_to_update();
 }
 
 float Parameterization::_Laplacian_val(int i, int j) {

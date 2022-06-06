@@ -4,6 +4,7 @@
 #include "elements.h"
 #include <map>
 #include <unordered_map>
+#include <memory>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -36,7 +37,11 @@ namespace RenderSpace {
     class Parameterization {
     public:
         Parameterization() = default;
-        Parameterization(MeshDrawable* uns_mesh, MeshDrawable* uns_param, MeshDrawable* str_mesh);
+        Parameterization(
+            std::shared_ptr<MeshDrawable> uns_mesh,
+            std::shared_ptr<MeshDrawable> uns_param,
+            std::shared_ptr<MeshDrawable> str_mesh
+        );
 
         ~Parameterization();
 
@@ -114,9 +119,9 @@ namespace RenderSpace {
         std::unordered_map<int, float> m_weights_diag; // 边缘对角线权重
 
     private:
-        MeshDrawable* m_uns_mesh;
-        MeshDrawable* m_param_mesh;
-        MeshDrawable* m_str_mesh;
+        std::shared_ptr<MeshDrawable> m_uns_mesh;
+        std::shared_ptr<MeshDrawable> m_param_mesh;
+        std::shared_ptr<MeshDrawable> m_str_mesh;
 
         float m_scale; // width of rectangle
     };

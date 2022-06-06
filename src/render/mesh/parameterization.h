@@ -2,7 +2,7 @@
 #define PARAMETERIZATION_H
 
 #include "elements.h"
-#include <vector>
+#include <map>
 #include <unordered_map>
 
 #ifndef M_PI
@@ -10,9 +10,14 @@
 #endif
 
 namespace RenderSpace {
+    enum ParamMethod {
+        Spring,
+        Laplace
+    };
+
     struct pair_hash {
         template <class T1, class T2>
-        std::size_t operator() (const std::pair<T1,T2> &p) const {
+        std::size_t operator() (const std::pair<T1, T2> &p) const {
             auto h1 = std::hash<T1>{}(p.first);
             auto h2 = std::hash<T2>{}(p.second);
             return h1 ^ h2;  
@@ -31,14 +36,16 @@ namespace RenderSpace {
     class Parameterization {
     public:
         Parameterization() = default;
-        Parameterization(MeshDrawable* ori, MeshDrawable* tar);
+        Parameterization(MeshDrawable* uns_mesh, MeshDrawable* uns_param, MeshDrawable* str_mesh);
 
         ~Parameterization();
 
-        void parameterize();
+        void parameterize(ParamMethod);
+
+        void resample(uint32_t num_samples);
 
     private:
-        // 标记ori面中的边缘与非边缘
+        // 标记uns_mesh面中的边缘与非边缘
         void _remark_edges(std::vector<OrderedEdge>&, std::vector<OrderedEdge>&);
         // 对边缘边，从第一个边缘点开始 按拓扑关系进行重新排序
         void _topology_reorder(std::vector<OrderedEdge>&);
@@ -47,7 +54,8 @@ namespace RenderSpace {
         // 初始化 计算weights
         void _init_weights(
             const std::vector<OrderedEdge>&,
-            const std::vector<OrderedEdge>&
+            const std::vector<OrderedEdge>&,
+            const ParamMethod
         );
 
         // edge to vertex
@@ -71,13 +79,22 @@ namespace RenderSpace {
             const std::vector<glm::vec2>& f_2
         );
 
-        // Gauss-Seidel 迭代求解方程组
-        void Gauss_Seidel_Iteration(
+        // Jacobi 迭代求解方程组
+        void Jacobi_Iteration(
             const std::vector<int>& r_idx,
             const std::vector<int>& c_idx,
             std::vector<glm::vec2>& f,
             const std::vector<glm::vec2>& b,
             const float epsilon // 允许的误差
+        );
+
+        // 通过vt_inner, vt_bound, param_inner, param_bound
+        // 构建mesh:uns_param的拓扑结构
+        void _build_param_mesh(
+            const std::vector<int>& vt_inner,
+            const std::vector<int>& vt_bound,
+            const std::vector<glm::vec2>& param_inner,
+            const std::vector<glm::vec2>& param_bound
         );
 
         float _Laplacian_val(int i, int j);
@@ -86,15 +103,22 @@ namespace RenderSpace {
         float _cot(float) const;
         float _angle_between(const glm::vec3&, const glm::vec3&, const glm::vec3&) const;
 
+        float _trias_area(const glm::vec3&, const glm::vec3&, const glm::vec3&) const;
+        const Triangle _which_trias_in(const glm::vec2& pos) const;
+
     private:
         // 中间结果
         float m_bound_length; // 边缘总长度
-        std::unordered_map<OrderedEdge, float, pair_hash> m_weights; // 边缘权重
+        // std::map<OrderedEdge, float> m_weights; // 边缘权重
+        std::unordered_map<OrderedEdge, float, pair_hash> m_weights;
+        std::unordered_map<int, float> m_weights_diag; // 边缘对角线权重
 
     private:
-        MeshDrawable* m_ori;
-        MeshDrawable* m_tar;
+        MeshDrawable* m_uns_mesh;
+        MeshDrawable* m_param_mesh;
+        MeshDrawable* m_str_mesh;
+
+        float m_scale; // width of rectangle
     };
 }
-
 #endif

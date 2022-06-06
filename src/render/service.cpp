@@ -1,5 +1,5 @@
 ﻿#include "service.h"
-// #include "./mesh/parameterization.h"
+#include "./mesh/parameterization.h"
 #include "../infrastructure/communication/ContextHub.h"
 
 #include <iostream>

@@ -399,18 +399,25 @@ void Parameterization::_solve_Laplacian_equation(
         }
         _value_mat.push_back(-_row_vec);
     }
-    // 设置迭代初值 (0.0, 0.0)
+    // 设置迭代初值
     f_1.resize(mat1_col_count, vec2(0.5f, 0.5f));
-    // 进行迭代求解
 
-    Jacobi_Iteration(r_idx_1, c_idx_1, f_1, _value_mat, 0.0001f);
+    // 进行迭代求解
+    for (int epoch = 0; epoch < 200; ++epoch) {
+        if (epoch % 50 == 0)
+        cout << "[EPOCH] " << epoch << endl;
+        Jacobi_Iteration(r_idx_1, c_idx_1, f_1, _value_mat, 0.1f, 5);
+        _build_param_mesh(r_idx_1, c_idx_2, f_1, f_2);
+    }
+    
 }
 
 void Parameterization::Jacobi_Iteration(const vector<int>& r_idx,
                                               const vector<int>& c_idx,
                                               vector<vec2>& f,
                                               const vector<vec2>& b,
-                                              const float epsilon  // 允许的误差
+                                              const float epsilon,  // 允许的误差
+                                              const int max_iter
 ) {
     const int row_max = r_idx.size();
     const int col_max = c_idx.size();
@@ -419,8 +426,7 @@ void Parameterization::Jacobi_Iteration(const vector<int>& r_idx,
     assert(row_max == col_max);
     assert(row_max == f_max);
 
-    const int _max_iter = 100;  // 最大迭代次数
-    for (int _iter_count = 0; _iter_count < _max_iter; ++_iter_count) {
+    for (int _iter_count = 0; _iter_count < max_iter; ++_iter_count) {
         float _residual = 0.0f;
         auto start = chrono::system_clock::now();
         vector<vec2> _new_f(f);
@@ -443,8 +449,9 @@ void Parameterization::Jacobi_Iteration(const vector<int>& r_idx,
         auto end = chrono::system_clock::now();
         chrono::duration<double> elapsed_seconds = end - start;
         time_t end_time = chrono::system_clock::to_time_t(end);
-        if (_iter_count % 50 == 0)
-        cout << ">> " << ctime(&end_time) << _iter_count << "/" << _max_iter << " ==> " << _residual << "  | cost " << elapsed_seconds.count() << endl;
+        // if (_iter_count % 50 == 0) {
+        //     cout << ">> " << ctime(&end_time) << _iter_count << "/" << max_iter << " ==> " << _residual << "  | cost " << elapsed_seconds.count() << endl;
+        // }
         if (_residual < epsilon) {
             break;
         }
@@ -488,7 +495,6 @@ void Parameterization::_build_param_mesh(const vector<int>& vt_inner,
         tar_vertices.push_back(
             Vertex(vec3(_v.x, _v.y, 0.0), vec3(0.0), vec3(1.0)));
     }
-    cout << "[INFO] building param mesh done" << endl;
     m_param_mesh->ready_to_update();
 }
 

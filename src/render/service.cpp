@@ -13,6 +13,10 @@ namespace RenderSpace {
         m_autobus(make_unique<AutoBus>()) {
         setup();
 
+        // 文本渲染器
+        m_text_service = make_unique<TextService>(m_shader_text);
+
+        // 参数化实验
         auto _id_uns = create_mesh("uns_mesh", DrawableType::DRAWABLE_TRIANGLE);
         auto _id_param = create_mesh("param_mesh", DrawableType::DRAWABLE_TRIANGLE);
         auto _id_str = create_mesh("str_mesh", DrawableType::DRAWABLE_TRIANGLE);
@@ -20,17 +24,14 @@ namespace RenderSpace {
         m_meshes_map.at(_id_uns)->load_OBJ("static/models/uns.obj");
         thread param_thread([&]() {
             Parameterization pmethod(
-                m_meshes_map.at(_id_uns),
-                m_meshes_map.at(_id_param),
-                m_meshes_map.at(_id_str)
+                m_meshes_map[_id_uns],
+                m_meshes_map[_id_param],
+                m_meshes_map[_id_str]
             );
             pmethod.parameterize(ParamMethod::Spring);
             pmethod.resample(50);
         });
         param_thread.detach();
-
-        // 文本渲染器
-        m_text_service = make_unique<TextService>(m_shader_text);
     }
 
     void RenderService::setup() {

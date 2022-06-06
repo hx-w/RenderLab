@@ -3,6 +3,7 @@
 #include <mutex>
 #include <vector>
 #include <string>
+#include <atomic>
 #include <algorithm>
 #include "../shader.hpp"
 #include "../libs/glm/glm.hpp"
@@ -123,8 +124,8 @@ namespace RenderSpace {
         std::string m_name;
         std::mutex m_mutex;
 
-        bool _ready_to_update = false;
-        bool _ready_to_draw = false;
+        std::atomic<bool> _ready_to_update = false;
+        std::atomic<bool> _ready_to_draw = false;
 
         DrawableType m_type;
     };

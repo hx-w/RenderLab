@@ -90,7 +90,8 @@ namespace RenderSpace {
             const std::vector<int>& c_idx,
             std::vector<glm::vec2>& f,
             const std::vector<glm::vec2>& b,
-            const float epsilon // 允许的误差
+            const float epsilon, // 允许的误差
+            const int max_iter // 最大迭代次数
         );
 
         // 通过vt_inner, vt_bound, param_inner, param_bound

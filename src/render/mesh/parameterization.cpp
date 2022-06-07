@@ -62,7 +62,7 @@ void Parameterization::resample(uint32_t num_samples) {
     auto& str_vertices = m_str_mesh->get_vertices();
     auto& str_trias = m_str_mesh->get_triangles();
 
-    TGAImage image(num_samples * 4, num_samples * 4, TGAImage::RGB);
+    TGAImage image(num_samples * 2, num_samples * 2, TGAImage::RGB);
     for (auto ir = 0; ir < num_samples; ++ir) {
         for (auto ic = 0; ic < num_samples; ++ic) {
             // 在参数平面上的点
@@ -91,7 +91,21 @@ void Parameterization::resample(uint32_t num_samples) {
             str_point += vec3(10.0, 0.0, 0.0);
             str_vertices.push_back(Vertex(str_point, vec3(0.0), vec3(0.0)));
             // save to RGB image
-            image.set(ic * 4, ir * 4, TGAColor(255, 0, 0));
+            // type punning
+            // Little-Endian
+            for (int idx = 0; idx < 4; ++idx) {
+                image.set(ic * 2 + (idx % 2), ir * 2 + int(idx / 2), TGAColor(
+                    static_cast<uint8_t>(((*reinterpret_cast<uint32_t*>(&str_point.x)) >> (idx * 8)) & 0xFF),
+                    static_cast<uint8_t>(((*reinterpret_cast<uint32_t*>(&str_point.y)) >> (idx * 8)) & 0xFF),
+                    static_cast<uint8_t>(((*reinterpret_cast<uint32_t*>(&str_point.z)) >> (idx * 8)) & 0xFF)
+                /**
+                 *  or use c-style cast
+                 *  (uint8_t)((*(uint32_t *)&str_point.x) >> (idx * 8) & 0xFF),
+                 *  (uint8_t)((*(uint32_t *)&str_point.y) >> (idx * 8) & 0xFF),
+                 *  (uint8_t)((*(uint32_t *)&str_point.z) >> (idx * 8) & 0xFF)
+                 */
+                ));
+            }
 
             /**
              *  retopology

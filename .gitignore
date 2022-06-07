@@ -2,6 +2,7 @@
 models/
 *.pkl
 *.csv
+*.tga
 main
 main_table
 main_test

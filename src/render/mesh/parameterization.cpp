@@ -10,6 +10,7 @@
 #include <utility>
 #include <chrono>
 #include <ctime>
+#include "../libs/tgaimage/tgaimage.h"
 
 using namespace std;
 using namespace glm;
@@ -61,6 +62,7 @@ void Parameterization::resample(uint32_t num_samples) {
     auto& str_vertices = m_str_mesh->get_vertices();
     auto& str_trias = m_str_mesh->get_triangles();
 
+    TGAImage image(num_samples * 4, num_samples * 4, TGAImage::RGB);
     for (auto ir = 0; ir < num_samples; ++ir) {
         for (auto ic = 0; ic < num_samples; ++ic) {
             // 在参数平面上的点
@@ -88,6 +90,9 @@ void Parameterization::resample(uint32_t num_samples) {
             // shift
             str_point += vec3(10.0, 0.0, 0.0);
             str_vertices.push_back(Vertex(str_point, vec3(0.0), vec3(0.0)));
+            // save to RGB image
+            image.set(ic * 4, ir * 4, TGAColor(255, 0, 0));
+
             /**
              *  retopology
              *  [idx-max_col-1] ----- [idx-max_col]
@@ -102,6 +107,7 @@ void Parameterization::resample(uint32_t num_samples) {
         }
     }
     m_str_mesh->ready_to_update();
+    image.write_tga_file("static/geoimage/resample.tga");
 }
 
 void Parameterization::_remark_edges(vector<OrderedEdge>& edge_bound,

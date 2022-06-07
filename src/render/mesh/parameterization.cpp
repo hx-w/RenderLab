@@ -90,23 +90,15 @@ void Parameterization::resample(uint32_t num_samples) {
             // shift
             str_point += vec3(10.0, 0.0, 0.0);
             str_vertices.push_back(Vertex(str_point, vec3(0.0), vec3(0.0)));
-            // save to RGB image
-            // type punning
-            // Little-Endian
+
             for (int idx = 0; idx < 4; ++idx) {
-                image.set(ic * 2 + (idx % 2), ir * 2 + int(idx / 2), TGAColor(
+                image.set(ic * 2 + idx % 2, ir * 2 + idx / 2, TGAColor(
                     static_cast<uint8_t>(((*reinterpret_cast<uint32_t*>(&str_point.x)) >> (idx * 8)) & 0xFF),
                     static_cast<uint8_t>(((*reinterpret_cast<uint32_t*>(&str_point.y)) >> (idx * 8)) & 0xFF),
                     static_cast<uint8_t>(((*reinterpret_cast<uint32_t*>(&str_point.z)) >> (idx * 8)) & 0xFF)
-                /**
-                 *  or use c-style cast
-                 *  (uint8_t)((*(uint32_t *)&str_point.x) >> (idx * 8) & 0xFF),
-                 *  (uint8_t)((*(uint32_t *)&str_point.y) >> (idx * 8) & 0xFF),
-                 *  (uint8_t)((*(uint32_t *)&str_point.z) >> (idx * 8) & 0xFF)
-                 */
                 ));
             }
-
+            
             /**
              *  retopology
              *  [idx-max_col-1] ----- [idx-max_col]
@@ -120,8 +112,10 @@ void Parameterization::resample(uint32_t num_samples) {
             }
         }
     }
-    m_str_mesh->ready_to_update();
+
     image.write_tga_file("static/geoimage/resample.tga");
+
+    m_str_mesh->ready_to_update();
 }
 
 void Parameterization::_remark_edges(vector<OrderedEdge>& edge_bound,
@@ -423,7 +417,7 @@ void Parameterization::_solve_Laplacian_equation(
     f_1.resize(mat1_col_count, vec2(0.5f, 0.5f));
 
     // 进行迭代求解
-    for (int epoch = 0; epoch < 200; ++epoch) {
+    for (int epoch = 0; epoch < 500; ++epoch) {
         if (epoch % 50 == 0)
         cout << "[EPOCH] " << epoch << endl;
         Jacobi_Iteration(r_idx_1, c_idx_1, f_1, _value_mat, 0.1f, 5);

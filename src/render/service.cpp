@@ -28,8 +28,8 @@ namespace RenderSpace {
                 m_meshes_map[_id_param],
                 m_meshes_map[_id_str]
             );
-            pmethod.parameterize(ParamMethod::Spring);
-            pmethod.resample(50);
+            pmethod.parameterize(ParamMethod::Laplace);
+            pmethod.resample(256);
         });
         param_thread.detach();
     }

@@ -5,6 +5,7 @@
 #include <string>
 #include <array>
 #include <unordered_map>
+#include <functional>
 #include "shader.hpp"
 #include "./text/textbox.h"
 #include "./mesh/elements.h"
@@ -12,10 +13,12 @@
 #include "../infrastructure/communication/AutoBus.hpp"
 
 namespace RenderSpace {
+    typedef std::unordered_map<std::string, pthread_t> ThreadMap;
+
     class RenderService {
     public:
         RenderService();
-        ~RenderService() = default;
+        ~RenderService();
 
         Shader& get_shader() { return m_shader; }
 
@@ -52,6 +55,8 @@ namespace RenderSpace {
 
         int gen_id();
 
+        void start_thread(std::string tname, std::function<void()>&& func);
+
     private:
         // 网格列表
         std::unordered_map<int, std::shared_ptr<MeshDrawable>> m_meshes_map;
@@ -66,6 +71,9 @@ namespace RenderSpace {
 
         int m_id_gen = 0;
         std::mutex m_mutex;
+
+        // thread manage
+        ThreadMap m_thread_map;
     };
 }
 

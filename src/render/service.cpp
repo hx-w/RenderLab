@@ -21,7 +21,7 @@ namespace RenderSpace {
         auto _id_str = create_mesh("str_mesh", DrawableType::DRAWABLE_TRIANGLE);
 
         m_meshes_map.at(_id_uns)->load_OBJ("static/models/uns.obj");
-        thread param_thread([&]() {
+        start_thread("param_thread", [&]() {
             Parameterization pmethod(
                 m_meshes_map[_id_uns],
                 m_meshes_map[_id_param],
@@ -30,7 +30,24 @@ namespace RenderSpace {
             pmethod.parameterize(ParamMethod::Laplace);
             pmethod.resample(100);
         });
-        param_thread.detach();
+        // thread param_thread([&]() {
+        //     Parameterization pmethod(
+        //         m_meshes_map[_id_uns],
+        //         m_meshes_map[_id_param],
+        //         m_meshes_map[_id_str]
+        //     );
+        //     pmethod.parameterize(ParamMethod::Laplace);
+        //     pmethod.resample(100);
+        // });
+        // param_thread.detach();
+    }
+
+    RenderService::~RenderService() {
+        for (auto& [tname, thr] : m_thread_map) {
+            pthread_cancel(thr);
+            m_thread_map.erase(tname);
+            std::cout << "Thread " << tname << " killed:" << std::endl;
+        }
     }
 
     void RenderService::setup() {
@@ -224,5 +241,12 @@ namespace RenderSpace {
 
     void RenderService::delete_text(BoxRegion region, int line_id) {
         m_text_service->delete_text(region, line_id);
+    }
+
+    void RenderService::start_thread(string tname, function<void()>&& func) {
+        std::thread thrd = std::thread(func);
+        m_thread_map[tname] = thrd.native_handle();
+        thrd.detach();
+        std::cout << "Thread " << tname << " created:" << std::endl;
     }
 }

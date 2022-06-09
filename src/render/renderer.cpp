@@ -26,7 +26,7 @@ namespace RenderSpace {
         // glfw m_window creation
         // --------------------
         m_window = glfwCreateWindow(w, h, "NURBS Render System", NULL, NULL);
-        if (m_window == NULL) {
+        if (m_window == nullptr) {
             std::cout << "Failed to create GLFW m_window" << std::endl;
             glfwTerminate();
             return;
@@ -103,7 +103,7 @@ namespace RenderSpace {
     void Renderer::update_transform() {
         auto& m_shader = m_service->get_shader();
         // --------------------
-        float currentFrame = static_cast<float>(glfwGetTime());
+        auto currentFrame = static_cast<float>(glfwGetTime());
         m_win_widget.deltaTime = currentFrame - m_win_widget.lastFrame;
         m_win_widget.lastFrame = currentFrame;
 

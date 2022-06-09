@@ -1,6 +1,5 @@
 ﻿#include "service.h"
 #include "./mesh/parameterization.h"
-#include "../infrastructure/communication/ContextHub.h"
 
 #include <iostream>
 #include <thread>
@@ -29,7 +28,7 @@ namespace RenderSpace {
                 m_meshes_map[_id_str]
             );
             pmethod.parameterize(ParamMethod::Laplace);
-            pmethod.resample(256);
+            pmethod.resample(100);
         });
         param_thread.detach();
     }

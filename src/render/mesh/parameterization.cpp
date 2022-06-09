@@ -417,7 +417,7 @@ void Parameterization::_solve_Laplacian_equation(
     f_1.resize(mat1_col_count, vec2(0.5f, 0.5f));
 
     // 进行迭代求解
-    for (int epoch = 0; epoch < 500; ++epoch) {
+    for (int epoch = 0; epoch < 400; ++epoch) {
         if (epoch % 50 == 0)
         cout << "[EPOCH] " << epoch << endl;
         Jacobi_Iteration(r_idx_1, c_idx_1, f_1, _value_mat, 0.1f, 5);

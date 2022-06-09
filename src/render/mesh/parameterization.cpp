@@ -317,11 +317,11 @@ void Parameterization::_init_weights(
             }
             _weight /= adj_vt.size();
 
-            m_weights[OrderedEdge(vi, vj)] = _weight;
+            m_weights[OrderedEdge(vi, vj)] = -_weight;
             // weights中 i=j无意义，但是可以预存ij相等的情况，方便Laplacian
             // matrix的计算 默认值是0
-            m_weights_diag[vi] += _weight;
-            m_weights_diag[vj] += _weight;
+            m_weights[OrderedEdge(vi, vi)] += _weight;
+            m_weights[OrderedEdge(vj, vj)] += _weight;
         }
         else if (pmodel == ParamMethod::Spring) {
             // compute \lambda_{ij} = D_{ij} / \sum_{k \in N_i} D_{ik}
@@ -331,9 +331,9 @@ void Parameterization::_init_weights(
                 sum_weight += 1.0f; // modify if D_{ij} != 1
             }
             float _weight = 1.0f / sum_weight;
-            m_weights[OrderedEdge(vi, vj)] = _weight;
-            m_weights_diag[vi] += _weight;
-            m_weights_diag[vj] += _weight;
+            m_weights[OrderedEdge(vi, vj)] = -_weight;
+            m_weights[OrderedEdge(vi, vi)] += _weight;
+            m_weights[OrderedEdge(vj, vj)] += _weight;
         }
         else {
             // unknown model
@@ -513,19 +513,12 @@ void Parameterization::_build_param_mesh(const vector<int>& vt_inner,
 }
 
 float Parameterization::_Laplacian_val(int i, int j) {
-    if (i > j)
-        swap(i, j);
-    if (i != j) {
-        auto iter = m_weights.find(OrderedEdge(i, j));
-        if (iter == m_weights.end()) {
-            return 0.0f;
-        } else {
-            return -iter->second;
-        }
-    } else {
-        return m_weights_diag.find(i)->second;
+    if (i > j) swap(i, j);
+    auto iter = m_weights.find(OrderedEdge(i, j));
+    if (iter != m_weights.end()) {
+        return iter->second;
     }
-    return 0;
+    return 0.0f;
 }
 
 float Parameterization::_cot(float rad) const {

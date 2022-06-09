@@ -117,7 +117,7 @@ namespace RenderSpace {
         float m_bound_length; // 边缘总长度
         // std::map<OrderedEdge, float> m_weights; // 边缘权重
         std::unordered_map<OrderedEdge, float, pair_hash> m_weights;
-        std::unordered_map<int, float> m_weights_diag; // 边缘对角线权重
+        // std::unordered_map<int, float> m_weights_diag; // 边缘对角线权重
 
     private:
         std::shared_ptr<MeshDrawable> m_uns_mesh;

@@ -45,7 +45,7 @@ namespace RenderSpace {
         float deltaTime = 0.0f;	// time between current frame and last frame
         float lastFrame = 0.0f;
 
-        GLenum shade_mode = GL_FILL;
+        GLenum shade_mode = GL_LINE;
         std::shared_ptr<RenderService> m_service;
         bool all_visible = true;
 

@@ -3,6 +3,7 @@
 #include <mutex>
 #include <vector>
 #include <string>
+#include <atomic>
 #include <algorithm>
 #include "../shader.hpp"
 #include "../libs/glm/glm.hpp"
@@ -63,6 +64,20 @@ namespace RenderSpace {
             return VertexIdx.x < other.VertexIdx.x;
         }
 
+        int vt_in(int vt) const {
+            if (VertexIdx.x == vt) return 0;
+            if (VertexIdx.y == vt) return 1;
+            if (VertexIdx.z == vt) return 2;
+            return -1;
+        }
+
+        bool is_neighbor(const Triangle& tri) {
+            int x_ret = vt_in(tri.VertexIdx.x);
+            int y_ret = vt_in(tri.VertexIdx.y);
+            int z_ret = vt_in(tri.VertexIdx.z);
+            return ((x_ret >= 0 && y_ret >= 0) || (x_ret >= 0 && z_ret >= 0) || (y_ret >= 0 && z_ret >= 0));
+        }
+
         glm::uvec3 VertexIdx;
     };
 
@@ -85,9 +100,11 @@ namespace RenderSpace {
         };
 
         std::vector<Triangle>& get_triangles() {
+            std::lock_guard<std::mutex> lock(m_mutex);
             return m_triangles;
         }
         std::vector<Vertex>& get_vertices() {
+            std::lock_guard<std::mutex> lock(m_mutex);
             return m_vertices;
         }
 
@@ -123,8 +140,8 @@ namespace RenderSpace {
         std::string m_name;
         std::mutex m_mutex;
 
-        bool _ready_to_update = false;
-        bool _ready_to_draw = false;
+        std::atomic<bool> _ready_to_update = false;
+        std::atomic<bool> _ready_to_draw = false;
 
         DrawableType m_type;
     };

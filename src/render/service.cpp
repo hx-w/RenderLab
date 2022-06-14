@@ -1,9 +1,13 @@
 ﻿#include "service.h"
 #include "./mesh/parameterization.h"
-#include "../infrastructure/communication/ContextHub.h"
 
 #include <iostream>
 #include <thread>
+
+#include "libs/imgui/imgui.h"
+#include "libs/imgui/imgui_impl_glfw.h"
+#include "libs/imgui/imgui_impl_opengl3.h"
+#include "filebrowser/browser.h"
 
 using namespace std;
 using namespace fundamental;
@@ -13,25 +17,33 @@ namespace RenderSpace {
         m_autobus(make_unique<AutoBus>()) {
         setup();
 
-        // 在这里预读取
-        m_param_items["uns_mesh"] = MeshDrawable("uns_mesh", DrawableType::DRAWABLE_TRIANGLE);
-        m_param_items["param_mesh"] = MeshDrawable("param_mesh", DrawableType::DRAWABLE_TRIANGLE);
-        m_param_items["sample_mesh"] = MeshDrawable("sample_mesh", DrawableType::DRAWABLE_POINT);
-        m_param_items["str_mesh"] = MeshDrawable("str_mesh", DrawableType::DRAWABLE_TRIANGLE); 
-        for (auto& [name, mesh] : m_param_items) {
-            mesh.set_shader(m_shader);
-        }
-
-        thread model_thread([&]() {
-            string param_list[4]{ "uns", "param", "sample", "str" };
-            for (auto& item: param_list) {
-                m_param_items.at(item + "_mesh").load_OBJ("static/models/" + item + ".obj");
-            }
-        });
-        model_thread.detach();
-
         // 文本渲染器
         m_text_service = make_unique<TextService>(m_shader_text);
+
+        // 参数化实验
+        auto _id_uns = create_mesh("uns_mesh", DrawableType::DRAWABLE_TRIANGLE);
+        auto _id_param = create_mesh("param_mesh", DrawableType::DRAWABLE_TRIANGLE);
+        auto _id_str = create_mesh("str_mesh", DrawableType::DRAWABLE_TRIANGLE);
+
+        m_meshes_map.at(_id_uns)->load_OBJ("static/models/uns.obj");
+        // start_thread("param_thread", [&]() {
+        //     Parameterization pmethod(
+        //         m_meshes_map[_id_uns],
+        //         m_meshes_map[_id_param],
+        //         m_meshes_map[_id_str]
+        //     );
+        //     pmethod.parameterize(ParamMethod::Laplace);
+        //     pmethod.resample(100);
+        // });
+
+    }
+
+    RenderService::~RenderService() {
+        for (auto& [tname, thr] : m_thread_map) {
+            pthread_cancel(thr);
+            m_thread_map.erase(tname);
+            std::cout << "Thread " << tname << " killed:" << std::endl;
+        }
     }
 
     void RenderService::setup() {
@@ -105,19 +117,13 @@ namespace RenderSpace {
     }
 
     void RenderService::draw_all() {
-        m_text_service->draw();
-        for (auto& [name, mesh]: m_param_items) {
-            mesh.draw();
-        }
+        // m_text_service->draw();
         for (auto [id, ptr]: m_meshes_map) {
             ptr->draw();
         }
     }
 
     void RenderService::update() {
-        for (auto& [name, mesh]: m_param_items) {
-            mesh.sync();
-        }
         for (auto [id, ptr]: m_meshes_map) {
             ptr->sync();
         }
@@ -231,5 +237,48 @@ namespace RenderSpace {
 
     void RenderService::delete_text(BoxRegion region, int line_id) {
         m_text_service->delete_text(region, line_id);
+    }
+
+    void RenderService::start_thread(string tname, function<void()>&& func) {
+        std::thread thrd = std::thread(func);
+        m_thread_map[tname] = thrd.native_handle();
+        thrd.detach();
+        std::cout << "[INFO] thread " << tname << " created" << std::endl;
+    }
+
+    void RenderService::imGui_render(RenderWindowWidget* win) {
+        // Start the Dear ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        static bool show_import_modal = false;
+        static imgui_ext::file_browser_modal fileBrowser("Import");
+        std::string path;
+        // controller
+        {
+            ImGui::Begin("Controller");                          // Create a window called "Hello, world!" and append into it.
+
+            ImGui::ColorEdit3("background color", (float*)&win->clear_color); // Edit 3 floats representing a color
+            ImGui::SliderFloat("camera speed", &win->cameraSpeed, 1.0f, 15.0f); 
+
+            if (ImGui::Button("Import OBJ")) {
+                show_import_modal = !show_import_modal;
+            }
+            ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
+            ImGui::End();
+        }
+
+        if (show_import_modal) {
+            if (fileBrowser.render(true, path)) {
+                show_import_modal = false;
+                if (path.size() > 0 && path.substr(path.size() - 4, 4) == ".obj") {
+                    auto _id = create_mesh(path, DrawableType::DRAWABLE_TRIANGLE);
+                    m_meshes_map.at(_id)->load_OBJ(path);
+                }
+            }
+        }
+        // Rendering
+        ImGui::Render();
     }
 }

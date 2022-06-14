@@ -5,23 +5,30 @@
 #include <string>
 #include <array>
 #include <unordered_map>
+#include <functional>
 #include "shader.hpp"
+#include "xwindow.h"
 #include "./text/textbox.h"
 #include "./mesh/elements.h"
 #include "../libs/coords.h"
 #include "../infrastructure/communication/AutoBus.hpp"
 
 namespace RenderSpace {
+    class RenderWindowWidget;
+    typedef std::unordered_map<std::string, pthread_t> ThreadMap;
+
     class RenderService {
     public:
         RenderService();
-        ~RenderService() = default;
+        ~RenderService();
 
         Shader& get_shader() { return m_shader; }
 
         void draw_all();
 
         void update();
+
+        void imGui_render(RenderWindowWidget*);
 
         // all mesh
         void set_visible(bool visible);
@@ -52,9 +59,9 @@ namespace RenderSpace {
 
         int gen_id();
 
-    private:
-        std::map<std::string, MeshDrawable> m_param_items; // mesh for parameterizations
+        void start_thread(std::string tname, std::function<void()>&& func);
 
+    private:
         // 网格列表
         std::unordered_map<int, std::shared_ptr<MeshDrawable>> m_meshes_map;
         // 文本渲染器
@@ -68,6 +75,9 @@ namespace RenderSpace {
 
         int m_id_gen = 0;
         std::mutex m_mutex;
+
+        // thread manage
+        ThreadMap m_thread_map;
     };
 }
 

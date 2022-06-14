@@ -6,8 +6,10 @@
 #include "./libs/glm/gtc/type_ptr.hpp"
 #include "./libs/GLFW/glfw3.h"
 #include "service.h"
+#include "libs/imgui/imgui.h"
 
 namespace RenderSpace {
+    class RenderService;
     class RenderWindowWidget {
     public:
         RenderWindowWidget() = default;
@@ -33,6 +35,7 @@ namespace RenderSpace {
         glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f, 10.0f);
         glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
         glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f, 0.0f);
+        float cameraSpeed = 8.f;
 
         bool leftMousePressed = false;
         bool firstMouse = true;
@@ -45,9 +48,10 @@ namespace RenderSpace {
         float deltaTime = 0.0f;	// time between current frame and last frame
         float lastFrame = 0.0f;
 
-        GLenum shade_mode = GL_FILL;
+        GLenum shade_mode = GL_LINE;
         std::shared_ptr<RenderService> m_service;
         bool all_visible = true;
+        ImVec4 clear_color = ImVec4(0.8f, 0.8f, 0.8f, 1.00f);
 
         float realX = 0.0f;
         float realY = 0.0f;

@@ -9,8 +9,11 @@ using namespace std;
 namespace RenderSpace {
     Drawable::Drawable() {
         // 默认随机生成一个名字
+        std::lock_guard<std::mutex> lk(m_mutex);
         m_name = "Drawable_" + to_string(rand());
         m_type = DrawableType::DRAWABLE_POINT;
+        _ready_to_draw = false;
+        _ready_to_update = false;
     }
 
     Drawable::~Drawable() {
@@ -33,16 +36,18 @@ namespace RenderSpace {
     }
 
     void Drawable::set_shader(Shader& shader) {
+        std::lock_guard<std::mutex> lk(m_mutex);
         m_shader = shader;
     }
 
     void Drawable::set_type(DrawableType type) {
+        std::lock_guard<std::mutex> lk(m_mutex);
         m_type = type;
     }
 
     void Drawable::draw() {
-        if (!_ready_to_draw) return;
         std::lock_guard<std::mutex> lk(m_mutex);
+        if (!_ready_to_draw) return;
         m_shader.use();
         glBindVertexArray(m_vao);
 
@@ -69,8 +74,8 @@ namespace RenderSpace {
             glLineWidth(1.0f);
             break;
         case DrawableType::DRAWABLE_TRIANGLE:
-            m_shader.setBool("ignoreLight", true);
-            glLineWidth(2.0f);
+            m_shader.setBool("ignoreLight", false);
+            glLineWidth(1.0f);
             if (m_ebo != 0 && m_triangles.size() > 0) {
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
                 glDrawElements(GL_TRIANGLES, m_triangles.size() * 3, GL_UNSIGNED_INT, 0);
@@ -78,7 +83,6 @@ namespace RenderSpace {
             else {
                 glDrawArrays(GL_TRIANGLES, 0, m_vertices.size());
             }
-            glLineWidth(1.0f);
             break;
         default:
             m_shader.setBool("ignoreLight", false);
@@ -138,6 +142,7 @@ namespace RenderSpace {
 
     void Drawable::ready_to_update() {
         std::lock_guard<std::mutex> lk(m_mutex);
+        if (_ready_to_update) return;
         _ready_to_update = true;
     }
 
@@ -153,8 +158,10 @@ namespace RenderSpace {
 
     void Drawable::_deepcopy(const Drawable& element) {
         std::lock_guard<std::mutex> lk(m_mutex);
-        _ready_to_draw = element._ready_to_draw;
-        _ready_to_update = element._ready_to_update;
+        // _ready_to_draw = element._ready_to_draw;
+        // _ready_to_update = element._ready_to_update;
+        _ready_to_draw = false;
+        _ready_to_update = false;
         m_type = element.m_type;
         m_triangles.assign(element.m_triangles.begin(), element.m_triangles.end());
         m_edges.assign(element.m_edges.begin(), element.m_edges.end());

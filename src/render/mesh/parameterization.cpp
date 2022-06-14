@@ -10,13 +10,18 @@
 #include <utility>
 #include <chrono>
 #include <ctime>
+#include <thread>
+#include "../libs/tgaimage/tgaimage.h"
 
 using namespace std;
 using namespace glm;
 
 namespace RenderSpace {
-Parameterization::Parameterization(MeshDrawable* uns_mesh, MeshDrawable* param_mesh, MeshDrawable* str_mesh)
-    : m_uns_mesh(uns_mesh), m_param_mesh(param_mesh), m_str_mesh(str_mesh), m_scale(10) {}
+Parameterization::Parameterization(
+    shared_ptr<MeshDrawable> uns_mesh,
+    shared_ptr<MeshDrawable> param_mesh,
+    shared_ptr<MeshDrawable> str_mesh
+    ): m_uns_mesh(uns_mesh), m_param_mesh(param_mesh), m_str_mesh(str_mesh), m_scale(10) {}
 
 Parameterization::~Parameterization() {}
 
@@ -25,6 +30,10 @@ void Parameterization::parameterize(ParamMethod pmodel) {
     vector<OrderedEdge> edge_inner;
     // 先获取边缘和非边缘边
     _remark_edges(edge_bound, edge_inner);
+    if (edge_bound.empty()) {
+        _cut_mesh_open(edge_inner);
+        _remark_edges(edge_bound, edge_inner);
+    }
     // 需要将边缘边有序遍历 v1->v3, v3->v2, v2->v1
     _topology_reorder(edge_bound);
     // 参数平面 边缘点 根据edge_bound 顺序计算得到
@@ -52,19 +61,19 @@ void Parameterization::parameterize(ParamMethod pmodel) {
 }
 
 void Parameterization::resample(uint32_t num_samples) {
-    MeshDrawable sample_mesh;
     auto& uns_vertices = m_uns_mesh->get_vertices();
     auto& param_vertices = m_param_mesh->get_vertices();
-    auto& sample_vertices = sample_mesh.get_vertices();
+    vector<RenderSpace::Vertex> sample_vertices;
     auto& str_vertices = m_str_mesh->get_vertices();
     auto& str_trias = m_str_mesh->get_triangles();
 
+    TGAImage image(int(num_samples) * 2, int(num_samples) * 2, TGAImage::RGB);
     for (auto ir = 0; ir < num_samples; ++ir) {
         for (auto ic = 0; ic < num_samples; ++ic) {
             // 在参数平面上的点
             auto x = m_scale * (ic + 0.5) / num_samples - m_scale / 2;
             auto y = m_scale * (ir + 0.5) / num_samples - m_scale / 2;
-            sample_vertices.push_back(Vertex(vec3(x, y, 0), vec3(1.0), vec3(0.0)));
+            sample_vertices.emplace_back(Vertex(vec3(x, y, 0), vec3(0.0), vec3(0.0)));
             // 逆映射到三维空间
             const Triangle spot_trias = _which_trias_in(vec2(x, y));
             auto tot_area = _trias_area(param_vertices[spot_trias.VertexIdx.x].Position,
@@ -85,7 +94,16 @@ void Parameterization::resample(uint32_t num_samples) {
             
             // shift
             str_point += vec3(10.0, 0.0, 0.0);
-            str_vertices.push_back(Vertex(str_point, vec3(1.0), vec3(0.0)));
+            str_vertices.emplace_back(Vertex(str_point, vec3(0.0), vec3(0.0)));
+
+            for (int idx = 0; idx < 4; ++idx) {
+                image.set(ic * 2 + idx % 2, ir * 2 + idx / 2, TGAColor(
+                    static_cast<uint8_t>(((*reinterpret_cast<uint32_t*>(&str_point.x)) >> (idx * 8)) & 0xFF),
+                    static_cast<uint8_t>(((*reinterpret_cast<uint32_t*>(&str_point.y)) >> (idx * 8)) & 0xFF),
+                    static_cast<uint8_t>(((*reinterpret_cast<uint32_t*>(&str_point.z)) >> (idx * 8)) & 0xFF)
+                ));
+            }
+            
             /**
              *  retopology
              *  [idx-max_col-1] ----- [idx-max_col]
@@ -94,17 +112,22 @@ void Parameterization::resample(uint32_t num_samples) {
              */
             if (ir > 0 && ic > 0) {
                 auto idx = sample_vertices.size() - 1;
-                str_trias.push_back(Triangle(idx, idx - num_samples, idx - 1));
-                str_trias.push_back(Triangle(idx - 1, idx - num_samples, idx - num_samples - 1));
+                str_trias.emplace_back(Triangle(idx, idx - num_samples, idx - 1));
+                str_trias.emplace_back(Triangle(idx - 1, idx - num_samples, idx - num_samples - 1));
             }
         }
     }
 
-    // sample_mesh.save_OBJ("models/sample.obj");
+    image.write_tga_file("static/geoimage/resample.tga");
+
+    m_str_mesh->ready_to_update();
+    m_str_mesh->save_OBJ("static/models/test.obj");
 }
 
 void Parameterization::_remark_edges(vector<OrderedEdge>& edge_bound,
                                      vector<OrderedEdge>& edge_inner) {
+    edge_bound.clear();
+    edge_inner.clear();
     set<OrderedEdge> edge_bound_set;
     set<OrderedEdge> edge_inner_set;
     // 构造Edge集合，判断只与一个三角形相邻的边
@@ -115,11 +138,7 @@ void Parameterization::_remark_edges(vector<OrderedEdge>& edge_bound,
             int vidx = std::min(tri.VertexIdx[i], tri.VertexIdx[(i + 1) % 3]);
             int vidx_next = std::max(tri.VertexIdx[i], tri.VertexIdx[(i + 1) % 3]);
             OrderedEdge edge(vidx, vidx_next);
-            if (edge_count_map.find(edge) == edge_count_map.end()) {
-                edge_count_map[edge] = 1;
-            } else {
-                edge_count_map[edge]++;
-            }
+            edge_count_map[edge]++;
         }
     }
     for (auto& [edge, count] : edge_count_map) {
@@ -133,6 +152,20 @@ void Parameterization::_remark_edges(vector<OrderedEdge>& edge_bound,
     }
     edge_bound.assign(edge_bound_set.begin(), edge_bound_set.end());
     edge_inner.assign(edge_inner_set.begin(), edge_inner_set.end());
+}
+
+void Parameterization::_cut_mesh_open(const vector<OrderedEdge>& tot_edge) {
+    // 对于不同亏格的流形需要不同的切割方法，这里默认亏格为0
+    // 随机找路径并切割
+    vector<OrderedEdge> cutpath;
+    // 邻接表
+    unordered_map<int, unordered_set<int>> adj_vlist;
+    for (auto& edge : tot_edge) {
+        adj_vlist[edge.first].insert(edge.second);
+        adj_vlist[edge.second].insert(edge.first);
+    }
+    _find_cutpath(cutpath, adj_vlist);
+    _build_mesh_by_cutpath(cutpath);
 }
 
 void Parameterization::_topology_reorder(vector<OrderedEdge>& edge_bound) {
@@ -168,7 +201,7 @@ void Parameterization::_topology_reorder(vector<OrderedEdge>& edge_bound) {
                 vidx_next = adj_list[vidx][1];
             }
         }
-        edge_bound_reorder.push_back(OrderedEdge(vidx, vidx_next));
+        edge_bound_reorder.emplace_back(OrderedEdge(vidx, vidx_next));
         m_bound_length +=
             length(vertices[vidx].Position - vertices[vidx_next].Position);
         vidx = vidx_next;
@@ -300,13 +333,13 @@ void Parameterization::_init_weights(
                                             vertices[vj].Position,
                                             vertices[vk].Position));
             }
-            _weight /= adj_vt.size();
+            _weight /= static_cast<float>(adj_vt.size());
 
-            m_weights[OrderedEdge(vi, vj)] = _weight;
+            m_weights[OrderedEdge(vi, vj)] = -_weight;
             // weights中 i=j无意义，但是可以预存ij相等的情况，方便Laplacian
             // matrix的计算 默认值是0
-            m_weights_diag[vi] += _weight;
-            m_weights_diag[vj] += _weight;
+            m_weights[OrderedEdge(vi, vi)] += _weight;
+            m_weights[OrderedEdge(vj, vj)] += _weight;
         }
         else if (pmodel == ParamMethod::Spring) {
             // compute \lambda_{ij} = D_{ij} / \sum_{k \in N_i} D_{ik}
@@ -315,10 +348,10 @@ void Parameterization::_init_weights(
             for (auto vk : adj_list[vi]) {
                 sum_weight += 1.0f; // modify if D_{ij} != 1
             }
-            float _weight = 1.0f / sum_weight;
-            m_weights[OrderedEdge(vi, vj)] = _weight;
-            m_weights_diag[vi] += _weight;
-            m_weights_diag[vj] += _weight;
+            _weight = 1.0f / sum_weight;
+            m_weights[OrderedEdge(vi, vj)] = -_weight;
+            m_weights[OrderedEdge(vi, vi)] += _weight;
+            m_weights[OrderedEdge(vj, vj)] += _weight;
         }
         else {
             // unknown model
@@ -398,18 +431,25 @@ void Parameterization::_solve_Laplacian_equation(
         }
         _value_mat.push_back(-_row_vec);
     }
-    // 设置迭代初值 (0.0, 0.0)
+    // 设置迭代初值
     f_1.resize(mat1_col_count, vec2(0.5f, 0.5f));
-    // 进行迭代求解
 
-    Jacobi_Iteration(r_idx_1, c_idx_1, f_1, _value_mat, 0.0001f);
+    // 进行迭代求解
+    for (int epoch = 0; epoch < 400; ++epoch) {
+        if (epoch % 50 == 0)
+        cout << "[EPOCH] " << epoch << endl;
+        Jacobi_Iteration(r_idx_1, c_idx_1, f_1, _value_mat, 0.1f, 5);
+        _build_param_mesh(r_idx_1, c_idx_2, f_1, f_2);
+    }
+    
 }
 
 void Parameterization::Jacobi_Iteration(const vector<int>& r_idx,
                                               const vector<int>& c_idx,
                                               vector<vec2>& f,
                                               const vector<vec2>& b,
-                                              const float epsilon  // 允许的误差
+                                              const float epsilon,  // 允许的误差
+                                              const int max_iter
 ) {
     const int row_max = r_idx.size();
     const int col_max = c_idx.size();
@@ -418,8 +458,7 @@ void Parameterization::Jacobi_Iteration(const vector<int>& r_idx,
     assert(row_max == col_max);
     assert(row_max == f_max);
 
-    const int _max_iter = 1000;  // 最大迭代次数
-    for (int _iter_count = 0; _iter_count < _max_iter; ++_iter_count) {
+    for (int _iter_count = 0; _iter_count < max_iter; ++_iter_count) {
         float _residual = 0.0f;
         auto start = chrono::system_clock::now();
         vector<vec2> _new_f(f);
@@ -442,8 +481,9 @@ void Parameterization::Jacobi_Iteration(const vector<int>& r_idx,
         auto end = chrono::system_clock::now();
         chrono::duration<double> elapsed_seconds = end - start;
         time_t end_time = chrono::system_clock::to_time_t(end);
-        if (_iter_count % 50 == 0)
-        cout << ">> " << ctime(&end_time) << _iter_count << "/" << _max_iter << " ==> " << _residual << "  | cost " << elapsed_seconds.count() << endl;
+        // if (_iter_count % 50 == 0) {
+        //     cout << ">> " << ctime(&end_time) << _iter_count << "/" << max_iter << " ==> " << _residual << "  | cost " << elapsed_seconds.count() << endl;
+        // }
         if (_residual < epsilon) {
             break;
         }
@@ -454,7 +494,6 @@ void Parameterization::_build_param_mesh(const vector<int>& vt_inner,
                                    const vector<int>& vt_bound,
                                    const vector<vec2>& param_inner,
                                    const vector<vec2>& param_bound) {
-    cout << "[DEBUG] rebuilding" << endl;
     // 对vt_inner, vt_bound构建倒排索引
     map<int, int> vt_inner_idx;
     map<int, int> vt_bound_idx;
@@ -475,7 +514,7 @@ void Parameterization::_build_param_mesh(const vector<int>& vt_inner,
     tar_tris.assign(ori_tris.begin(), ori_tris.end());
 
     // 重设顶点位置
-    const int sz = ori_vertices.size();
+    const auto sz = ori_vertices.size();
     for (int i = 0; i < sz; ++i) {
         vec2 _v(0.0, 0.0);
         if (vt_inner_idx.find(i) != vt_inner_idx.end()) {
@@ -485,25 +524,19 @@ void Parameterization::_build_param_mesh(const vector<int>& vt_inner,
         } else {
             cout << "[ERROR] 发现非法顶点索引" << endl;
         }
-        tar_vertices.push_back(
-            Vertex(vec3(_v.x, _v.y, 0.0), vec3(1.0), vec3(1.0)));
+        tar_vertices.emplace_back(
+            Vertex(vec3(_v.x, _v.y, 0.0), vec3(0.0), vec3(1.0)));
     }
+    m_param_mesh->ready_to_update();
 }
 
 float Parameterization::_Laplacian_val(int i, int j) {
-    if (i > j)
-        swap(i, j);
-    if (i != j) {
-        auto iter = m_weights.find(OrderedEdge(i, j));
-        if (iter == m_weights.end()) {
-            return 0.0f;
-        } else {
-            return -iter->second;
-        }
-    } else {
-        return m_weights_diag.find(i)->second;
+    if (i > j) swap(i, j);
+    auto iter = m_weights.find(OrderedEdge(i, j));
+    if (iter != m_weights.end()) {
+        return iter->second;
     }
-    return 0;
+    return 0.0f;
 }
 
 float Parameterization::_cot(float rad) const {
@@ -532,7 +565,7 @@ float Parameterization::_trias_area(const vec3& v0, const vec3& v1, const vec3& 
 const Triangle Parameterization::_which_trias_in(const vec2& pos) const {
     const auto& _vertices = m_param_mesh->get_vertices();
     const auto& _tris = m_param_mesh->get_triangles();
-    const int _sz = _vertices.size();
+    const auto _sz = _vertices.size();
     for (const auto& tri : _tris) {
         const vec3& _v0 = _vertices[tri.VertexIdx.x].Position;
         const vec3& _v1 = _vertices[tri.VertexIdx.y].Position;
@@ -551,6 +584,109 @@ const Triangle Parameterization::_which_trias_in(const vec2& pos) const {
         }
     }
     return Triangle(0.0, 0.0, 0.0);
+}
+
+void Parameterization::_find_cutpath(
+    vector<OrderedEdge>& cutpath,
+    unordered_map<int, unordered_set<int>>& adj_vlist,
+    int curr_vt,
+    int depth
+) {
+    // dfs
+    if (depth == 0) {
+        return;
+    }
+    auto& _vlist = adj_vlist[curr_vt];
+    int picked_vt = 0;
+    // remove duplicated
+    if (cutpath.empty()) {
+        picked_vt = *_vlist.begin();
+    }
+    else {
+        for (auto& vt : _vlist) {
+            picked_vt = vt;
+            for (auto& eg : cutpath) {
+                if (vt == eg.first || vt == eg.second) {
+                    picked_vt = -1;
+                    break;
+                }
+            }
+            if (picked_vt > 0) {
+                break;
+            }
+        }
+    }
+    // shuffle(_vlist.begin(), _vlist.end(), depth ^ curr_vt);
+    cutpath.emplace_back(OrderedEdge(curr_vt, picked_vt));
+    return _find_cutpath(cutpath, adj_vlist, picked_vt, depth - 1);
+}
+
+void Parameterization::_build_mesh_by_cutpath(const vector<OrderedEdge>& cutpath) {
+    auto& verts = m_uns_mesh->get_vertices();
+    auto& tris = m_uns_mesh->get_triangles();
+    auto tris_size = tris.size();
+    auto cut_size = cutpath.size();
+    unordered_map<int, vector<int>> adj_trias; // v => vec<trias>
+    for (auto tridx = 0; tridx < tris_size; ++tridx) {
+        adj_trias[tris[tridx].VertexIdx.x].emplace_back(tridx);
+        adj_trias[tris[tridx].VertexIdx.y].emplace_back(tridx);
+        adj_trias[tris[tridx].VertexIdx.z].emplace_back(tridx);
+    }
+
+    auto is_edge_in_triangle = [&](const OrderedEdge& edge, int tridx)-> bool {
+        return ((tris[tridx].vt_in(edge.first) >= 0) && tris[tridx].vt_in(edge.second) >= 0);
+    };
+
+    int pivot_tri = -1;
+    int target_vt = cutpath[0].first;
+    int last_new = -1;
+    if (target_vt != cutpath[1].first && target_vt != cutpath[1].second) {
+        target_vt = cutpath[0].second;
+    }
+    // find pivot in first
+    for (auto tridx = 0; tridx < tris_size; ++tridx) {
+        if (is_edge_in_triangle(cutpath[0], tridx)) {
+            pivot_tri = tridx;
+            break;
+        }
+    }
+
+    // for others
+    for (auto edge_idx = 1; edge_idx < cut_size; ++edge_idx) {
+        auto& edge = cutpath[edge_idx];
+        assert(edge.first == target_vt || edge.second == target_vt);
+        last_new = verts.size();
+        verts.emplace_back(verts[target_vt]);
+        // find new pivot_tri
+        while (!is_edge_in_triangle(edge, pivot_tri)) {
+            int new_pivot_tri = -1;
+            for (auto _tri : adj_trias[target_vt]) {
+                if (is_edge_in_triangle(cutpath[edge_idx - 1], _tri)) {
+                    continue;
+                }
+                if (_tri != pivot_tri && tris[_tri].is_neighbor(tris[pivot_tri])) {
+                    new_pivot_tri = _tri;
+                    break;
+                }
+            }
+            // split
+            int fd_vt_idx = tris[pivot_tri].vt_in(target_vt);
+            tris[pivot_tri].VertexIdx[fd_vt_idx] = last_new;
+            pivot_tri = new_pivot_tri;
+        }
+        // update target_vt
+        if (edge_idx != cut_size - 1) {
+            if (edge.first == target_vt) {
+                target_vt = edge.second;
+            }
+            else {
+                target_vt = edge.first;
+            }
+        }
+    }
+    // for last one
+    int fd_vt_idx = tris[pivot_tri].vt_in(target_vt);
+    tris[pivot_tri].VertexIdx[fd_vt_idx] = last_new;
 }
 
 }  // namespace RenderSpace

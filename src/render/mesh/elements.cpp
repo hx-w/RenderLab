@@ -190,6 +190,21 @@ namespace RenderSpace {
         return true;
     }
 
+    void MeshDrawable::save_OBJ(const string& filename) {
+        ofstream ofs(filename);
+        if (!ofs.good()) {
+            cout << "[ERROR] " << "Can't open file: " << filename << endl;
+            return;
+        }
+        for (int i = 0; i < m_vertices.size(); ++i) {
+            ofs << "v " << m_vertices[i].Position.x << " " << m_vertices[i].Position.y << " " << m_vertices[i].Position.z << endl;
+        }
+        for (int i = 0; i < m_triangles.size(); ++i) {
+            ofs << "f " << m_triangles[i].VertexIdx.x + 1 << " " << m_triangles[i].VertexIdx.y + 1 << " " << m_triangles[i].VertexIdx.z + 1 << endl;
+        }
+        ofs.close();
+    }
+
     // 需要同步更新 center aabb radius
     void MeshDrawable::add_vertex_raw(const Vertex& v) {
         std::lock_guard<std::mutex> lk(m_mutex);

@@ -1,7 +1,11 @@
+.idea/
+cmake-build-debug/
+imgui.ini
 *.pdf
 models/
 *.pkl
 *.csv
+*.tga
 main
 main_table
 main_test

@@ -2,7 +2,6 @@
 
 #include <limits>
 #include "../libs/imgui/imgui.h"
-#include <iostream>
 
 using namespace imgui_ext;
 
@@ -55,14 +54,10 @@ const bool file_browser_modal::render(const bool isVisible, std::string& outPath
         ImGuiWindowFlags_AlwaysAutoResize;
 
     bool result = false;
-
     if (m_oldVisibility != isVisible) {
         m_oldVisibility  = isVisible;
         //Visiblity has changed.
-
         if (isVisible) {
-            //Only run when the visibility state changes to visible.
-
             //Reset the path to the initial path.
             m_currentPath = fs::current_path();
             m_currentPathIsDir = true;
@@ -80,18 +75,14 @@ const bool file_browser_modal::render(const bool isVisible, std::string& outPath
     if (ImGui::BeginPopupModal(m_title, &isOpen, modal_flags)) {
 
         if (ImGui::ListBox("##", &m_selection, vector_file_items_getter, &m_filesInScope, m_filesInScope.size(), 10)) {
-
             //Update current path to the selected list item.
             m_currentPath = m_filesInScope[m_selection].path;
             m_currentPathIsDir = fs::is_directory(m_currentPath);
-
             //If the selection is a directory, repopulate the list with the contents of that directory.
             if (m_currentPathIsDir) {
                 get_files_in_path(m_currentPath, m_filesInScope);
             }
-
         }
-
         //Auto resize text wrap to popup width.
         ImGui::PushItemWidth(-1);
         ImGui::TextWrapped("%s", m_currentPath.string().data());
@@ -114,8 +105,8 @@ const bool file_browser_modal::render(const bool isVisible, std::string& outPath
             ImGui::PopStyleColor();
             ImGui::PopStyleColor();
             ImGui::PopStyleColor();
-
-        } else {
+        }
+        else {
             if (ImGui::Button("Select")) {
                 ImGui::CloseCurrentPopup();
 
@@ -123,7 +114,6 @@ const bool file_browser_modal::render(const bool isVisible, std::string& outPath
                 result = true;
                 m_oldVisibility = false;
             }
-
         }
 
         ImGui::EndPopup();
@@ -132,5 +122,6 @@ const bool file_browser_modal::render(const bool isVisible, std::string& outPath
         result = true;
         m_oldVisibility = false;
     }
+
     return result;
 }

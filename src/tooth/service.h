@@ -67,6 +67,7 @@ namespace ToothSpace {
 
         // 获取face1上的angle_u/angle_v/length_u/length_v
         void _get_face1_info(const UVPoint& pivot, Scalar& angle_u, Scalar& angle_v, Scalar& length_u, Scalar& length_v);
+
     private:
         std::string m_name; // 名称
         int m_scale;

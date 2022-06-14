@@ -7,7 +7,7 @@
 #include "libs/imgui/imgui.h"
 #include "libs/imgui/imgui_impl_glfw.h"
 #include "libs/imgui/imgui_impl_opengl3.h"
-#include "filebrowser/browser.h"
+#include "imgui_ext/browser.h"
 
 using namespace std;
 using namespace fundamental;
@@ -19,6 +19,7 @@ namespace RenderSpace {
 
         // 文本渲染器
         m_text_service = make_unique<TextService>(m_shader_text);
+        m_logger = make_unique<imgui_ext::Logger>(20);
 
         // 参数化实验
         auto _id_uns = create_mesh("uns_mesh", DrawableType::DRAWABLE_TRIANGLE);
@@ -35,7 +36,6 @@ namespace RenderSpace {
         //     pmethod.parameterize(ParamMethod::Laplace);
         //     pmethod.resample(100);
         // });
-
     }
 
     RenderService::~RenderService() {
@@ -163,6 +163,8 @@ namespace RenderSpace {
         auto new_mesh = make_shared<MeshDrawable>(name, type);
         new_mesh->set_shader(m_shader);
         m_meshes_map[_id] = new_mesh;
+
+        m_logger->log("created mesh: " + name + "(" + to_string(_id) + ")");
         return _id;
     }
 
@@ -273,11 +275,18 @@ namespace RenderSpace {
             if (fileBrowser.render(true, path)) {
                 show_import_modal = false;
                 if (path.size() > 0 && path.substr(path.size() - 4, 4) == ".obj") {
-                    auto _id = create_mesh(path, DrawableType::DRAWABLE_TRIANGLE);
+                    string name = path.substr(0, path.size() - 4);
+                    auto iter = name.find_last_of('/');
+                    if (iter != string::npos) {
+                        name = name.substr(iter + 1);
+                    }
+                    auto _id = create_mesh(name, DrawableType::DRAWABLE_TRIANGLE);
                     m_meshes_map.at(_id)->load_OBJ(path);
                 }
             }
         }
+
+        m_logger->render();
         // Rendering
         ImGui::Render();
     }

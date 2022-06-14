@@ -119,7 +119,7 @@ namespace RenderSpace {
             m_service->imGui_render(&m_win_widget);
             // clear
             // glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
-            const auto& clr = m_win_widget.clear_color;
+            const auto& clr = m_win_widget.bgColor;
             glClearColor(clr.x * clr.w, clr.y * clr.w, clr.z * clr.w, clr.w);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 
@@ -172,8 +172,8 @@ namespace RenderSpace {
         glm::mat4 view = glm::lookAt(m_win_widget.cameraPos, m_win_widget.cameraPos + m_win_widget.cameraFront, m_win_widget.cameraUp);
         m_shader.setMat4("view", view);
 
-        m_shader.setVec3("lightColor",  1.0f, 1.0f, 1.0f);
-        m_shader.setVec3("lightPos", 0.0, 0.0, 0.0);
+        m_shader.setVec3("lightColor",  m_win_widget.lightColor);
+        m_shader.setVec3("lightPos", m_win_widget.lightPos);
         m_shader.setVec3("viewPos", m_win_widget.cameraPos);
     }
 

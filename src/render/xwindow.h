@@ -6,7 +6,6 @@
 #include "./libs/glm/gtc/type_ptr.hpp"
 #include "./libs/GLFW/glfw3.h"
 #include "service.h"
-#include "libs/imgui/imgui.h"
 
 namespace RenderSpace {
     class RenderService;
@@ -51,10 +50,15 @@ namespace RenderSpace {
         GLenum shade_mode = GL_LINE;
         std::shared_ptr<RenderService> m_service;
         bool all_visible = true;
-        ImVec4 clear_color = ImVec4(0.8f, 0.8f, 0.8f, 1.00f);
+        glm::vec4 bgColor = glm::vec4(0.8f, 0.8f, 0.8f, 1.00f);
 
         float realX = 0.0f;
         float realY = 0.0f;
+
+        // light
+        glm::vec3 lightPos = glm::vec3(0.0f, 0.0f, 0.0f);
+        glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+
     private:
         bool T_down = false;
         bool H_down = false;

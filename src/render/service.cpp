@@ -259,10 +259,15 @@ namespace RenderSpace {
         // controller
         {
             ImGui::Begin("Controller");                          // Create a window called "Hello, world!" and append into it.
-
-            ImGui::ColorEdit3("background color", (float*)&win->clear_color); // Edit 3 floats representing a color
+            ImGui::Text("Environment:");
+            ImGui::ColorEdit3("background color", (float*)&win->bgColor); // Edit 3 floats representing a color
+            ImGui::ColorEdit3("light color", (float*)&win->lightColor); // Edit 3 floats representing a color
+            ImGui::DragFloat3("light position", (float*)&win->lightPos);
+            ImGui::Separator();
             ImGui::SliderFloat("camera speed", &win->cameraSpeed, 1.0f, 15.0f); 
+            ImGui::DragFloat3("camera position", (float*)&win->cameraPos);
 
+            ImGui::Spacing();
             if (ImGui::Button("Import OBJ")) {
                 show_import_modal = !show_import_modal;
             }

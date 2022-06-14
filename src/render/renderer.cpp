@@ -4,7 +4,6 @@
 #include "libs/imgui/imgui_impl_glfw.h"
 #include "libs/imgui/imgui_impl_opengl3.h"
 
-
 using namespace std;
 using namespace fundamental;
 
@@ -110,42 +109,14 @@ namespace RenderSpace {
     }
 
     int Renderer::exec() {
-        // Our state
-        bool show_demo_window = true;
-        bool show_another_window = false;
-        ImVec4 clear_color = ImVec4(0.8f, 0.8f, 0.8f, 1.00f);
         while (!glfwWindowShouldClose(m_window)) {
             glfwPollEvents();
-            // Start the Dear ImGui frame
-            ImGui_ImplOpenGL3_NewFrame();
-            ImGui_ImplGlfw_NewFrame();
-            ImGui::NewFrame();
 
-            // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
-            {
-                static int counter = 0;
-
-                ImGui::Begin("Controller");                          // Create a window called "Hello, world!" and append into it.
-
-                ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-                ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-                ImGui::Checkbox("Another Window", &show_another_window);
-
-                ImGui::ColorEdit3("background color", (float*)&clear_color); // Edit 3 floats representing a color
-
-                if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-                    counter++;
-                ImGui::SameLine();
-                ImGui::Text("counter = %d", counter);
-
-                ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-                ImGui::End();
-            }
-            // Rendering
-            ImGui::Render();
+            m_service->imGui_render(&m_win_widget);
             // clear
             // glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
-            glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
+            const auto& clr = m_win_widget.clear_color;
+            glClearColor(clr.x * clr.w, clr.y * clr.w, clr.z * clr.w, clr.w);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 
             // shade mode

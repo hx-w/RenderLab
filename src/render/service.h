@@ -7,12 +7,14 @@
 #include <unordered_map>
 #include <functional>
 #include "shader.hpp"
+#include "xwindow.h"
 #include "./text/textbox.h"
 #include "./mesh/elements.h"
 #include "../libs/coords.h"
 #include "../infrastructure/communication/AutoBus.hpp"
 
 namespace RenderSpace {
+    class RenderWindowWidget;
     typedef std::unordered_map<std::string, pthread_t> ThreadMap;
 
     class RenderService {
@@ -25,6 +27,8 @@ namespace RenderSpace {
         void draw_all();
 
         void update();
+
+        void imGui_render(RenderWindowWidget*);
 
         // all mesh
         void set_visible(bool visible);

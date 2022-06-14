@@ -4,7 +4,10 @@
 #include <iostream>
 #include <thread>
 
-#include "./libs/imgui/imgui.h"
+#include "libs/imgui/imgui.h"
+#include "libs/imgui/imgui_impl_glfw.h"
+#include "libs/imgui/imgui_impl_opengl3.h"
+#include "filebrowser/browser.h"
 
 using namespace std;
 using namespace fundamental;
@@ -118,8 +121,6 @@ namespace RenderSpace {
         for (auto [id, ptr]: m_meshes_map) {
             ptr->draw();
         }
-        bool my_tool_active = true;
-        float my_color[4];
     }
 
     void RenderService::update() {
@@ -243,5 +244,55 @@ namespace RenderSpace {
         m_thread_map[tname] = thrd.native_handle();
         thrd.detach();
         std::cout << "[INFO] thread " << tname << " created" << std::endl;
+    }
+
+    void RenderService::imGui_render(RenderWindowWidget* win) {
+        // Start the Dear ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        static bool show_filebrowser = false;
+        // controller
+        {
+            ImGui::Begin("Controller");                          // Create a window called "Hello, world!" and append into it.
+
+            // ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+            // ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
+            // ImGui::Checkbox("Another Window", &show_another_window);
+
+            ImGui::ColorEdit3("background color", (float*)&win->clear_color); // Edit 3 floats representing a color
+
+            if (ImGui::Button("Button")) {
+                show_filebrowser = true;
+            }
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            ImGui::End();
+        }
+
+        if (show_filebrowser) {
+            static imgui_ext::file_browser_modal fileBrowser("Import");
+
+            // Had to use this awkward approach to get the menu item to open the pop-up modal.
+            bool isImportClicked = false;
+            if (ImGui::BeginMainMenuBar()) {
+                if (ImGui::BeginMenu("File")) {
+                    if (ImGui::MenuItem("Import")) {
+                        isImportClicked = true;
+                    }
+                    ImGui::EndMenu();
+                }
+                ImGui::EndMainMenuBar();
+            }
+
+
+            std::string path;
+            if (fileBrowser.render(isImportClicked, path)) {
+                // The "path" string will hold a valid file path here.
+                show_filebrowser = false;
+            }
+        }
+        // Rendering
+        ImGui::Render();
     }
 }

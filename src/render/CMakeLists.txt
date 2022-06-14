@@ -1,14 +1,11 @@
 # 添加目标链接
 if (APPLE)
     set(GLFW_LINK ${CMAKE_CURRENT_SOURCE_DIR}/libs/GLFW/libglfw.3.dylib)
-    set(FREETYPE_LINK ${CMAKE_CURRENT_SOURCE_DIR}/libs/freetype/libfreetype.dylib)
 endif()
 if (WIN32)
     set(GLFW_LINK ${CMAKE_CURRENT_SOURCE_DIR}/libs/GLFW/glfw3.lib)
-    set(FREETYPE_LINK ${CMAKE_CURRENT_SOURCE_DIR}/libs/freetype/freetype.lib)
 endif()
 link_libraries(${GLFW_LINK})
-link_libraries(${FREETYPE_LINK})
 
 file(GLOB_RECURSE CPPSRCS ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 file(GLOB_RECURSE CSRCS ${CMAKE_CURRENT_SOURCE_DIR}/*.c)

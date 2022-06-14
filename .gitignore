@@ -1,4 +1,6 @@
 .idea/
+freetype/
+freetype_back/
 cmake-build-debug/
 imgui.ini
 *.pdf
@@ -49,7 +51,7 @@ __pycache__/
 *.lai
 *.la
 *.a
-*.lib
+# *.lib
 
 # Executables
 *.exe

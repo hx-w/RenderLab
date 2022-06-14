@@ -1,6 +1,6 @@
 #pragma once
 
-#include <memory.h>
+#include <memory>
 #include <unordered_map>
 
 namespace RenderSpace {

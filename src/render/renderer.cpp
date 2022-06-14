@@ -60,15 +60,19 @@ namespace RenderSpace {
         glfwSetWindowUserPointer(m_window, &m_win_widget);
 
         glfwSetCursorPosCallback(m_window, [](GLFWwindow* w, double xpos, double ypos) {
+            if (!ImGui::GetIO().WantCaptureMouse)
             static_cast<RenderWindowWidget*>(glfwGetWindowUserPointer(w))->mouse_callback(w, xpos, ypos);
         });
         glfwSetScrollCallback(m_window, [](GLFWwindow* w, double xoffset, double yoffset) {
+            if (!ImGui::GetIO().WantCaptureMouse)
             static_cast<RenderWindowWidget*>(glfwGetWindowUserPointer(w))->scroll_callback(w, xoffset, yoffset);
         });
         glfwSetFramebufferSizeCallback(m_window, [](GLFWwindow* w, int width, int height) {
+            if (!ImGui::GetIO().WantCaptureMouse)
             static_cast<RenderWindowWidget*>(glfwGetWindowUserPointer(w))->framebuffer_size_callback(w, width, height);
         });
         glfwSetMouseButtonCallback(m_window, [](GLFWwindow* w, int button, int action, int modes) {
+            if (!ImGui::GetIO().WantCaptureMouse)
             static_cast<RenderWindowWidget*>(glfwGetWindowUserPointer(w))->mouse_button_callback(w, button, action, modes);
         });
         // glad: load all OpenGL function pointers
@@ -123,7 +127,9 @@ namespace RenderSpace {
             glPolygonMode(GL_FRONT_AND_BACK, m_win_widget.shade_mode);
 
             // input
+            // if (!ImGui::GetIO().WantCaptureKeyboard) {
             m_win_widget.processInput(m_window);
+            // }
 
             update_transform();
 

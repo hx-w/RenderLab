@@ -28,15 +28,15 @@ namespace RenderSpace {
     void RenderWindowWidget::processInput(GLFWwindow* window) {
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
-        float cameraSpeed = static_cast<float>(10.0 * deltaTime);
+        float cameraMove = cameraSpeed * deltaTime;
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-            cameraPos += cameraSpeed * cameraFront;
+            cameraPos += cameraMove * cameraFront;
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-            cameraPos -= cameraSpeed * cameraFront;
+            cameraPos -= cameraMove * cameraFront;
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-            cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+            cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraMove;
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-            cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+            cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraMove;
         if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) {
             if (!T_down) {
                 T_down = !T_down;
@@ -73,10 +73,10 @@ namespace RenderSpace {
             R_down = false;
         }
         if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-            cameraPos -= cameraSpeed * glm::vec3(0.0f, 1.0f, 0.0f);
+            cameraPos -= cameraMove * glm::vec3(0.0f, 1.0f, 0.0f);
         }
         if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-            cameraPos += cameraSpeed * glm::vec3(0.0f, 1.0f, 0.0f);
+            cameraPos += cameraMove * glm::vec3(0.0f, 1.0f, 0.0f);
         }
     }
 

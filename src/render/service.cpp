@@ -259,16 +259,13 @@ namespace RenderSpace {
         {
             ImGui::Begin("Controller");                          // Create a window called "Hello, world!" and append into it.
 
-            // ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-            // ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-            // ImGui::Checkbox("Another Window", &show_another_window);
-
             ImGui::ColorEdit3("background color", (float*)&win->clear_color); // Edit 3 floats representing a color
+            ImGui::SliderFloat("camera speed", &win->cameraSpeed, 1.0f, 15.0f); 
 
             if (ImGui::Button("Import OBJ")) {
                 show_import_modal = !show_import_modal;
             }
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
             ImGui::End();
         }
 

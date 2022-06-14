@@ -18,7 +18,7 @@ namespace RenderSpace {
 #if defined(_WIN32)
     typedef std::unordered_map<std::string, std::thread::native_handle_type> ThreadMap;
 #else
-    typedef std::unordered_map<std::string, thread_t> ThreadMap;
+    typedef std::unordered_map<std::string, pthread_t> ThreadMap;
 #endif
 
     class RenderService {

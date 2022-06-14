@@ -4,8 +4,6 @@ if (APPLE)
 endif()
 if (WIN32)
     set(GLFW_LINK ${CMAKE_CURRENT_SOURCE_DIR}/libs/GLFW/glfw3_x86.lib)
-elseif (WIN64 && !APPLE)
-    set(GLFW_LINK ${CMAKE_CURRENT_SOURCE_DIR}/libs/GLFW/glfw3_x64.lib)
 endif()
 link_libraries(${GLFW_LINK})
 

@@ -3,6 +3,7 @@
 
 #include "../libs/glad/glad.h"
 #include "../libs/GLFW/glfw3.h"
+#include "../imgui_ext/logger.h"
 
 using namespace std;
 namespace RenderSpace {
@@ -10,7 +11,10 @@ namespace RenderSpace {
         m_mutex.lock();
         ifstream ifs(filename);
         if (!ifs.good()) {
-            cout << "[ERROR] " << "Can't open file: " << filename << endl;
+            imgui_ext::Logger::get_instance()->log(
+                "can't open file: " + filename,
+                imgui_ext::LOG_ERROR
+            );
             return false;
         }
         string headStr;
@@ -138,7 +142,10 @@ namespace RenderSpace {
         _ready_to_update = false;
         ifstream ifs(filename);
         if (!ifs.good()) {
-            cout << "[ERROR] " << "Can't open file: " << filename << endl;
+            imgui_ext::Logger::get_instance()->log(
+                "can't open file: " + filename,
+                imgui_ext::LOG_ERROR
+            );
             return false;
         }
 
@@ -159,7 +166,7 @@ namespace RenderSpace {
                         stof(words[2]),
                         stof(words[3])
                     ),
-                    glm::vec3(0.0, 0.0, 0.0),
+                    glm::vec3(0.5, 0.5, 0.5),
                     glm::vec3(0.0, 0.0, 0.0)
                 );
             }
@@ -177,7 +184,7 @@ namespace RenderSpace {
             glm::vec3 v1 = m_vertices[tri.VertexIdx.x].Position;
             glm::vec3 v2 = m_vertices[tri.VertexIdx.y].Position;
             glm::vec3 v3 = m_vertices[tri.VertexIdx.z].Position;
-            glm::vec3 normal = glm::normalize(glm::cross(v2 - v1, v3 - v1));
+            glm::vec3 normal = -glm::normalize(glm::cross(v2 - v1, v3 - v1));
             m_vertices[tri.VertexIdx.x].Normal += normal;
             m_vertices[tri.VertexIdx.y].Normal += normal;
             m_vertices[tri.VertexIdx.z].Normal += normal;
@@ -193,7 +200,10 @@ namespace RenderSpace {
     void MeshDrawable::save_OBJ(const string& filename) {
         ofstream ofs(filename);
         if (!ofs.good()) {
-            cout << "[ERROR] " << "Can't open file: " << filename << endl;
+            imgui_ext::Logger::get_instance()->log(
+                "can't open file: " + filename,
+                imgui_ext::LOG_ERROR
+            );
             return;
         }
         for (int i = 0; i < m_vertices.size(); ++i) {

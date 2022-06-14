@@ -2,6 +2,7 @@
 
 #include "../libs/glad/glad.h"
 #include "../libs/GLFW/glfw3.h"
+#include "../imgui_ext/logger.h"
 #include <iostream>
 
 using namespace std;
@@ -99,6 +100,7 @@ namespace RenderSpace {
         if (m_vao == 0) {
             _gen_vao();
         }
+
         glBindVertexArray(m_vao);
 
         glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
@@ -158,8 +160,6 @@ namespace RenderSpace {
 
     void Drawable::_deepcopy(const Drawable& element) {
         std::lock_guard<std::mutex> lk(m_mutex);
-        // _ready_to_draw = element._ready_to_draw;
-        // _ready_to_update = element._ready_to_update;
         _ready_to_draw = false;
         _ready_to_update = false;
         m_type = element.m_type;

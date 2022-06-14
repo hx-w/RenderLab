@@ -6,10 +6,10 @@ namespace RenderSpace {
 
 namespace imgui_ext {
 
-    class MeshBox {
+    class MeshViewer {
     public:
-        MeshBox() = default;
-        ~MeshBox() = default;
+        MeshViewer() = default;
+        ~MeshViewer() = default;
 
         static void render(RenderSpace::RenderService* service);
     };

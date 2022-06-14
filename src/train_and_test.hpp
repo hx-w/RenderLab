@@ -153,52 +153,44 @@ void train_and_test(int scale, shared_ptr<RenderService> rservice) {
     // remove("static/dataset/uv_point.csv");
 
 
-    // thread ml_train_thread([&](){
-    //     // gen data
-    //     auto train_size = train_set.size();
-    //     for (auto id = 0; id < train_size; ++id) {
-    //         text_update(rservice, 0, id * 1.0 / train_size);
-    //         auto service = ToothSpace::make_service(train_set[id], scale);
-    //         service->retag_point();
-    //         text_update(rservice, 0, (id + 0.5) * 1.0 / train_size);
-    //         service->simulate();
-    //         text_update(rservice, 0, (id + 1.0) * 1.0 / train_size);
-    //     }
-    //     // train
-    //     cout << "[INFO] train ml model..." << endl;
-    //     text_update(rservice, 1, 0.0);
-    //     execute("python3 scripts/ml_train.py");
-    //     text_update(rservice, 1, 1.0);
-    // });
-    // ml_train_thread.join();
-
-    thread ml_predict_thread([&](){
-        this_thread::sleep_for(1000ms);
-        cout << "[INFO] ml predict..." << endl;
-        auto test_size = test_set.size();
-        for (auto id = 0; id < test_size; ++id) {
-            text_update(rservice, 3, id * 1.0 / test_size);
-            auto service = ToothSpace::make_service(test_set[id], scale);
-            service->retag_point_by_ml();
-            text_update(rservice, 3, (id + 0.5) * 1.0 / test_size);
-            service->simulate_by_ml();
-            text_update(rservice, 3, (id + 1.0) * 1.0 / test_size);
+    thread ml_train_thread([&](){
+        // gen data
+        auto train_size = train_set.size();
+        for (auto id = 0; id < train_size; ++id) {
+            auto service = ToothSpace::make_service(train_set[id], scale);
+            service->retag_point();
+            service->simulate();
         }
     });
+    ml_train_thread.join();
 
-    thread ml_server_thread([&](){
-        cout << "[INFO] start ml server..." << endl;
-        text_update(rservice, 2, 1.0);
-        execute("python3 scripts/ml_server.py");
-    });
+//     thread ml_predict_thread([&](){
+//         this_thread::sleep_for(1000ms);
+//         cout << "[INFO] ml predict..." << endl;
+//         auto test_size = test_set.size();
+//         for (auto id = 0; id < test_size; ++id) {
+//             text_update(rservice, 3, id * 1.0 / test_size);
+//             auto service = ToothSpace::make_service(test_set[id], scale);
+//             service->retag_point_by_ml();
+//             text_update(rservice, 3, (id + 0.5) * 1.0 / test_size);
+//             service->simulate_by_ml();
+//             text_update(rservice, 3, (id + 1.0) * 1.0 / test_size);
+//         }
+//     });
 
-#ifdef _WIN32
-    ml_server_thread.detach(); // background
-    ml_predict_thread.join();
-#else
-    ml_predict_thread.detach();
-    ml_server_thread.join(); // background
-#endif
+//     thread ml_server_thread([&](){
+//         cout << "[INFO] start ml server..." << endl;
+//         text_update(rservice, 2, 1.0);
+//         execute("python3 scripts/ml_server.py");
+//     });
+
+// #ifdef _WIN32
+//     ml_server_thread.detach(); // background
+//     ml_predict_thread.join();
+// #else
+//     ml_predict_thread.detach();
+//     ml_server_thread.join(); // background
+// #endif
 }
 
 

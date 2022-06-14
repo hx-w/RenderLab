@@ -23,8 +23,8 @@ namespace RenderSpace {
 
         // 参数化实验
         auto _id_uns = create_mesh("uns_mesh", DrawableType::DRAWABLE_TRIANGLE);
-        auto _id_param = create_mesh("param_mesh", DrawableType::DRAWABLE_TRIANGLE);
-        auto _id_str = create_mesh("str_mesh", DrawableType::DRAWABLE_TRIANGLE);
+        // auto _id_param = create_mesh("param_mesh", DrawableType::DRAWABLE_TRIANGLE);
+        // auto _id_str = create_mesh("str_mesh", DrawableType::DRAWABLE_TRIANGLE);
 
         m_meshes_map.at(_id_uns)->load_OBJ("static/models/uns.obj");
         // start_thread("param_thread", [&]() {
@@ -42,7 +42,6 @@ namespace RenderSpace {
         for (auto& [tname, thr] : m_thread_map) {
             pthread_cancel(thr);
             m_thread_map.erase(tname);
-            std::cout << "Thread " << tname << " killed:" << std::endl;
         }
     }
 
@@ -145,7 +144,7 @@ namespace RenderSpace {
         if (m_meshes_map.find(mesh_id) == m_meshes_map.end()) {
             return;
         }
-        cout << "[INFO] refresh Drawable: " << m_meshes_map[mesh_id]->get_name() << "(" << mesh_id << ")" << endl;
+        m_logger->log("refresh mesh: " + m_meshes_map[mesh_id]->get_name() + "(" + to_string(mesh_id) + ")");
         m_meshes_map[mesh_id]->ready_to_update();
     }
 
@@ -153,7 +152,7 @@ namespace RenderSpace {
         if (m_meshes_map.find(mesh_id) == m_meshes_map.end()) {
             return;
         }
-        cout << "[INFO] delete Drawable: " << m_meshes_map[mesh_id]->get_name() << "(" << mesh_id << ")" << endl;
+        m_logger->log("delete mesh: " + m_meshes_map[mesh_id]->get_name() + "(" + to_string(mesh_id) + ")");
         // m_meshes_map[mesh_id].reset();
         m_meshes_map.erase(mesh_id);
     }
@@ -164,7 +163,7 @@ namespace RenderSpace {
         new_mesh->set_shader(m_shader);
         m_meshes_map[_id] = new_mesh;
 
-        m_logger->log("created mesh: " + name + "(" + to_string(_id) + ")");
+        m_logger->log("create mesh: " + name + "(" + to_string(_id) + ")");
         return _id;
     }
 

@@ -20,9 +20,6 @@ namespace RenderSpace {
         m_autobus(make_unique<AutoBus>()) {
         setup();
 
-        // 文本渲染器
-        // m_text_service = make_unique<TextService>(m_shader_text);
-
         // 参数化实验
         auto _id_uns = create_mesh("uns_mesh", DrawableType::DRAWABLE_TRIANGLE);
         // auto _id_param = create_mesh("param_mesh", DrawableType::DRAWABLE_TRIANGLE);
@@ -115,12 +112,9 @@ namespace RenderSpace {
         m_shader_text.use();
         glm::mat4 projection = glm::ortho(0.0f, static_cast<GLfloat>(width), 0.0f, static_cast<GLfloat>(height));
         m_shader_text.setMat4("projection", projection);
-
-        // m_text_service->update_window_size(width, height);
     }
 
     void RenderService::draw_all() {
-        // m_text_service->draw();
         for (auto [id, ptr]: m_meshes_map) {
             ptr->draw();
         }

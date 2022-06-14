@@ -57,8 +57,6 @@ namespace RenderSpace {
     private:
         // 网格列表
         std::unordered_map<int, std::shared_ptr<MeshDrawable>> m_meshes_map;
-        // 文本渲染器 待删除
-        // std::unique_ptr<TextService> m_text_service;
 
         Shader m_shader; // 带光照模型的
         Shader m_shader_text; // 文本渲染着色器

@@ -158,6 +158,11 @@ namespace RenderSpace {
         }
     }
 
+    bool Drawable::is_visible() const {
+        // std::lock_guard<std::mutex> lk(m_mutex);
+        return _ready_to_draw;
+    }
+
     void Drawable::_deepcopy(const Drawable& element) {
         std::lock_guard<std::mutex> lk(m_mutex);
         _ready_to_draw = false;

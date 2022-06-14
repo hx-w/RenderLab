@@ -46,15 +46,6 @@ namespace RenderSpace {
         if (glfwGetKey(window, GLFW_KEY_T) == GLFW_RELEASE) {
             T_down = false;
         }
-        if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS) {
-            if (!H_down) {
-                H_down = !H_down;
-                H_EventHandler();
-            }
-        }
-        if (glfwGetKey(window, GLFW_KEY_H) == GLFW_RELEASE) {
-            H_down = false;
-        }
         if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
             CTRL_down = true;
         }
@@ -185,11 +176,6 @@ namespace RenderSpace {
         } else if (shade_mode == GL_POINT) {
             shade_mode = GL_LINE;
         }
-    }
-
-    void RenderWindowWidget::H_EventHandler() {
-        all_visible = !all_visible;
-        m_service->set_visible(all_visible);
     }
 
     void RenderWindowWidget::pickingRay(glm::vec2 screen_pos, glm::vec3& direction) {

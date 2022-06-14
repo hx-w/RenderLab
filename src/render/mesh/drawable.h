@@ -110,6 +110,7 @@ namespace RenderSpace {
 
         // hide or show
         void set_visible(bool visible);
+        bool is_visible() const;
 
         // 先ready update -> sync -> draw 
         void ready_to_update();

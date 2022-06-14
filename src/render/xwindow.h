@@ -61,13 +61,11 @@ namespace RenderSpace {
 
     private:
         bool T_down = false;
-        bool H_down = false;
         bool R_down = false;
         bool CTRL_down = false;
     
     private:
         void T_EventHandler();
-        void H_EventHandler();
     };
 }
 

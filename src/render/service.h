@@ -8,7 +8,6 @@
 #include <functional>
 #include "shader.hpp"
 #include "xwindow.h"
-// #include "text/textbox.h"
 #include "mesh/elements.h"
 #include "../libs/coords.h"
 #include "../infrastructure/communication/AutoBus.hpp"
@@ -33,10 +32,6 @@ namespace RenderSpace {
         void update();
 
         void imGui_render(RenderWindowWidget*);
-
-        // all mesh
-        void set_visible(bool visible);
-        void set_visible(int mesh_id, bool visible);
 
         void notify_picking(const glm::vec3& origin, const glm::vec3& direction);
         void notify_clear_picking(); // refresh all picking ray

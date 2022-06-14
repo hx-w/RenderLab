@@ -45,7 +45,7 @@ namespace RenderSpace {
 
         // glfw m_window creation
         // --------------------
-        m_window = glfwCreateWindow(w, h, "NURBS Render System", NULL, NULL);
+        m_window = glfwCreateWindow(w, h, "None Render", NULL, NULL);
         if (m_window == nullptr) {
             std::cout << "Failed to create GLFW m_window" << std::endl;
             glfwTerminate();

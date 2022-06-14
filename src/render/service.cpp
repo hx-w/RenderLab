@@ -132,18 +132,6 @@ namespace RenderSpace {
         }
     }
 
-    void RenderService::set_visible(bool visible) {
-        for (auto [id, ptr]: m_meshes_map) {
-            ptr->set_visible(visible);
-        }
-    }
-
-    void RenderService::set_visible(int mesh_id, bool visible) {
-        if (m_meshes_map.find(mesh_id) != m_meshes_map.end()) {
-            m_meshes_map[mesh_id]->set_visible(visible);
-        }
-    }
-
     void RenderService::refresh(int mesh_id) {
         if (m_meshes_map.find(mesh_id) == m_meshes_map.end()) {
             return;
@@ -282,7 +270,7 @@ namespace RenderSpace {
         }
 
         logger->render();
-        imgui_ext::MeshViewer::render(this);
+        imgui_ext::MeshViewer::render(m_meshes_map);
 
         // Rendering
         ImGui::Render();

@@ -1,16 +1,23 @@
 #pragma once
 
+#include <memory.h>
+#include <unordered_map>
+
 namespace RenderSpace {
-    class RenderService;
+    class MeshDrawable;
 };
 
 namespace imgui_ext {
+    typedef std::unordered_map<
+        int,
+        std::shared_ptr<RenderSpace::MeshDrawable>
+    > MeshMapType;
 
     class MeshViewer {
     public:
         MeshViewer() = default;
         ~MeshViewer() = default;
 
-        static void render(RenderSpace::RenderService* service);
+        static void render(const MeshMapType& meshes);
     };
 }

@@ -26,7 +26,7 @@ jobs:
           cmake -DCMAKE_BUILD_TYPE=Release -G "NMake Makefiles" ..
           nmake
       - name: Archive artifacts
-        uses: actions/upload-artifacts@v3
+        uses: actions/upload-artifact@v3
         with:
           name: NoneRender_win32.zip
           path: |

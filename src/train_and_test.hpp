@@ -70,83 +70,10 @@ void train_test_split(vector<string>& train_set, vector<string>& test_set, doubl
     }
 }
 
-void text_preset(shared_ptr<RenderService> rservice) {
-    // text preset
-    {
-        RenderLine rline;
-        rline.frame_remain = -1;
-        rline.Segments.emplace_back(TextSegment{"[data generating] ", glm::vec3(0.7f, 0.7f, 0.7f), 20});
-        rline.Segments.emplace_back(TextSegment{"0.00%", glm::vec3(0.7f, 0.7f, 0.7f), 20});
-        rservice->add_text(BoxRegion::BOX_RIGHT_TOP, move(rline));
-    }
-    {
-        RenderLine rline;
-        rline.frame_remain = -1;
-        rline.Segments.emplace_back(TextSegment{"[ml training] ", glm::vec3(0.7f, 0.7f, 0.7f), 20});
-        rline.Segments.emplace_back(TextSegment{"0.00%", glm::vec3(0.7f, 0.7f, 0.7f), 20});
-        rservice->add_text(BoxRegion::BOX_RIGHT_TOP, move(rline));
-    }
-    {
-        RenderLine rline;
-        rline.frame_remain = -1;
-        rline.Segments.emplace_back(TextSegment{"[server deploying] ", glm::vec3(0.7f, 0.7f, 0.7f), 20});
-        rline.Segments.emplace_back(TextSegment{"0.00%", glm::vec3(0.7f, 0.7f, 0.7f), 20});
-        rservice->add_text(BoxRegion::BOX_RIGHT_TOP, move(rline));
-    }
-    {
-        RenderLine rline;
-        rline.frame_remain = -1;
-        rline.Segments.emplace_back(TextSegment{"[mesh reconstruction] ", glm::vec3(0.7f, 0.7f, 0.7f), 20});
-        rline.Segments.emplace_back(TextSegment{"0.00%", glm::vec3(0.7f, 0.7f, 0.7f), 20});
-        rservice->add_text(BoxRegion::BOX_RIGHT_TOP, move(rline));
-    }
-}
-
-void text_update(shared_ptr<RenderService> rservice, int index, double ratio) {
-    string header;
-    glm::vec3 color;
-    switch (index) {
-        case 0:
-            header = "[data generating] ";
-            break;
-        case 1:
-            header = "[ml training] ";
-            break;
-        case 2:
-            header = "[server deploying] ";
-            break;
-        case 3:
-            header = "[mesh reconstruction] ";
-            break;
-        default:
-            break;
-    }
-    char buffer[32] = {0};
-    if (ratio < 0.5) {
-        color = glm::vec3(1.0, 0.7, 0.7);
-        snprintf(buffer, sizeof(buffer), "%2.2f%%", ratio * 100);
-    }
-    else if (ratio < 0.98) {
-        color = glm::vec3(0.7, 1.0, 0.7);
-        snprintf(buffer, sizeof(buffer), "%2.2f%%", ratio * 100);
-    }
-    else {
-        color = glm::vec3(0.0, 1.0, 0.0);
-        snprintf(buffer, sizeof(buffer), "%s", "success");
-    }
-    RenderLine rline;
-    rline.frame_remain = -1;
-    rline.Segments.emplace_back(TextSegment{header, glm::vec3(0.7, 0.7, 0.7), 20});
-    rline.Segments.emplace_back(TextSegment{buffer, color, 20});
-    rservice->update_text(BoxRegion::BOX_RIGHT_TOP, index, move(rline));
-}
-
 void train_and_test(int scale, shared_ptr<RenderService> rservice) {
     vector<string> train_set;
     vector<string> test_set;
     train_test_split(train_set, test_set, 0.2);
-
-    text_preset(rservice);
 
     // 创建单独线程进行训练
     // remove("static/dataset/edge_line.csv");
@@ -169,18 +96,14 @@ void train_and_test(int scale, shared_ptr<RenderService> rservice) {
 //         cout << "[INFO] ml predict..." << endl;
 //         auto test_size = test_set.size();
 //         for (auto id = 0; id < test_size; ++id) {
-//             text_update(rservice, 3, id * 1.0 / test_size);
 //             auto service = ToothSpace::make_service(test_set[id], scale);
 //             service->retag_point_by_ml();
-//             text_update(rservice, 3, (id + 0.5) * 1.0 / test_size);
 //             service->simulate_by_ml();
-//             text_update(rservice, 3, (id + 1.0) * 1.0 / test_size);
 //         }
 //     });
 
 //     thread ml_server_thread([&](){
 //         cout << "[INFO] start ml server..." << endl;
-//         text_update(rservice, 2, 1.0);
 //         execute("python3 scripts/ml_server.py");
 //     });
 

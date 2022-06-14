@@ -20,7 +20,7 @@ namespace RenderSpace {
         setup();
 
         // 文本渲染器
-        m_text_service = make_unique<TextService>(m_shader_text);
+        // m_text_service = make_unique<TextService>(m_shader_text);
 
         // 参数化实验
         auto _id_uns = create_mesh("uns_mesh", DrawableType::DRAWABLE_TRIANGLE);
@@ -115,7 +115,7 @@ namespace RenderSpace {
         glm::mat4 projection = glm::ortho(0.0f, static_cast<GLfloat>(width), 0.0f, static_cast<GLfloat>(height));
         m_shader_text.setMat4("projection", projection);
 
-        m_text_service->update_window_size(width, height);
+        // m_text_service->update_window_size(width, height);
     }
 
     void RenderService::draw_all() {
@@ -224,22 +224,6 @@ namespace RenderSpace {
     int RenderService::gen_id() {
         std::lock_guard<std::mutex> lock(m_mutex);
         return m_id_gen++;
-    }
-
-    void RenderService::clear_text(BoxRegion region) {
-        m_text_service->clear_text(region);
-    }
-
-    void RenderService::add_text(BoxRegion region, RenderLine&& line) {
-        m_text_service->add_text(region, move(line));
-    }
-
-    void RenderService::update_text(BoxRegion region, int line_id, RenderLine&& line) {
-        m_text_service->update_text(region, line_id, move(line));
-    }
-
-    void RenderService::delete_text(BoxRegion region, int line_id) {
-        m_text_service->delete_text(region, line_id);
     }
 
     void RenderService::start_thread(string tname, function<void()>&& func) {

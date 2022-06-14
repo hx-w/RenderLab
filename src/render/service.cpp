@@ -30,16 +30,6 @@ namespace RenderSpace {
             pmethod.parameterize(ParamMethod::Laplace);
             pmethod.resample(100);
         });
-        // thread param_thread([&]() {
-        //     Parameterization pmethod(
-        //         m_meshes_map[_id_uns],
-        //         m_meshes_map[_id_param],
-        //         m_meshes_map[_id_str]
-        //     );
-        //     pmethod.parameterize(ParamMethod::Laplace);
-        //     pmethod.resample(100);
-        // });
-        // param_thread.detach();
     }
 
     RenderService::~RenderService() {
@@ -247,6 +237,6 @@ namespace RenderSpace {
         std::thread thrd = std::thread(func);
         m_thread_map[tname] = thrd.native_handle();
         thrd.detach();
-        std::cout << "Thread " << tname << " created:" << std::endl;
+        std::cout << "[INFO] thread " << tname << " created" << std::endl;
     }
 }

@@ -2,8 +2,8 @@
 #define PARAMETERIZATION_H
 
 #include "elements.h"
-#include <map>
 #include <unordered_map>
+#include <unordered_set>
 #include <memory>
 
 #ifndef M_PI
@@ -52,6 +52,8 @@ namespace RenderSpace {
     private:
         // 标记uns_mesh面中的边缘与非边缘
         void _remark_edges(std::vector<OrderedEdge>&, std::vector<OrderedEdge>&);
+        // 对于闭曲面 构造切割线 切成开曲面
+        void _cut_mesh_open(const std::vector<OrderedEdge>& tot_edge);
         // 对边缘边，从第一个边缘点开始 按拓扑关系进行重新排序
         void _topology_reorder(std::vector<OrderedEdge>&);
         // 将排序后的边缘边参数化到二维单位圆边缘
@@ -112,12 +114,19 @@ namespace RenderSpace {
         float _trias_area(const glm::vec3&, const glm::vec3&, const glm::vec3&) const;
         const Triangle _which_trias_in(const glm::vec2& pos) const;
 
+        // a bad cutpath for genus = 0
+        void _find_cutpath(
+            std::vector<OrderedEdge>& cutpath,
+            std::unordered_map<int, std::unordered_set<int>>& adj_vlist,
+            int curr_vt = 1,
+            int depth = 3
+        );
+        void _build_mesh_by_cutpath(const std::vector<OrderedEdge>&);
+
     private:
         // 中间结果
         float m_bound_length; // 边缘总长度
-        // std::map<OrderedEdge, float> m_weights; // 边缘权重
         std::unordered_map<OrderedEdge, float, pair_hash> m_weights;
-        // std::unordered_map<int, float> m_weights_diag; // 边缘对角线权重
 
     private:
         std::shared_ptr<MeshDrawable> m_uns_mesh;

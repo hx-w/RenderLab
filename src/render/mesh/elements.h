@@ -16,6 +16,7 @@ namespace RenderSpace {
 
         bool load_STL(const std::string& filename);
         bool load_OBJ(const std::string& filename);
+        void save_OBJ(const std::string& filename);
 
         // 根据原始坐标点创建顶点以及顶点索引三角形
         void add_triangle_raw(const Vertex& v1, const Vertex& v2, const Vertex& v3);

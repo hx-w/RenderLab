@@ -4,6 +4,8 @@
 #include <iostream>
 #include <thread>
 
+#include "./libs/imgui/imgui.h"
+
 using namespace std;
 using namespace fundamental;
 
@@ -21,15 +23,16 @@ namespace RenderSpace {
         auto _id_str = create_mesh("str_mesh", DrawableType::DRAWABLE_TRIANGLE);
 
         m_meshes_map.at(_id_uns)->load_OBJ("static/models/uns.obj");
-        start_thread("param_thread", [&]() {
-            Parameterization pmethod(
-                m_meshes_map[_id_uns],
-                m_meshes_map[_id_param],
-                m_meshes_map[_id_str]
-            );
-            pmethod.parameterize(ParamMethod::Laplace);
-            pmethod.resample(100);
-        });
+        // start_thread("param_thread", [&]() {
+        //     Parameterization pmethod(
+        //         m_meshes_map[_id_uns],
+        //         m_meshes_map[_id_param],
+        //         m_meshes_map[_id_str]
+        //     );
+        //     pmethod.parameterize(ParamMethod::Laplace);
+        //     pmethod.resample(100);
+        // });
+
     }
 
     RenderService::~RenderService() {
@@ -111,10 +114,12 @@ namespace RenderSpace {
     }
 
     void RenderService::draw_all() {
-        m_text_service->draw();
+        // m_text_service->draw();
         for (auto [id, ptr]: m_meshes_map) {
             ptr->draw();
         }
+        bool my_tool_active = true;
+        float my_color[4];
     }
 
     void RenderService::update() {

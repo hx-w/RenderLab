@@ -1,5 +1,6 @@
 .idea/
 cmake-build-debug/
+imgui.ini
 *.pdf
 models/
 *.pkl

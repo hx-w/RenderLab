@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <ctime>
+#include <mutex>
 
 namespace imgui_ext {
     enum LOG_LEVEL {
@@ -31,8 +32,12 @@ namespace imgui_ext {
 
     class Logger {
     public:
-        Logger(uint32_t maxsize = 20, LOG_LEVEL lvl = LOG_INFO);
+        static Logger* get_instance();
+        static void destroy();
+        // Logger(uint32_t maxsize = 20, LOG_LEVEL lvl = LOG_INFO);
         ~Logger() = default;
+        Logger(const Logger&) = delete;
+        Logger& operator=(const Logger&) = delete;
 
         void log(const std::string& raw_msg, const LOG_LEVEL lvl = LOG_INFO);
         void flush();
@@ -42,9 +47,16 @@ namespace imgui_ext {
         void render();
 
     private:
-        uint32_t m_maxsize;
-        LOG_LEVEL m_level;
+        Logger() = default;
+
+    private:
+        uint32_t m_maxsize = 20;
+        LOG_LEVEL m_level = LOG_INFO;
         std::vector<LogMessage> m_messages;
+    
+    private:
+        static Logger* m_instance;
+        static std::once_flag m_inited;
     };
 
 }

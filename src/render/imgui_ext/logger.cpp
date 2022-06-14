@@ -31,10 +31,21 @@ bool LogMessage::operator < (const LogMessage& other) const {
     return timestamp < other.timestamp;
 }
 
-Logger::Logger(uint32_t maxsize, LOG_LEVEL lvl) {
-    m_maxsize = maxsize;
-    m_level = lvl;
-    vector<LogMessage>().swap(m_messages);
+Logger* Logger::m_instance = nullptr;
+std::once_flag Logger::m_inited;
+
+Logger* Logger::get_instance() {
+    std::call_once(m_inited, []() {
+        m_instance = new Logger();
+    });
+    return m_instance;
+}
+
+void Logger::destroy() {
+    if (m_instance) {
+        delete m_instance;
+        m_instance = nullptr;
+    }
 }
 
 void Logger::log(const string& raw_msg, const LOG_LEVEL lvl) {

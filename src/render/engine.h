@@ -1,7 +1,6 @@
 ﻿#ifndef RENDER_ENGINE_H
 #define RENDER_ENGINE_H
 
-#include "libs/freetype/ft2build.h"
 #include <mutex>
 #include "renderer.h"
 

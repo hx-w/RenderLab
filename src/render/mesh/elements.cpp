@@ -208,36 +208,36 @@ namespace RenderSpace {
     // 需要同步更新 center aabb radius
     void MeshDrawable::add_vertex_raw(const Vertex& v) {
         std::lock_guard<std::mutex> lk(m_mutex);
-        m_vertices.push_back(v);
+        m_vertices.emplace_back(v);
     }
 
     void MeshDrawable::add_triangle_by_idx(const Triangle& tri) {
         std::lock_guard<std::mutex> lk(m_mutex);
-        m_triangles.push_back(tri);
+        m_triangles.emplace_back(tri);
         // 还可以计算法线
     }
 
     void MeshDrawable::add_triangle_raw(const Vertex& v1, const Vertex& v2, const Vertex& v3) {
         std::lock_guard<std::mutex> lk(m_mutex);
         // 查重
-        m_vertices.push_back(v1);
-        m_vertices.push_back(v2);
-        m_vertices.push_back(v3);
-        m_triangles.push_back(Triangle(m_vertices.size() - 3, m_vertices.size() - 2, m_vertices.size() - 1));
+        m_vertices.emplace_back(v1);
+        m_vertices.emplace_back(v2);
+        m_vertices.emplace_back(v3);
+        m_triangles.emplace_back(Triangle(m_vertices.size() - 3, m_vertices.size() - 2, m_vertices.size() - 1));
     }
 
     void MeshDrawable::add_edge_raw(const Vertex& v1, const Vertex& v2) {
         std::lock_guard<std::mutex> lk(m_mutex);
-        m_vertices.push_back(v1);
-        m_vertices.push_back(v2);
-        m_edges.push_back(Edge(m_vertices.size() - 2, m_vertices.size() - 1));
+        m_vertices.emplace_back(v1);
+        m_vertices.emplace_back(v2);
+        m_edges.emplace_back(Edge(m_vertices.size() - 2, m_vertices.size() - 1));
     }
 
     void MeshDrawable::_split_words(const string& line, vector<string>& words, const char delim) {
         stringstream ss(line);
         string word;
         while (getline(ss, word, delim)) {
-            words.push_back(word);
+            words.emplace_back(word);
         }
     }
 }

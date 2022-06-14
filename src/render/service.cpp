@@ -8,9 +8,11 @@
 #include "libs/imgui/imgui_impl_glfw.h"
 #include "libs/imgui/imgui_impl_opengl3.h"
 #include "imgui_ext/browser.h"
+#include "imgui_ext/logger.h"
 
 using namespace std;
 using namespace fundamental;
+static auto logger = imgui_ext::Logger::get_instance();
 
 namespace RenderSpace {
     RenderService::RenderService():
@@ -19,7 +21,6 @@ namespace RenderSpace {
 
         // 文本渲染器
         m_text_service = make_unique<TextService>(m_shader_text);
-        m_logger = make_unique<imgui_ext::Logger>(20);
 
         // 参数化实验
         auto _id_uns = create_mesh("uns_mesh", DrawableType::DRAWABLE_TRIANGLE);
@@ -144,7 +145,7 @@ namespace RenderSpace {
         if (m_meshes_map.find(mesh_id) == m_meshes_map.end()) {
             return;
         }
-        m_logger->log("refresh mesh: " + m_meshes_map[mesh_id]->get_name() + "(" + to_string(mesh_id) + ")");
+        logger->log("refresh mesh: " + m_meshes_map[mesh_id]->get_name() + "(" + to_string(mesh_id) + ")");
         m_meshes_map[mesh_id]->ready_to_update();
     }
 
@@ -152,8 +153,7 @@ namespace RenderSpace {
         if (m_meshes_map.find(mesh_id) == m_meshes_map.end()) {
             return;
         }
-        m_logger->log("delete mesh: " + m_meshes_map[mesh_id]->get_name() + "(" + to_string(mesh_id) + ")");
-        // m_meshes_map[mesh_id].reset();
+        logger->log("delete mesh: " + m_meshes_map[mesh_id]->get_name() + "(" + to_string(mesh_id) + ")");
         m_meshes_map.erase(mesh_id);
     }
 
@@ -163,7 +163,7 @@ namespace RenderSpace {
         new_mesh->set_shader(m_shader);
         m_meshes_map[_id] = new_mesh;
 
-        m_logger->log("create mesh: " + name + "(" + to_string(_id) + ")");
+        logger->log("create mesh: " + name + "(" + to_string(_id) + ")");
         return _id;
     }
 
@@ -285,7 +285,7 @@ namespace RenderSpace {
             }
         }
 
-        m_logger->render();
+        logger->render();
         // Rendering
         ImGui::Render();
     }

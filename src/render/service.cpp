@@ -252,7 +252,9 @@ namespace RenderSpace {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        static bool show_filebrowser = false;
+        static bool show_import_modal = false;
+        static imgui_ext::file_browser_modal fileBrowser("Import");
+        std::string path;
         // controller
         {
             ImGui::Begin("Controller");                          // Create a window called "Hello, world!" and append into it.
@@ -263,33 +265,20 @@ namespace RenderSpace {
 
             ImGui::ColorEdit3("background color", (float*)&win->clear_color); // Edit 3 floats representing a color
 
-            if (ImGui::Button("Button")) {
-                show_filebrowser = true;
+            if (ImGui::Button("Import OBJ")) {
+                show_import_modal = !show_import_modal;
             }
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
             ImGui::End();
         }
 
-        if (show_filebrowser) {
-            static imgui_ext::file_browser_modal fileBrowser("Import");
-
-            // Had to use this awkward approach to get the menu item to open the pop-up modal.
-            bool isImportClicked = false;
-            if (ImGui::BeginMainMenuBar()) {
-                if (ImGui::BeginMenu("File")) {
-                    if (ImGui::MenuItem("Import")) {
-                        isImportClicked = true;
-                    }
-                    ImGui::EndMenu();
+        if (show_import_modal) {
+            if (fileBrowser.render(true, path)) {
+                show_import_modal = false;
+                if (path.size() > 0 && path.substr(path.size() - 4, 4) == ".obj") {
+                    auto _id = create_mesh(path, DrawableType::DRAWABLE_TRIANGLE);
+                    m_meshes_map.at(_id)->load_OBJ(path);
                 }
-                ImGui::EndMainMenuBar();
-            }
-
-
-            std::string path;
-            if (fileBrowser.render(isImportClicked, path)) {
-                // The "path" string will hold a valid file path here.
-                show_filebrowser = false;
             }
         }
         // Rendering

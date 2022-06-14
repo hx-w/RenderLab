@@ -2,6 +2,7 @@
 
 #include <limits>
 #include "../libs/imgui/imgui.h"
+#include <iostream>
 
 using namespace imgui_ext;
 
@@ -43,7 +44,6 @@ file_browser_modal::file_browser_modal(const char* title) :
     m_selection(0),
     m_currentPath(fs::current_path()),
     m_currentPathIsDir(true) {
-
 }
 
 // Will return true if file selected.
@@ -116,19 +116,21 @@ const bool file_browser_modal::render(const bool isVisible, std::string& outPath
             ImGui::PopStyleColor();
 
         } else {
-
             if (ImGui::Button("Select")) {
                 ImGui::CloseCurrentPopup();
 
                 outPath = m_currentPath.string();
                 result = true;
+                m_oldVisibility = false;
             }
 
         }
 
         ImGui::EndPopup();
-
     }
-
+    else {
+        result = true;
+        m_oldVisibility = false;
+    }
     return result;
 }

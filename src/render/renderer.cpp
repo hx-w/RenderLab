@@ -94,8 +94,8 @@ namespace RenderSpace {
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
         // Setup Dear ImGui style
-        ImGui::StyleColorsDark();
-        // ImGui::StyleColorsClassic();
+        // ImGui::StyleColorsDark();
+        ImGui::StyleColorsClassic();
         // ImGui::StyleColorsLight();
 
         // Setup Platform/Renderer backends

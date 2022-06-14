@@ -228,6 +228,10 @@ namespace RenderSpace {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
+        if (!win->show_gui) {
+            ImGui::Render();
+            return;
+        }
         static bool show_import_modal = false;
         static imgui_ext::file_browser_modal fileBrowser("Import");
         std::string path;

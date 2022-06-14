@@ -95,9 +95,11 @@ namespace RenderSpace {
         void set_type(DrawableType type);
 
         void set_shader(Shader& shader);
-        std::string get_name() const {
-            return m_name;
-        };
+
+        void set_shade_mode(GLenum mode);
+        GLenum get_shade_mode() { return m_shade_mode; }
+
+        std::string get_name() const { return m_name; }
 
         std::vector<Triangle>& get_triangles() {
             std::lock_guard<std::mutex> lock(m_mutex);
@@ -145,6 +147,7 @@ namespace RenderSpace {
         std::atomic<bool> _ready_to_draw = false;
 
         DrawableType m_type;
+        GLenum m_shade_mode = GL_LINE;
     };
 }
 

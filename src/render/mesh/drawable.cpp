@@ -44,6 +44,17 @@ namespace RenderSpace {
     void Drawable::set_type(DrawableType type) {
         std::lock_guard<std::mutex> lk(m_mutex);
         m_type = type;
+        if (type == DrawableType::DRAWABLE_POINT) {
+            m_shade_mode = GL_POINT;
+        }
+        else if (type == DrawableType::DRAWABLE_LINE && m_shade_mode == GL_FILL) {
+            m_shade_mode = GL_LINE;
+        }
+    }
+
+    void Drawable::set_shade_mode(GLenum mode) {
+        std::lock_guard<std::mutex> lk(m_mutex);
+        m_shade_mode = mode;
     }
 
     void Drawable::draw() {
@@ -56,6 +67,9 @@ namespace RenderSpace {
         glm::mat4 model = glm::mat4(1.0f);
         m_shader.setMat4("model", model);
         glPointSize(3.0f);
+
+        // polygon mode
+        glPolygonMode(GL_FRONT_AND_BACK, m_shade_mode);
 
         switch (m_type) {
         case DrawableType::DRAWABLE_POINT:

@@ -58,10 +58,14 @@ namespace RenderSpace {
         // light
         glm::vec3 lightPos = glm::vec3(0.0f, 0.0f, 0.0f);
         glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+        
+        // gui
+        bool show_gui = true;
 
     private:
         bool T_down = false;
         bool R_down = false;
+        bool H_down = false;
         bool CTRL_down = false;
     
     private:

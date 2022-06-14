@@ -19,5 +19,8 @@ namespace imgui_ext {
         ~MeshViewer() = default;
 
         static void render(const MeshMapType& meshes);
+    
+    private:
+        static void render_mesh(const std::shared_ptr<RenderSpace::MeshDrawable> mesh);
     };
 }

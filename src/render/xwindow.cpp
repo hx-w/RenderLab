@@ -37,6 +37,15 @@ namespace RenderSpace {
             cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraMove;
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
             cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraMove;
+        if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS) {
+            if (!H_down) {
+                H_down = !H_down;
+                show_gui = !show_gui;
+            } 
+        }
+        if (glfwGetKey(window, GLFW_KEY_H) == GLFW_RELEASE) {
+            H_down = false;
+        }
         if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) {
             if (!T_down) {
                 T_down = !T_down;

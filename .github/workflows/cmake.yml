@@ -25,12 +25,10 @@ jobs:
           cd build
           cmake -DCMAKE_BUILD_TYPE=Release -G "NMake Makefiles" ..
           nmake
-      - name: Upload Release Binary
-        uses: svenstaro/upload-release-action@v1-release
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v3
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: main.exe
-          tag: ${{ github.ref }}
-          file_glob: true
-          overwrite: true
-  
+          name: NoneRender_win32.zip
+          path: |
+            main.exe
+            resource

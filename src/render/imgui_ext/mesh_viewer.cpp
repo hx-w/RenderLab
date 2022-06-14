@@ -76,7 +76,18 @@ void MeshViewer::render_mesh(const std::shared_ptr<RenderSpace::MeshDrawable> me
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0.25f, 0.7f, 0.7f));
     ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0.25f, 0.8f, 0.8f));
     if (ImGui::Button("ViewFit")) {
-        logger->log("Fit view to mesh: " + mesh->get_name());
+        logger->log("fit view to mesh: " + mesh->get_name());
+    }
+    ImGui::PopStyleColor(3);
+    ImGui::PopID();
+    // Button::Delete
+    ImGui::SameLine();
+    ImGui::PushID(1);
+    ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0.f, 0.6f, 0.6f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0.f, 0.7f, 0.7f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0.f, 0.8f, 0.8f));
+    if (ImGui::Button("Delete")) {
+        logger->log("delete mesh: " + mesh->get_name());
     }
     ImGui::PopStyleColor(3);
     ImGui::PopID();

@@ -49,7 +49,7 @@ namespace imgui_ext {
         Logger() = default;
 
     private:
-        uint32_t m_maxsize = 20;
+        uint32_t m_maxsize = 8;
         LOG_LEVEL m_level = LOG_INFO;
         std::vector<LogMessage> m_messages;
     

@@ -9,6 +9,7 @@
 #include "libs/imgui/imgui_impl_opengl3.h"
 #include "imgui_ext/browser.h"
 #include "imgui_ext/logger.h"
+#include "imgui_ext/meshbox.h"
 
 using namespace std;
 using namespace fundamental;
@@ -281,6 +282,8 @@ namespace RenderSpace {
         }
 
         logger->render();
+        imgui_ext::MeshBox::render(this);
+
         // Rendering
         ImGui::Render();
     }

@@ -34,7 +34,6 @@ namespace imgui_ext {
     public:
         static Logger* get_instance();
         static void destroy();
-        // Logger(uint32_t maxsize = 20, LOG_LEVEL lvl = LOG_INFO);
         ~Logger() = default;
         Logger(const Logger&) = delete;
         Logger& operator=(const Logger&) = delete;

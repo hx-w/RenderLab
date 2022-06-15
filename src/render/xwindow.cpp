@@ -1,5 +1,6 @@
 ﻿#include "libs/glad/glad.h"
 #include "xwindow.h"
+#include "service.h"
 #include <iostream>
 
 using namespace std;
@@ -178,13 +179,7 @@ namespace RenderSpace {
     }
 
     void RenderWindowWidget::T_EventHandler() {
-        if (shade_mode == GL_LINE) {
-            shade_mode = GL_FILL;
-        } else if (shade_mode == GL_FILL) {
-            shade_mode = GL_POINT;
-        } else if (shade_mode == GL_POINT) {
-            shade_mode = GL_LINE;
-        }
+        // TODO
     }
 
     void RenderWindowWidget::pickingRay(glm::vec2 screen_pos, glm::vec3& direction) {
@@ -207,5 +202,17 @@ namespace RenderSpace {
         glm::vec4 v_world = inv_mvp * v_NDC;
         v_world.w = 1.0 / v_world.w;
         world_pos = glm::vec3(v_world.x * v_world.w, v_world.y * v_world.w, v_world.z * v_world.w);
+    }
+
+    void RenderWindowWidget::viewfit_BBOX(const AABB& aabb) {
+        glm::vec3 center = (aabb.first + aabb.second) / 2.0f;
+        glm::vec3 size = aabb.second - aabb.first;
+        float max_size = std::max(std::max(size.x, size.y), size.z);
+        glm::vec3 front;
+        front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+        front.y = sin(glm::radians(pitch));
+        front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+        cameraPos = center - front * max_size * 1.5f;
+        cameraFront = front;
     }
 }

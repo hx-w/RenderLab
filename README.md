@@ -1,6 +1,6 @@
-## NoneRender
+## RenderLab
 
-[![CodeFactor](https://www.codefactor.io/repository/github/hx-w/nonerender/badge)](https://www.codefactor.io/repository/github/hx-w/nonerender)
+[![CodeFactor](https://www.codefactor.io/repository/github/hx-w/renderlab/badge)](https://www.codefactor.io/repository/github/hx-w/renderlab)
 
 ### Build and run
 Move STL file to `./static/STL/`, and rename as `JawScan.stl`

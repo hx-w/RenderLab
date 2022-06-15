@@ -48,7 +48,7 @@ namespace RenderSpace {
 
         // glfw m_window creation
         // --------------------
-        m_window = glfwCreateWindow(w, h, "None Render", NULL, NULL);
+        m_window = glfwCreateWindow(w, h, "Render Lab", NULL, NULL);
         if (m_window == nullptr) {
             std::cout << "Failed to create GLFW m_window" << std::endl;
             glfwTerminate();
@@ -124,9 +124,6 @@ namespace RenderSpace {
             const auto& clr = m_win_widget->bgColor;
             glClearColor(clr.x * clr.w, clr.y * clr.w, clr.z * clr.w, clr.w);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
-
-            // shade mode
-            glPolygonMode(GL_FRONT_AND_BACK, m_win_widget->shade_mode);
 
             // input
             // if (!ImGui::GetIO().WantCaptureKeyboard) {

@@ -35,6 +35,8 @@ namespace RenderSpace {
 
         void imGui_render();
 
+        void viewfit_mesh(const std::shared_ptr<Drawable> mesh);
+
         void notify_picking(const glm::vec3& origin, const glm::vec3& direction);
         void notify_clear_picking(); // refresh all picking ray
         void notify_window_resize(uint32_t width, uint32_t height);

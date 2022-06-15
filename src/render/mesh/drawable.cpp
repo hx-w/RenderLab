@@ -159,6 +159,7 @@ namespace RenderSpace {
     void Drawable::ready_to_update() {
         std::lock_guard<std::mutex> lk(m_mutex);
         if (_ready_to_update) return;
+        compute_BBOX();
         _ready_to_update = true;
     }
 
@@ -175,6 +176,19 @@ namespace RenderSpace {
     bool Drawable::is_visible() const {
         // std::lock_guard<std::mutex> lk(m_mutex);
         return _ready_to_draw;
+    }
+
+    void Drawable::compute_BBOX() {
+        if (m_vertices.size() == 0) return;
+        m_aabb = AABB(m_vertices[0].Position, m_vertices[0].Position);
+        for (auto& v : m_vertices) {
+            if (v.Position.x < m_aabb.first.x) m_aabb.first.x = v.Position.x;
+            if (v.Position.y < m_aabb.first.y) m_aabb.first.y = v.Position.y;
+            if (v.Position.z < m_aabb.first.z) m_aabb.first.z = v.Position.z;
+            if (v.Position.x > m_aabb.second.x) m_aabb.second.x = v.Position.x;
+            if (v.Position.y > m_aabb.second.y) m_aabb.second.y = v.Position.y;
+            if (v.Position.z > m_aabb.second.z) m_aabb.second.z = v.Position.z;
+        }
     }
 
     void Drawable::_deepcopy(const Drawable& element) {

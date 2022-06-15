@@ -101,6 +101,8 @@ namespace RenderSpace {
 
         std::string get_name() const { return m_name; }
 
+        AABB get_BBOX() const { return m_aabb; }
+
         std::vector<Triangle>& get_triangles() {
             std::lock_guard<std::mutex> lock(m_mutex);
             return m_triangles;
@@ -109,6 +111,9 @@ namespace RenderSpace {
             std::lock_guard<std::mutex> lock(m_mutex);
             return m_vertices;
         }
+
+        // called when ready to update
+        void compute_BBOX();
 
         // hide or show
         void set_visible(bool visible);

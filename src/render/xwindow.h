@@ -1,13 +1,15 @@
 #ifndef RENDER_WINDOW_H
 #define RENDER_WINDOW_H
 
+#include <memory>
 #include "./libs/glm/glm.hpp"
 #include "./libs/glm/gtc/matrix_transform.hpp"
 #include "./libs/glm/gtc/type_ptr.hpp"
 #include "./libs/GLFW/glfw3.h"
-#include "service.h"
 
 namespace RenderSpace {
+    typedef std::pair<glm::vec3, glm::vec3> AABB; // min, max
+
     class RenderService;
     class RenderWindowWidget {
     public:
@@ -27,6 +29,10 @@ namespace RenderSpace {
 
         void pickingRay(glm::vec2 screen_pos, glm::vec3& direction);
         void screen2world(glm::vec2 screen_pos, glm::vec3& world_pos);
+
+        // view control
+        void viewfit_BBOX(const AABB& aabb);
+
     public:
         unsigned int m_scr_width = 800;
         unsigned int m_scr_height = 600;
@@ -48,7 +54,6 @@ namespace RenderSpace {
         float deltaTime = 0.0f;	// time between current frame and last frame
         float lastFrame = 0.0f;
 
-        GLenum shade_mode = GL_LINE;
         std::shared_ptr<RenderService> m_service;
         bool all_visible = true;
         glm::vec4 bgColor = glm::vec4(0.8f, 0.8f, 0.8f, 1.00f);

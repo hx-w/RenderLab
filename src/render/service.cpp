@@ -278,4 +278,9 @@ namespace RenderSpace {
         // Rendering
         ImGui::Render();
     }
+
+    void RenderService::viewfit_mesh(const shared_ptr<Drawable> mesh) {
+        logger->log("fit view to mesh: " + mesh->get_name());
+        m_win_widget->viewfit_BBOX(mesh->get_BBOX());
+    }
 }

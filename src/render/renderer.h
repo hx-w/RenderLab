@@ -22,7 +22,7 @@ namespace RenderSpace {
         void draw();
 
     private:
-        RenderWindowWidget m_win_widget;
+        std::shared_ptr<RenderWindowWidget> m_win_widget;
         GLFWwindow* m_window;
     
     private:

@@ -25,13 +25,15 @@ namespace RenderSpace {
         RenderService();
         ~RenderService();
 
+        void update_win(std::shared_ptr<RenderWindowWidget> win);
+
         Shader& get_shader() { return m_shader; }
 
         void draw_all();
 
         void update();
 
-        void imGui_render(RenderWindowWidget*);
+        void imGui_render();
 
         void notify_picking(const glm::vec3& origin, const glm::vec3& direction);
         void notify_clear_picking(); // refresh all picking ray
@@ -60,6 +62,9 @@ namespace RenderSpace {
 
         Shader m_shader; // 带光照模型的
         Shader m_shader_text; // 文本渲染着色器
+
+        // 交互
+        std::shared_ptr<RenderWindowWidget> m_win_widget;
 
         std::string m_symbol = "render";
         std::unique_ptr<fundamental::AutoBus> m_autobus;

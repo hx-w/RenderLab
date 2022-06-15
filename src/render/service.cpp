@@ -1,9 +1,10 @@
 ﻿#include "service.h"
-#include "./mesh/parameterization.h"
 
 #include <iostream>
 #include <thread>
 
+#include "xwindow.h"
+#include "mesh/parameterization.h"
 #include "libs/imgui/imgui.h"
 #include "libs/imgui/imgui_impl_glfw.h"
 #include "libs/imgui/imgui_impl_opengl3.h"
@@ -93,6 +94,10 @@ namespace RenderSpace {
             [this](int mesh_id) {
                 this->delete_mesh(mesh_id);
             });
+    }
+
+    void RenderService::update_win(shared_ptr<RenderWindowWidget> win) {
+        m_win_widget = win;
     }
 
     void RenderService::notify_picking(const glm::vec3& ori, const glm::vec3& dir) {
@@ -216,13 +221,13 @@ namespace RenderSpace {
         std::cout << "[INFO] thread " << tname << " created" << std::endl;
     }
 
-    void RenderService::imGui_render(RenderWindowWidget* win) {
+    void RenderService::imGui_render() {
         // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        if (!win->show_gui) {
+        if (!m_win_widget->show_gui) {
             ImGui::Render();
             return;
         }
@@ -231,14 +236,14 @@ namespace RenderSpace {
         std::string path;
         // controller
         {
-            ImGui::Begin("Controller");                          // Create a window called "Hello, world!" and append into it.
+            ImGui::Begin("Controller");
             ImGui::Text("Environment:");
-            ImGui::ColorEdit3("background color", (float*)&win->bgColor); // Edit 3 floats representing a color
-            ImGui::ColorEdit3("light color", (float*)&win->lightColor); // Edit 3 floats representing a color
-            ImGui::DragFloat3("light pos", (float*)&win->lightPos);
+            ImGui::ColorEdit3("background color", (float*)&m_win_widget->bgColor);
+            ImGui::ColorEdit3("light color", (float*)&m_win_widget->lightColor);
+            ImGui::DragFloat3("light pos", (float*)&m_win_widget->lightPos);
             ImGui::Separator();
-            ImGui::SliderFloat("camera speed", &win->cameraSpeed, 1.0f, 15.0f); 
-            ImGui::DragFloat3("camera pos", (float*)&win->cameraPos);
+            ImGui::SliderFloat("camera speed", &m_win_widget->cameraSpeed, 1.0f, 15.0f); 
+            ImGui::DragFloat3("camera pos", (float*)&m_win_widget->cameraPos);
 
             ImGui::Spacing();
             if (ImGui::Button("Import OBJ")) {
@@ -268,7 +273,7 @@ namespace RenderSpace {
         }
 
         logger->render();
-        imgui_ext::MeshViewer::render(m_meshes_map);
+        imgui_ext::MeshViewer::render(this, m_meshes_map);
 
         // Rendering
         ImGui::Render();

@@ -14,6 +14,7 @@ namespace RenderSpace {
         RenderWindowWidget() = default;
         RenderWindowWidget(unsigned int width, unsigned int height, std::shared_ptr<RenderService> service);
         ~RenderWindowWidget();
+        RenderWindowWidget(const RenderWindowWidget&) = delete;
 
         void init(unsigned int width, unsigned int height, std::shared_ptr<RenderService> service);
 

@@ -22,7 +22,7 @@ static void HelpMarker(const char* desc) {
     }
 }
 
-void MeshViewer::render(const MeshMapType& meshes) {
+void MeshViewer::render(const RenderService* service, const MeshMapType& meshes) {
     ImGui::Begin("MeshViewer");
     ImGui::Text("All meshes created:");
     

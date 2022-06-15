@@ -56,28 +56,30 @@ void MeshViewer::render_mesh(RenderService* service, const std::shared_ptr<Rende
     if (!ImGui::CollapsingHeader(mesh->get_name().c_str())) return;
     const string mesh_name = mesh->get_name().c_str();
     // Shade mode
-    const char* items[] = { "GL_POINT", "GL_LINE", "GL_FILL" };
-    int item_current = 0;
+    const char* shade_str[] = { "GL_POINT", "GL_LINE", "GL_FILL" };
+    int shade_current = 0;
     switch (mesh->get_shade_mode()) {
         case GL_POINT:
-            item_current = 0; break;
+            shade_current = 0; break;
         case GL_LINE:
-            item_current = 1; break;
+            shade_current = 1; break;
         case GL_FILL:
-            item_current = 2; break;
+            shade_current = 2; break;
         default: break;
     }
-    if (ImGui::Combo(IMGUI_NAME("shade mode", mesh_name), &item_current, items, IM_ARRAYSIZE(items))) {
+    // if (ImGui::Combo(IMGUI_NAME("shade mode", mesh_name), &shade_current, shade_str, IM_ARRAYSIZE(shade_str))) {
+    if (ImGui::SliderInt(IMGUI_NAME("shade mode", mesh_name), &shade_current, 0, 2, shade_str[shade_current])) {
         GLenum shade_mode = GL_POINT;
-        switch (item_current) {
+        switch (shade_current) {
             case 0: shade_mode = GL_POINT; break;
             case 1: shade_mode = GL_LINE; break;
             case 2: shade_mode = GL_FILL; break;
             default: break;
         }
         mesh->set_shade_mode(shade_mode);
-        logger->log("shade mode changed: " + mesh->get_name() + " => " + items[item_current]);
+        logger->log("shade mode changed: " + mesh->get_name() + " => " + shade_str[shade_current]);
     }
+    ImGui::SameLine(); HelpMarker("Different shading modes without changing topology.");
     // Button::Fit
     ImGui::PushID(0);
     ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0.25f, 0.6f, 0.6f));
@@ -95,7 +97,7 @@ void MeshViewer::render_mesh(RenderService* service, const std::shared_ptr<Rende
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0.f, 0.7f, 0.7f));
     ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0.f, 0.8f, 0.8f));
     if (ImGui::Button("Delete")) {
-        logger->log("delete mesh: " + mesh->get_name());
+        logger->log("TODO delete mesh: " + mesh->get_name());
     }
     ImGui::PopStyleColor(3);
     ImGui::PopID();

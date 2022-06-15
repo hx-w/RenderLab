@@ -48,8 +48,7 @@ void MeshViewer::render(RenderService* service, const MeshMapType& meshes) {
     }
 
     ImGui::End();
-
-    ImGui::ShowDemoWindow();
+    // ImGui::ShowDemoWindow();
 }
 
 void MeshViewer::render_mesh(RenderService* service, const std::shared_ptr<RenderSpace::MeshDrawable> mesh) {

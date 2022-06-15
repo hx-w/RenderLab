@@ -4,6 +4,7 @@
 #include <iostream>
 #include <iterator>
 #include <set>
+#include <chrono>
 #include "../glm_ext/curvature.hpp"
 #include "../imgui_ext/logger.h"
 #include "../libs/GLFW/glfw3.h"
@@ -12,6 +13,7 @@
 using namespace std;
 
 namespace RenderSpace {
+static auto st_micsec_time = chrono::steady_clock::now();
 Drawable::Drawable() {
     // 默认随机生成一个名字
     std::lock_guard<std::mutex> lk(m_mutex);
@@ -81,6 +83,13 @@ void Drawable::draw() {
 
     // polygon mode
     glPolygonMode(GL_FRONT_AND_BACK, m_shade_mode);
+
+    m_shader.setBool("randomColor", (m_color_mode == CM_Dynamic_Random));
+    if (m_color_mode == CM_Dynamic_Random) {
+        // get timestamp
+        float ut = static_cast<float>(chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - st_micsec_time).count()) / 1000.f;
+        m_shader.setFloat("u_time", ut);
+    }
 
     switch (m_type) {
         case DrawableType::DRAWABLE_POINT:

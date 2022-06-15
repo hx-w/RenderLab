@@ -1,15 +1,31 @@
 #version 330 core
+#ifdef GL_ES
+precision mediump float;
+#endif
+
 
 in vec3 FragPos;
 in vec3 objectColor;
 in vec3 Norm;
 out vec4 FragColor;
+
 uniform vec3 lightPos;
 uniform vec3 lightColor;
 uniform vec3 viewPos;
 uniform bool ignoreLight;
+uniform bool randomColor;
+
+uniform float u_time;   // Time in seconds since load
 
 void main() {
+    vec3 color = objectColor;
+    if (randomColor) {
+        color = vec3(
+            sin(u_time + FragPos.x) * 0.5 + 0.5,
+            sin(u_time + 2.0 + FragPos.y) * 0.5 + 0.5,
+            sin(u_time + 4.0 + FragPos.z) * 0.5 + 0.5
+        );
+    }
     if (ignoreLight) {
         FragColor = vec4(objectColor, 1.0);
         return;
@@ -29,6 +45,6 @@ void main() {
     float spec = pow(max(dot(norm, halfwayDir), 0.05), 32);
     vec3 specular = specularStrength * spec * lightColor;
 
-    vec3 result = (ambient + diffuse + specular) * objectColor;
+    vec3 result = (ambient + diffuse + specular) * color;
     FragColor = vec4(result, 1.0);
 }

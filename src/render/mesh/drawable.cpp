@@ -60,6 +60,13 @@ void Drawable::set_shade_mode(GLenum mode) {
     m_shade_mode = mode;
 }
 
+void Drawable::set_color_mode(ColorMode mode) {
+    if (m_color_mode == mode) return;
+    m_color_mode = mode;
+    buf_colormap(mode);
+    ready_to_update();
+}
+
 void Drawable::draw() {
     std::lock_guard<std::mutex> lk(m_mutex);
     if (!_ready_to_draw)
@@ -129,8 +136,14 @@ void Drawable::sync() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
     glEnableVertexAttribArray(0);
     // color
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                          (void*)offsetof(Vertex, Color));
+    if (m_color_mode == CM_Original || m_color_mode == CM_Dynamic_Random) {
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                            (void*)offsetof(Vertex, Color));
+    }
+    else {
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                            (void*)offsetof(Vertex, BufColor));
+    }
     glEnableVertexAttribArray(1);
     // normal
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
@@ -222,8 +235,14 @@ void Drawable::_deepcopy(const Drawable& element) {
     m_aabb = element.m_aabb;
 }
 
-void Drawable::visualize_curvature() {
-    // std::lock_guard<std::mutex> lk(m_mutex);
+void Drawable::buf_colormap(ColorMode mode) {
+    if (mode == CM_Original || mode == CM_Dynamic_Random) return;
+    if (mode == CM_Static_Random) {
+
+
+        return;
+    }
+    // curvature color map
     if (m_type != DrawableType::DRAWABLE_TRIANGLE)
         return;
     // 对不同顶点，构造寻找邻接顶点的索引，且保证邻接点拓扑有序，围绕成环
@@ -277,8 +296,19 @@ void Drawable::visualize_curvature() {
         for (auto& iv : ord_adj_list[vidx]) {
             neighbors.emplace_back(m_vertices[iv].Position);
         }
-        float curv = glm_ext::compute_curvature(
-            m_vertices[vidx].Position, neighbors, glm_ext::CURVATURE_GAUSSIAN);
+
+        glm_ext::CurvatureType curv_type = glm_ext::CURVATURE_GAUSSIAN;
+        switch (mode) {
+        case CM_ColorMap_Gauss:
+            curv_type = glm_ext::CURVATURE_GAUSSIAN;
+            break;
+        case CM_ColorMap_Mean:
+            curv_type = glm_ext::CURVATURE_MEAN;
+            break;
+        default:
+            break;
+        }
+        float curv = glm_ext::compute_curvature(m_vertices[vidx].Position, neighbors, curv_type);
         if (curv < min_curv)
             min_curv = curv;
         if (curv > max_curv)
@@ -290,8 +320,7 @@ void Drawable::visualize_curvature() {
     vector<set<int>>().swap(ord_adj_list);
 
     // 对所有顶点，归一化曲率，计算顶点的颜色
-    cout << "min curvature: " << min_curv << "  max curvature: " << max_curv
-         << endl;
+    cout << "min curvature: " << min_curv << "  max curvature: " << max_curv << endl;
     for (int vidx = 0; vidx < vec_size; ++vidx) {
         float curv = (curvs[vidx] - min_curv) / (max_curv - min_curv);
         // color map: blue to red
@@ -323,8 +352,7 @@ void Drawable::visualize_curvature() {
             g = 0;
             b = 0;
         }
-        m_vertices[vidx].Color = glm::vec3(r, g, b);
+        m_vertices[vidx].BufColor = glm::vec3(r, g, b);
     }
-    sync();
 }
 }  // namespace RenderSpace

@@ -27,7 +27,6 @@ namespace RenderSpace {
         // auto _id_str = create_mesh("str_mesh", DrawableType::DRAWABLE_TRIANGLE);
 
         m_meshes_map.at(_id_uns)->load_OBJ("static/models/uns.obj");
-        m_meshes_map.at(_id_uns)->visualize_curvature();
         // start_thread("param_thread", [&]() {
         //     Parameterization pmethod(
         //         m_meshes_map[_id_uns],

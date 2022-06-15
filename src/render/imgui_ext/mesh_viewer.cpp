@@ -55,7 +55,7 @@ void MeshViewer::render(RenderService* service, const MeshMapType& meshes) {
 void MeshViewer::render_mesh(RenderService* service, const std::shared_ptr<RenderSpace::MeshDrawable> mesh) {
     if (!ImGui::CollapsingHeader(mesh->get_name().c_str())) return;
     const string mesh_name = mesh->get_name().c_str();
-    // Shade mode
+    // ShadeMode
     const char* shade_str[] = { "GL_POINT", "GL_LINE", "GL_FILL" };
     int shade_current = 0;
     switch (mesh->get_shade_mode()) {
@@ -67,7 +67,6 @@ void MeshViewer::render_mesh(RenderService* service, const std::shared_ptr<Rende
             shade_current = 2; break;
         default: break;
     }
-    // if (ImGui::Combo(IMGUI_NAME("shade mode", mesh_name), &shade_current, shade_str, IM_ARRAYSIZE(shade_str))) {
     if (ImGui::SliderInt(IMGUI_NAME("shade mode", mesh_name).c_str(), &shade_current, 0, 2, shade_str[shade_current])) {
         GLenum shade_mode = GL_POINT;
         switch (shade_current) {
@@ -80,6 +79,16 @@ void MeshViewer::render_mesh(RenderService* service, const std::shared_ptr<Rende
         logger->log("shade mode changed: " + mesh->get_name() + " => " + shade_str[shade_current]);
     }
     ImGui::SameLine(); HelpMarker("Different shading modes without changing topology.");
+
+    // ColorMode
+    const char* colortypes[] = { "original", "static random", "dynamic random", "colormap(Gauss)", "colormap(Mean)" };
+    auto clr_mode = static_cast<int>(mesh->get_color_mode());
+    if (ImGui::Combo(IMGUI_NAME("color mode", mesh_name).c_str(), &clr_mode, colortypes, IM_ARRAYSIZE(colortypes))) {
+        mesh->set_color_mode(static_cast<ColorMode>(clr_mode));
+        logger->log("color mode changed: " + mesh->get_name() + " => " + colortypes[clr_mode]);
+    }
+    ImGui::SameLine(); HelpMarker("Colormap depends on the curvature of the mesh, and it will be computed in realtime by now.");
+
     // Button::Fit
     ImGui::PushID(0);
     ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0.25f, 0.6f, 0.6f));
@@ -101,6 +110,5 @@ void MeshViewer::render_mesh(RenderService* service, const std::shared_ptr<Rende
     }
     ImGui::PopStyleColor(3);
     ImGui::PopID();
-
     ImGui::Separator();
 }

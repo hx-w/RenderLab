@@ -20,6 +20,14 @@ namespace RenderSpace {
         DRAWABLE_TRIANGLE
     };
 
+    enum ColorMode {
+        CM_Original,
+        CM_Static_Random,
+        CM_Dynamic_Random,
+        CM_ColorMap_Gauss,
+        CM_ColorMap_Mean
+    };
+
     struct Vertex {
         Vertex() = default;
         Vertex(
@@ -30,6 +38,7 @@ namespace RenderSpace {
         glm::vec3 Position;
         glm::vec3 Color;
         glm::vec3 Normal;
+        glm::vec3 BufColor; // for color map or random color
     };
 
     struct Edge {
@@ -98,6 +107,8 @@ namespace RenderSpace {
 
         void set_shade_mode(GLenum mode);
         GLenum get_shade_mode() { return m_shade_mode; }
+        void set_color_mode(ColorMode mode);
+        ColorMode get_color_mode() { return m_color_mode; }
 
         std::string get_name() const { return m_name; }
 
@@ -127,13 +138,13 @@ namespace RenderSpace {
 
         void draw();
 
-        // 曲率可视化
-        void visualize_curvature();
-
     protected:
         void _gen_vao();
         void _reset();
         void _deepcopy(const Drawable& element);
+
+        // 可视化
+        void buf_colormap(ColorMode);
 
     protected:
         Shader m_shader;
@@ -155,7 +166,9 @@ namespace RenderSpace {
         std::atomic<bool> _ready_to_draw = false;
 
         DrawableType m_type;
+        // properties
         GLenum m_shade_mode = GL_LINE;
+        ColorMode m_color_mode = CM_Original;
     };
 }
 

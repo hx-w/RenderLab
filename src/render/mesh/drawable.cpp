@@ -3,6 +3,10 @@
 #include "../libs/glad/glad.h"
 #include "../libs/GLFW/glfw3.h"
 #include "../imgui_ext/logger.h"
+#include "../glm_ext/curvature.hpp"
+#include <set>
+#include <algorithm>
+#include <iterator>
 #include <iostream>
 
 using namespace std;
@@ -202,5 +206,66 @@ namespace RenderSpace {
         m_center = element.m_center;
         m_radius = element.m_radius;
         m_aabb = element.m_aabb;
+    }
+
+    void Drawable::visualize_curvature() {
+        std::lock_guard<std::mutex> lk(m_mutex);
+        if (m_type != DrawableType::DRAWABLE_TRIANGLE) return;
+        // 对不同顶点，构造寻找邻接顶点的索引，且保证邻接点拓扑有序，围绕成环
+        // 拓扑无序的邻接表 (set本身是有序的)
+        vector<set<int>> adj_list;
+        adj_list.resize(m_vertices.size());
+        for (auto& tri : m_triangles) {
+            for (int i = 0; i < 3; i++) {
+                adj_list[tri.VertexIdx[i]].insert(tri.VertexIdx[(i + 1) % 3]);
+                adj_list[tri.VertexIdx[i]].insert(tri.VertexIdx[(i + 2) % 3]);
+            }
+        }
+        // 通过无序表构造拓扑有序邻接表(set有序)
+        vector<set<int>> ord_adj_list;
+        ord_adj_list.resize(m_vertices.size());
+        auto vec_size = adj_list.size();
+        for (int vidx = 0; vidx < vec_size; vidx++) {
+            // 选中任意邻接点
+            auto adj_vidx = *adj_list[vidx].begin();
+            ord_adj_list[vidx].insert(adj_vidx);
+            // 通过临界点
+            bool is_found = true;
+            while (is_found) {
+                // vidx 与 adj_vidx 邻接点集合的交，应该有1-2个点
+                set<int> intsets;
+                set_intersection(adj_list[adj_vidx].begin(), adj_list[adj_vidx].end(),
+                                 adj_list[vidx].begin(), adj_list[vidx].end(),
+                                 inserter(intsets, intsets.begin()));
+                is_found = false;
+                for (auto& iv : intsets) {
+                    if (iv == adj_vidx) continue; // 不应该出现
+                    if (find(ord_adj_list[vidx].begin(), ord_adj_list[vidx].end(), iv) == ord_adj_list[vidx].end()) {
+                        // 不邻接表中，需要添加
+                        ord_adj_list[vidx].insert(iv);
+                        adj_vidx = iv;
+                        is_found = true;
+                        break;
+                    }
+                }
+            }
+        }
+        // 对所有顶点，计算顶点的曲率
+        for (int vidx = 0; vidx < vec_size; vidx++) {
+            vector<glm::vec3> neighbors;
+            for (auto& iv : ord_adj_list[vidx]) {
+                neighbors.emplace_back(m_vertices[iv].Position);
+            }
+            float curv = glm_ext::compute_curvature(m_vertices[vidx].Position, neighbors, glm_ext::CURVATURE_GAUSSIAN);
+            if (curv < 1000) {
+                m_vertices[vidx].Color = glm::vec3(0, 0, 1);
+            }
+            else if (1000 <= curv && curv < 5000) {
+                m_vertices[vidx].Color = glm::vec3(0, 1, 0);
+            }
+            else {
+                m_vertices[vidx].Color = glm::vec3(1, 0, 0);
+            }
+        }
     }
 }

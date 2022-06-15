@@ -101,4 +101,6 @@ void MeshViewer::render_mesh(RenderService* service, const std::shared_ptr<Rende
     }
     ImGui::PopStyleColor(3);
     ImGui::PopID();
+
+    ImGui::Separator();
 }

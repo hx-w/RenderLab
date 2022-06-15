@@ -127,6 +127,9 @@ namespace RenderSpace {
 
         void draw();
 
+        // 曲率可视化
+        void visualize_curvature();
+
     protected:
         void _gen_vao();
         void _reset();

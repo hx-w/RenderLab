@@ -8,9 +8,9 @@
 #include "libs/imgui/imgui.h"
 #include "libs/imgui/imgui_impl_glfw.h"
 #include "libs/imgui/imgui_impl_opengl3.h"
-#include "imgui_ext/browser.h"
 #include "imgui_ext/logger.h"
 #include "imgui_ext/mesh_viewer.h"
+#include "imgui_ext/controller.h"
 
 using namespace std;
 using namespace fundamental;
@@ -232,48 +232,9 @@ namespace RenderSpace {
             ImGui::Render();
             return;
         }
-        static bool show_import_modal = false;
-        static imgui_ext::file_browser_modal fileBrowser("Import");
-        std::string path;
-        // controller
-        {
-            ImGui::Begin("Controller");
-            ImGui::Text("Environment:");
-            ImGui::ColorEdit3("background color", (float*)&m_win_widget->bgColor);
-            ImGui::ColorEdit3("light color", (float*)&m_win_widget->lightColor);
-            ImGui::DragFloat3("light pos", (float*)&m_win_widget->lightPos);
-            ImGui::Separator();
-            ImGui::SliderFloat("camera speed", &m_win_widget->cameraSpeed, 1.0f, 15.0f); 
-            ImGui::DragFloat3("camera pos", (float*)&m_win_widget->cameraPos);
-
-            ImGui::Spacing();
-            if (ImGui::Button("Import OBJ")) {
-                show_import_modal = !show_import_modal;
-            }
-            ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
-            ImGui::End();
-        }
-
-        if (show_import_modal) {
-            if (fileBrowser.render(true, path)) {
-                show_import_modal = false;
-                if (path.size() > 0 && path.substr(path.size() - 4, 4) == ".obj") {
-                    string name = path.substr(0, path.size() - 4);
-#if defined(_WIN32)
-                    auto iter = name.find_last_of('\\');
-#else
-                    auto iter = name.find_last_of('/');
-#endif
-                    if (iter != string::npos) {
-                        name = name.substr(iter + 1);
-                    }
-                    auto _id = create_mesh(name, DrawableType::DRAWABLE_TRIANGLE);
-                    m_meshes_map.at(_id)->load_OBJ(path);
-                }
-            }
-        }
 
         logger->render();
+        imgui_ext::Controller::render(this);
         imgui_ext::MeshViewer::render(this, m_meshes_map);
 
         // Rendering
@@ -283,5 +244,13 @@ namespace RenderSpace {
     void RenderService::viewfit_mesh(const shared_ptr<Drawable> mesh) {
         logger->log("fit view to mesh: " + mesh->get_name());
         m_win_widget->viewfit_BBOX(mesh->get_BBOX());
+    }
+
+    bool RenderService::load_mesh(const string& name, const string& path) {
+        if (path.substr(path.size() - 4, 4) == ".obj") {
+            auto _id = create_mesh(name, DrawableType::DRAWABLE_TRIANGLE);
+            return m_meshes_map.at(_id)->load_OBJ(path);
+        }
+        return false;
     }
 }

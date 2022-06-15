@@ -26,6 +26,7 @@ namespace RenderSpace {
         ~RenderService();
 
         void update_win(std::shared_ptr<RenderWindowWidget> win);
+        std::shared_ptr<RenderWindowWidget> get_win() { return m_win_widget; }
 
         Shader& get_shader() { return m_shader; }
 
@@ -40,6 +41,9 @@ namespace RenderSpace {
         void notify_picking(const glm::vec3& origin, const glm::vec3& direction);
         void notify_clear_picking(); // refresh all picking ray
         void notify_window_resize(uint32_t width, uint32_t height);
+
+        // return true if success, *.obj supported
+        bool load_mesh(const std::string& name, const std::string& path);
 
     private:
         void setup();

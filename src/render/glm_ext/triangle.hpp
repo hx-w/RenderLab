@@ -4,6 +4,7 @@
  *  @brief triangle methods using glm
  */
 
+#include <cmath>
 #include "../libs/glm/glm.hpp"
 #include "../libs/glm/gtc/matrix_transform.hpp"
 #include "../libs/glm/gtc/type_ptr.hpp"
@@ -18,19 +19,28 @@ static inline float vec_angle(const glm::vec3& v1, const glm::vec3& v2) {
     return glm::acos(glm::dot(v1, v2) / (v1len * v2len));
 }
 
-static float triangle_area(const glm::vec3& v1,
-                           const glm::vec3& v2,
-                           const glm::vec3& v3) {
-    glm::vec3 v12 = v1 - v2;
-    glm::vec3 v13 = v1 - v3;
-    glm::vec3 v23 = v2 - v3;
+static float triangle_area(const glm::vec3& a,
+                           const glm::vec3& b,
+                           const glm::vec3& c) {
+#if 1
+    glm::vec3 v12 = a - b;
+    glm::vec3 v13 = a - c;
+    glm::vec3 v23 = b - c;
     return glm::length(glm::cross(v12, v13)) / 2.f;
+#else
+    //应用海伦公式   S=1/4std::sqrt[(a+b+c)(a+b-c)(a+c-b)(b+c-a)]
+	float lenA = std::sqrt(std::pow(b.x - c.x, 2) + std::pow(b.y - c.y, 2) + std::pow(b.z - c.z, 2));// b - c 两点的坐标
+	float lenB = std::sqrt(std::pow(a.x - c.x, 2) + std::pow(a.y - c.y, 2) + std::pow(a.z - c.z, 2));// a - c 两点的坐标
+	float lenC = std::sqrt(std::pow(b.x - a.x, 2) + std::pow(b.y - a.y, 2) + std::pow(b.z - a.z, 2));// a - b 两点的坐标
+	float area = 1.0 / 4.0 * std::sqrt((lenA + lenB + lenC) * (lenA + lenB - lenC) * (lenA + lenC - lenB) * (lenB + lenC - lenA));
+    return area;
+#endif
 }
 
 static bool is_same_side(const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& v3, const glm::vec3& p) {
-    glm::vec3 AB(v2.x - v1.x, v2.y - v1.y, v2.z - v1.z);
-    glm::vec3 AC(v3.x - v1.x, v3.y - v1.y, v3.z - v1.z);
-    glm::vec3 AP(p.x - v1.x, p.y - v1.y, p.z - v1.z);
+    glm::vec3 AB = v2 - v1;
+    glm::vec3 AC = v3 - v1;
+    glm::vec3 AP = p - v1;
 
     glm::vec3 vx1 = glm::cross(AB, AC);
     glm::vec3 vx2 = glm::cross(AB, AP);
@@ -87,7 +97,7 @@ static glm::vec3 triangle_circumcircle_center(const glm::vec3& v1,
 static glm::vec3 VoronoiMixed_center(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c) {
 	glm::vec3 p = triangle_circumcircle_center(a, b, c);//计算外接圆的圆心
 	if (!is_in_triangle(a, b, c, p)) {//不在三角形内部的时候 返回bc的中点
-		return { (b.x + c.x) / 2.0, (b.y + c.y) / 2.0, (b.z + c.z) / 2.0 };
+        return (b + c) / 2.0f;
 	}
 	return p;
 }

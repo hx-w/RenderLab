@@ -277,16 +277,14 @@ void Drawable::buf_colormap(ColorMode mode) {
         while (is_found) {
             // vidx 与 adj_vidx 邻接点集合的交，应该有1-2个点
             set<int> intsets;
-            set_intersection(adj_list[adj_vidx].begin(),
-                             adj_list[adj_vidx].end(), adj_list[vidx].begin(),
-                             adj_list[vidx].end(),
+            set_intersection(adj_list[adj_vidx].begin(), adj_list[adj_vidx].end(),
+                             adj_list[vidx].begin(), adj_list[vidx].end(),
                              inserter(intsets, intsets.begin()));
             is_found = false;
             for (auto& iv : intsets) {
                 if (iv == adj_vidx)
                     continue;  // 不应该出现
-                if (find(ord_adj_list[vidx].begin(), ord_adj_list[vidx].end(),
-                         iv) == ord_adj_list[vidx].end()) {
+                if (find(ord_adj_list[vidx].begin(), ord_adj_list[vidx].end(), iv) == ord_adj_list[vidx].end()) {
                     // 不邻接表中，需要添加
                     ord_adj_list[vidx].insert(iv);
                     adj_vidx = iv;
@@ -338,7 +336,6 @@ void Drawable::buf_colormap(ColorMode mode) {
         const double gone = 1.0;
         const double bone = 1.0;
         double x = curv;
-        x = (curv < 0 ? 0 : (x > 1 ? 1 : x));
         //可以简单地理解：红色的曲率最大，蓝色的最小
         if (x < 1. / 8.) {
             r = 0;

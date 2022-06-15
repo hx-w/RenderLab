@@ -6,6 +6,7 @@
 
 #include <vector>
 #include "triangle.hpp"
+#include "../libs/glm/gtx/vector_angle.hpp"
 
 namespace glm_ext {
 
@@ -19,7 +20,7 @@ enum CurvatureType { CURVATURE_GAUSSIAN, CURVATURE_MEAN };
 static float curvature_Guassian(const glm::vec3& a,
                                 const glm::vec3& b,
                                 const glm::vec3& c) {
-    return vec_angle(c - a, b - a);
+    return glm::angle(glm::normalize(c - a), glm::normalize(b - a));
 }
 
 // 计算cotangent系数 得到长度
@@ -27,7 +28,26 @@ static float curvature_Mean(const glm::vec3& p,
                             const glm::vec3& neb_prev,
                             const glm::vec3& neb,
                             const glm::vec3& neb_next) {
-    return 0.f;
+    // compute alpha beta
+    glm::vec3 AP = glm::normalize(p - neb_prev);
+    glm::vec3 AB = glm::normalize(neb - neb_prev);
+    float cosAlpha = glm::cos(glm::angle(AP, AB));
+
+    if (cosAlpha >= 0.99f) {
+        return 0.0f;
+    }
+    float cotAlpha = cosAlpha / glm::sqrt(1 - cosAlpha * cosAlpha);
+    glm::vec3 CP = glm::normalize(p - neb_next);
+    glm::vec3 CB = glm::normalize(neb - neb_next);
+    float cosBeta = glm::cos(glm::angle(CP, CB));
+    if (cosBeta >= 0.99f) {
+        return 0.0f;
+    }
+    float cotBeta = cosBeta / glm::sqrt(1 - cosBeta * cosBeta);
+
+    float coff = glm::sqrt(cotAlpha + cotBeta) * glm::length(neb - p);
+
+    return coff;
 }
 
 // neighors 拓扑有序
@@ -66,14 +86,12 @@ static float compute_curvature(const glm::vec3& p,
         sum_area += triangle_area(p, v1, v2);
     }
 
+    if (sum_area <= 0.f) {
+        return 0.0f;
+    }
     switch (type) {
         case CURVATURE_GAUSSIAN:
-            if (sum_area <= 0.f) {
-                curvature = 0.f;
-            }
-            else {
-                curvature = (1.0 / sum_area) * (2 * M_PI * coff);
-            }
+            curvature = (1.0 / sum_area) * (2 * M_PI - coff);
             break;
         case CURVATURE_MEAN:
             curvature = 0.5f * (1.f / (sum_area * 2) * coff);
@@ -81,7 +99,6 @@ static float compute_curvature(const glm::vec3& p,
         default:
             break;
     }
-
     return curvature;
 }
 }  // namespace glm_ext

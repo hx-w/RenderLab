@@ -23,10 +23,10 @@ static void HelpMarker(const char* desc) {
     }
 }
 
-static inline const char* IMGUI_NAME(const char* name, const string& meshname) {
+static inline const string IMGUI_NAME(const char* name, const string& meshname) {
     char buff[32] = "";
     snprintf(buff, sizeof(buff), "%s##%s", name, meshname.c_str());
-    return buff;
+    return string(buff);
 }
 
 void MeshViewer::render(RenderService* service, const MeshMapType& meshes) {
@@ -68,7 +68,7 @@ void MeshViewer::render_mesh(RenderService* service, const std::shared_ptr<Rende
         default: break;
     }
     // if (ImGui::Combo(IMGUI_NAME("shade mode", mesh_name), &shade_current, shade_str, IM_ARRAYSIZE(shade_str))) {
-    if (ImGui::SliderInt(IMGUI_NAME("shade mode", mesh_name), &shade_current, 0, 2, shade_str[shade_current])) {
+    if (ImGui::SliderInt(IMGUI_NAME("shade mode", mesh_name).c_str(), &shade_current, 0, 2, shade_str[shade_current])) {
         GLenum shade_mode = GL_POINT;
         switch (shade_current) {
             case 0: shade_mode = GL_POINT; break;
@@ -85,7 +85,7 @@ void MeshViewer::render_mesh(RenderService* service, const std::shared_ptr<Rende
     ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0.25f, 0.6f, 0.6f));
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0.25f, 0.7f, 0.7f));
     ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0.25f, 0.8f, 0.8f));
-    if (ImGui::Button(IMGUI_NAME("ViewFit", mesh_name))) {
+    if (ImGui::Button(IMGUI_NAME("ViewFit", mesh_name).c_str())) {
         service->viewfit_mesh(mesh);
     }
     ImGui::PopStyleColor(3);

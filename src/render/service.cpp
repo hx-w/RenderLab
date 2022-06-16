@@ -20,22 +20,6 @@ namespace RenderSpace {
     RenderService::RenderService():
         m_autobus(make_unique<AutoBus>()) {
         setup();
-
-        // 参数化实验
-        auto _id_uns = create_mesh("uns_mesh", DrawableType::DRAWABLE_TRIANGLE);
-        // auto _id_param = create_mesh("param_mesh", DrawableType::DRAWABLE_TRIANGLE);
-        // auto _id_str = create_mesh("str_mesh", DrawableType::DRAWABLE_TRIANGLE);
-
-        m_meshes_map.at(_id_uns)->load_OBJ("static/models/uns.obj");
-        // start_thread("param_thread", [&]() {
-        //     Parameterization pmethod(
-        //         m_meshes_map[_id_uns],
-        //         m_meshes_map[_id_param],
-        //         m_meshes_map[_id_str]
-        //     );
-        //     pmethod.parameterize(ParamMethod::Laplace);
-        //     pmethod.resample(100);
-        // });
     }
 
     RenderService::~RenderService() {

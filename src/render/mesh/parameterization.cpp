@@ -69,7 +69,7 @@ void Parameterization::resample(uint32_t num_samples) {
     vector<Vertex> str_vertices;
     vector<Triangle> str_trias;
 
-   TGAImage image(int(num_samples) * 2, int(num_samples) * 2, TGAImage::RGB);
+    TGAImage image(int(num_samples) * 2, int(num_samples) * 2, TGAImage::RGB);
     for (auto ir = 0; ir < num_samples; ++ir) {
         for (auto ic = 0; ic < num_samples; ++ic) {
             // 在参数平面上的点
@@ -171,6 +171,7 @@ void Parameterization::_remark_edges(vector<OrderedEdge>& edge_bound,
     }
     edge_bound.assign(edge_bound_set.begin(), edge_bound_set.end());
     edge_inner.assign(edge_inner_set.begin(), edge_inner_set.end());
+
 }
 
 void Parameterization::_cut_mesh_open(const vector<OrderedEdge>& tot_edge) {
@@ -225,6 +226,7 @@ void Parameterization::_topology_reorder(vector<OrderedEdge>& edge_bound) {
             length(vertices[vidx].Position - vertices[vidx_next].Position);
         vidx = vidx_next;
     }
+    cout << "topology reorder: " << edge_bound.size() << " == " << edge_bound_reorder.size() << endl;
     edge_bound.swap(edge_bound_reorder);
 }
 
@@ -319,10 +321,11 @@ void Parameterization::_init_weights(
      */
     // 构造邻接表 快速索引
     unordered_map<int, set<int>> adj_list;
-    vector<OrderedEdge> tot_edge;
-    tot_edge.insert(tot_edge.begin(), edge_bound.begin(), edge_bound.end());
-    tot_edge.insert(tot_edge.begin(), edge_inner.begin(), edge_inner.end());
-    for (auto& edge : tot_edge) {
+    for (auto& edge : edge_inner) {
+        adj_list[edge.first].insert(edge.second);
+        adj_list[edge.second].insert(edge.first);
+    }
+    for (auto& edge : edge_bound) {
         adj_list[edge.first].insert(edge.second);
         adj_list[edge.second].insert(edge.first);
     }
@@ -546,9 +549,9 @@ void Parameterization::_build_param_mesh(const vector<int>& vt_inner,
             _v = param_bound[vt_bound_idx[i]];
         } else {
             cout << "[ERROR] 发现非法顶点索引" << endl;
+            continue;
         }
-        tar_vertices.emplace_back(
-            Vertex(vec3(_v.x, _v.y, 0.0), vec3(0.0), vec3(1.0)));
+        tar_vertices.emplace_back(Vertex(vec3(_v.x, _v.y, 0.0), vec3(0.0), vec3(1.0)));
     }
 
     auto& param_vt = m_param_mesh->get_vertices();

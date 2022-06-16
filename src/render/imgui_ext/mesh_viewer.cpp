@@ -12,6 +12,8 @@ using namespace imgui_ext;
 using namespace RenderSpace;
 using namespace std;
 
+#define VERTICES_MAX int(1e6)
+
 static unordered_map<int, bool> _mesh_visibility;
 static unordered_map<int, bool> _mesh_alive;
 static unordered_map<int, string> _mesh_savepath;
@@ -123,7 +125,7 @@ void MeshViewer::render_mesh(RenderService* service, const std::shared_ptr<Rende
         static float sample_rate = 0.5f;
         vector<float> values;
         mesh->sample_curvs(values, sample_rate);
-        float arrv[values.size() + 1];
+        float arrv[VERTICES_MAX];
         for (int i = 0; i < values.size(); ++i) arrv[i] = values[i];
         ImGui::PlotLines(IMGUI_NAME("##", mesh_name).c_str(), arrv, IM_ARRAYSIZE(arrv));
         ImGui::SameLine();

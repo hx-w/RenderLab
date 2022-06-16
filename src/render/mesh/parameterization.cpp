@@ -527,10 +527,10 @@ void Parameterization::_build_param_mesh(const vector<int>& vt_inner,
         vt_bound_idx[vt_bound[i]] = i;
     }
 
-    auto& tar_vertices = m_param_mesh->get_vertices();
-    auto& tar_tris = m_param_mesh->get_triangles();
-    const auto& ori_vertices = m_uns_mesh->get_vertices();
-    const auto& ori_tris = m_uns_mesh->get_triangles();
+    vector<Vertex> tar_vertices;
+    vector<Triangle> tar_tris;
+    const auto ori_vertices = m_uns_mesh->get_vertices();
+    const auto ori_tris = m_uns_mesh->get_triangles();
     tar_vertices.clear();
 
     // 三角面片索引应相同
@@ -550,6 +550,11 @@ void Parameterization::_build_param_mesh(const vector<int>& vt_inner,
         tar_vertices.emplace_back(
             Vertex(vec3(_v.x, _v.y, 0.0), vec3(0.0), vec3(1.0)));
     }
+
+    auto& param_vt = m_param_mesh->get_vertices();
+    auto& param_tris = m_param_mesh->get_triangles();
+    param_vt.swap(tar_vertices);
+    param_tris.swap(tar_tris);
     m_param_mesh->ready_to_update();
 }
 

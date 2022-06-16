@@ -3,6 +3,7 @@
 #include "../service.h"
 #include "../libs/imgui/imgui.h"
 #include "../mesh/elements.h"
+#include "../mesh/parameterization.h"
 #include <filesystem>
 #include <cstring>
 #include <iostream>
@@ -14,6 +15,10 @@ using namespace std;
 static unordered_map<int, bool> _mesh_visibility;
 static unordered_map<int, bool> _mesh_alive;
 static unordered_map<int, string> _mesh_savepath;
+// parameterization
+static unordered_map<int, float> _mesh_progress;
+static unordered_map<int, int> _mesh_sample_num;
+
 static auto logger = imgui_ext::Logger::get_instance();
 
 static void HelpMarker(const char* desc) {
@@ -48,6 +53,12 @@ void MeshViewer::render(RenderService* service, const MeshMapType& meshes) {
             _mesh_savepath[_id] = "./" + _mesh->get_name() + ".obj";
 #endif
         }
+        if (_mesh_progress.find(_id) == _mesh_progress.end()) {
+            _mesh_progress[_id] = -1.0f;
+        }
+        if (_mesh_sample_num.find(_id) == _mesh_sample_num.end()) {
+            _mesh_sample_num[_id] = 100;
+        }
         _mesh_alive[_id] = true;
         // hide checkbox lable
         ImGui::Checkbox(("##" + _mesh->get_name()).c_str(), &_mesh_visibility[_id]);
@@ -60,7 +71,7 @@ void MeshViewer::render(RenderService* service, const MeshMapType& meshes) {
     }
 
     ImGui::End();
-    ImGui::ShowDemoWindow();
+    // ImGui::ShowDemoWindow();
 }
 
 void MeshViewer::render_mesh(RenderService* service, const std::shared_ptr<RenderSpace::MeshDrawable> mesh, int mesh_id) {
@@ -158,8 +169,18 @@ void MeshViewer::render_mesh(RenderService* service, const std::shared_ptr<Rende
     ImGui::InputText(IMGUI_NAME("##", mesh_name).c_str(), savepath, IM_ARRAYSIZE(savepath));
     _mesh_savepath[mesh_id] = string(savepath);
 
+    // parameteraztion
     if (ImGui::TreeNode(IMGUI_NAME("parameterazation", mesh_name).c_str())) {
+        ImGui::SliderInt(IMGUI_NAME("sample num", mesh_name).c_str(), &_mesh_sample_num.at(mesh_id), 50, 200);
 
+        if (ImGui::Button(IMGUI_NAME("execute", mesh_name).c_str())) {
+            service->execute_param(mesh_id, _mesh_progress.at(mesh_id), Laplace, _mesh_sample_num.at(mesh_id));
+        }
+        float progress = _mesh_progress.at(mesh_id);
+        if (progress >= 0.0f) {
+            ImGui::SameLine();
+            ImGui::ProgressBar(progress);
+        }
         ImGui::TreePop();
     }
 

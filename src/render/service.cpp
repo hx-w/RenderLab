@@ -256,4 +256,22 @@ namespace RenderSpace {
         }
         return false;
     }
+
+    void RenderService::execute_param(int mesh_id, float& progress, ParamMethod mtd, int sample_num) {
+        auto mesh_name = m_meshes_map.at(mesh_id)->get_name();
+        auto _id_param = create_mesh(mesh_name + "/param", DrawableType::DRAWABLE_TRIANGLE);
+        auto _id_str = create_mesh(mesh_name + "/str", DrawableType::DRAWABLE_TRIANGLE);
+
+        start_thread(mesh_name + "/param_thread", [&, _id_param, _id_str]() {
+            Parameterization pmethod(
+                m_meshes_map.at(mesh_id),
+                m_meshes_map.at(_id_param),
+                m_meshes_map.at(_id_str)
+            );
+            if (!pmethod.parameterize(mtd, progress, sample_num)) {
+                delete_mesh(_id_param);
+                delete_mesh(_id_str);
+            }
+        });
+    }
 }

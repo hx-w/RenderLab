@@ -16,6 +16,12 @@ namespace RenderSpace {
         Laplace
     };
 
+    enum BoundaryShape {
+        FreeBound,
+        FixBoundCircle,
+        FixBoundSquare
+    };
+
     struct pair_hash {
         template <class T1, class T2>
         std::size_t operator() (const std::pair<T1, T2> &p) const {
@@ -45,7 +51,7 @@ namespace RenderSpace {
 
         ~Parameterization();
 
-        void parameterize(ParamMethod);
+        bool parameterize(ParamMethod, float& progress, uint32_t num_samples);
 
         void resample(uint32_t num_samples);
 
@@ -83,7 +89,9 @@ namespace RenderSpace {
             std::vector<glm::vec2>& f_1,  // 结果保存在这里
             const std::vector<int>& r_idx_2,
             const std::vector<int>& c_idx_2,
-            const std::vector<glm::vec2>& f_2
+            const std::vector<glm::vec2>& f_2,
+            float& progress,
+            uint32_t num_samples
         );
 
         // Jacobi 迭代求解方程组

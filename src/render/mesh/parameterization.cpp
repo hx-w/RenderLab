@@ -25,12 +25,14 @@ Parameterization::Parameterization(
 
 Parameterization::~Parameterization() {}
 
-void Parameterization::parameterize(ParamMethod pmodel) {
+bool Parameterization::parameterize(ParamMethod pmodel, float& progress, uint32_t num_samples) {
+    progress = 0.0f;
     vector<OrderedEdge> edge_bound;
     vector<OrderedEdge> edge_inner;
     // 先获取边缘和非边缘边
     _remark_edges(edge_bound, edge_inner);
     if (edge_bound.empty()) {
+        return false;
         _cut_mesh_open(edge_inner);
         _remark_edges(edge_bound, edge_inner);
     }
@@ -55,25 +57,24 @@ void Parameterization::parameterize(ParamMethod pmodel) {
     vector<vec2> param_inner;
     cout << "solving Laplacian equation" << endl;
     _solve_Laplacian_equation(vt_inner, vt_inner, param_inner, vt_inner,
-                              vt_bound, param_bound);
+                              vt_bound, param_bound, progress, num_samples);
     cout << "building mesh" << endl;
     _build_param_mesh(vt_inner, vt_bound, param_inner, param_bound);
+    return true;
 }
 
 void Parameterization::resample(uint32_t num_samples) {
-    auto& uns_vertices = m_uns_mesh->get_vertices();
-    auto& param_vertices = m_param_mesh->get_vertices();
-    vector<RenderSpace::Vertex> sample_vertices;
-    auto& str_vertices = m_str_mesh->get_vertices();
-    auto& str_trias = m_str_mesh->get_triangles();
+    const auto uns_vertices = m_uns_mesh->get_vertices();
+    const auto param_vertices = m_param_mesh->get_vertices();
+    vector<Vertex> str_vertices;
+    vector<Triangle> str_trias;
 
-    TGAImage image(int(num_samples) * 2, int(num_samples) * 2, TGAImage::RGB);
+   TGAImage image(int(num_samples) * 2, int(num_samples) * 2, TGAImage::RGB);
     for (auto ir = 0; ir < num_samples; ++ir) {
         for (auto ic = 0; ic < num_samples; ++ic) {
             // 在参数平面上的点
             auto x = m_scale * (ic + 0.5) / num_samples - m_scale / 2;
             auto y = m_scale * (ir + 0.5) / num_samples - m_scale / 2;
-            sample_vertices.emplace_back(Vertex(vec3(x, y, 0), vec3(0.0), vec3(0.0)));
             // 逆映射到三维空间
             const Triangle spot_trias = _which_trias_in(vec2(x, y));
             auto tot_area = _trias_area(param_vertices[spot_trias.VertexIdx.x].Position,
@@ -94,16 +95,15 @@ void Parameterization::resample(uint32_t num_samples) {
             
             // shift
             str_point += vec3(10.0, 0.0, 0.0);
-            str_vertices.emplace_back(Vertex(str_point, vec3(0.0), vec3(0.0)));
+            str_vertices.emplace_back(Vertex(str_point, vec3(0.5), vec3(0.0)));
 
-            for (int idx = 0; idx < 4; ++idx) {
-                image.set(ic * 2 + idx % 2, ir * 2 + idx / 2, TGAColor(
-                    static_cast<uint8_t>(((*reinterpret_cast<uint32_t*>(&str_point.x)) >> (idx * 8)) & 0xFF),
-                    static_cast<uint8_t>(((*reinterpret_cast<uint32_t*>(&str_point.y)) >> (idx * 8)) & 0xFF),
-                    static_cast<uint8_t>(((*reinterpret_cast<uint32_t*>(&str_point.z)) >> (idx * 8)) & 0xFF)
-                ));
-            }
-            
+           for (int idx = 0; idx < 4; ++idx) {
+               image.set(ic * 2 + idx % 2, ir * 2 + idx / 2, TGAColor(
+                   static_cast<uint8_t>(((*reinterpret_cast<uint32_t*>(&str_point.x)) >> (idx * 8)) & 0xFF),
+                   static_cast<uint8_t>(((*reinterpret_cast<uint32_t*>(&str_point.y)) >> (idx * 8)) & 0xFF),
+                   static_cast<uint8_t>(((*reinterpret_cast<uint32_t*>(&str_point.z)) >> (idx * 8)) & 0xFF)
+               ));
+           }
             /**
              *  retopology
              *  [idx-max_col-1] ----- [idx-max_col]
@@ -111,17 +111,36 @@ void Parameterization::resample(uint32_t num_samples) {
              *  [idx-1] ------------- [idx] 
              */
             if (ir > 0 && ic > 0) {
-                auto idx = sample_vertices.size() - 1;
+                auto idx = ir * num_samples + ic;
                 str_trias.emplace_back(Triangle(idx, idx - num_samples, idx - 1));
                 str_trias.emplace_back(Triangle(idx - 1, idx - num_samples, idx - num_samples - 1));
             }
         }
     }
 
-    image.write_tga_file("static/geoimage/resample.tga");
+    // 计算法线
+    for (int i = 0; i < str_trias.size(); ++i) {
+        Triangle& tri = str_trias[i];
+        glm::vec3 v1 = str_vertices[tri.VertexIdx.x].Position;
+        glm::vec3 v2 = str_vertices[tri.VertexIdx.y].Position;
+        glm::vec3 v3 = str_vertices[tri.VertexIdx.z].Position;
+        glm::vec3 normal = -glm::normalize(glm::cross(v2 - v1, v3 - v1));
+        str_vertices[tri.VertexIdx.x].Normal += normal;
+        str_vertices[tri.VertexIdx.y].Normal += normal;
+        str_vertices[tri.VertexIdx.z].Normal += normal;
+        // normalize normal
+        str_vertices[tri.VertexIdx.x].Normal = glm::normalize(str_vertices[tri.VertexIdx.x].Normal);
+        str_vertices[tri.VertexIdx.y].Normal = glm::normalize(str_vertices[tri.VertexIdx.y].Normal);
+        str_vertices[tri.VertexIdx.z].Normal = glm::normalize(str_vertices[tri.VertexIdx.z].Normal);
+    }
+    auto& str_v = m_str_mesh->get_vertices();
+    str_v.swap(str_vertices);
+    auto& str_tri = m_str_mesh->get_triangles();
+    str_tri.swap(str_trias);
+    // image.write_tga_file("static/geoimage/resample.tga");
 
     m_str_mesh->ready_to_update();
-    m_str_mesh->save_OBJ("static/models/test.obj");
+    // m_str_mesh->save_OBJ("static/models/test.obj");
 }
 
 void Parameterization::_remark_edges(vector<OrderedEdge>& edge_bound,
@@ -410,7 +429,9 @@ void Parameterization::_solve_Laplacian_equation(
     vector<vec2>& f_1,  // 结果保存在这里
     const vector<int>& r_idx_2,
     const vector<int>& c_idx_2,
-    const vector<vec2>& f_2) {
+    const vector<vec2>& f_2,
+    float& progress,
+    uint32_t num_samples) {
     // 约束 c_idx_2.size() == f_2.size()
     //     r_idx_1.size() == c_idx_1.size() 即矩阵1为方阵
     // 变量初始化
@@ -435,11 +456,13 @@ void Parameterization::_solve_Laplacian_equation(
     f_1.resize(mat1_col_count, vec2(0.5f, 0.5f));
 
     // 进行迭代求解
-    for (int epoch = 0; epoch < 400; ++epoch) {
-        if (epoch % 50 == 0)
-        cout << "[EPOCH] " << epoch << endl;
+    int itermax = 200;
+    for (int epoch = 0; epoch < itermax; ++epoch) {
+        progress = epoch * 1.0 / itermax;
         Jacobi_Iteration(r_idx_1, c_idx_1, f_1, _value_mat, 0.1f, 5);
         _build_param_mesh(r_idx_1, c_idx_2, f_1, f_2);
+        if (epoch % 5 == 0)
+            resample(num_samples);
     }
     
 }

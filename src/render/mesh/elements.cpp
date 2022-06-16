@@ -197,14 +197,14 @@ namespace RenderSpace {
         return true;
     }
 
-    void MeshDrawable::save_OBJ(const string& filename) {
+    bool MeshDrawable::save_OBJ(const string& filename) {
         ofstream ofs(filename);
         if (!ofs.good()) {
             imgui_ext::Logger::get_instance()->log(
                 "can't open file: " + filename,
                 imgui_ext::LOG_ERROR
             );
-            return;
+            return false;
         }
         for (int i = 0; i < m_vertices.size(); ++i) {
             ofs << "v " << m_vertices[i].Position.x << " " << m_vertices[i].Position.y << " " << m_vertices[i].Position.z << endl;
@@ -213,6 +213,7 @@ namespace RenderSpace {
             ofs << "f " << m_triangles[i].VertexIdx.x + 1 << " " << m_triangles[i].VertexIdx.y + 1 << " " << m_triangles[i].VertexIdx.z + 1 << endl;
         }
         ofs.close();
+        return true;
     }
 
     // 需要同步更新 center aabb radius

@@ -67,7 +67,23 @@ void Logger::set_level(LOG_LEVEL lvl) {
 void Logger::render() {
     ImGui::Begin("Logger");
     for (auto& msg : m_messages) {
-        ImGui::Text("%s", msg.message.c_str());
+        ImVec4 clr = ImVec4(0.7, 0.7, 0.7, 1.);
+        switch (msg.level) {
+        case LOG_ERROR:
+            clr = ImVec4(0.9, .0, .0, 1.);
+            break;
+        case LOG_FATAL:
+            clr = ImVec4(1.0, .0, .0, 1.);
+            break;
+        case LOG_INFO:
+            clr = ImVec4(0.7, 0.8, 0.3, 1.);
+            break;
+        case LOG_WARN:
+            clr = ImVec4(0.8, 1.0, 0.0, 1.);
+            break;
+        default: break;
+        }
+        ImGui::TextColored(clr, "%s", msg.message.c_str());
     }
     ImGui::End();
 }

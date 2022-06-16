@@ -126,9 +126,9 @@ namespace RenderSpace {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 
             // input
-            // if (!ImGui::GetIO().WantCaptureKeyboard) {
-            m_win_widget->processInput(m_window);
-            // }
+            if (!ImGui::GetIO().WantCaptureKeyboard) {
+                m_win_widget->processInput(m_window);
+            }
 
             update_transform();
 

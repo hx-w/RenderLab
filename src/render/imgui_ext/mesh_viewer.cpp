@@ -3,6 +3,8 @@
 #include "../service.h"
 #include "../libs/imgui/imgui.h"
 #include "../mesh/elements.h"
+#include <filesystem>
+#include <cstring>
 #include <iostream>
 
 using namespace imgui_ext;
@@ -11,6 +13,7 @@ using namespace std;
 
 static unordered_map<int, bool> _mesh_visibility;
 static unordered_map<int, bool> _mesh_alive;
+static unordered_map<int, string> _mesh_savepath;
 static auto logger = imgui_ext::Logger::get_instance();
 
 static void HelpMarker(const char* desc) {
@@ -37,6 +40,13 @@ void MeshViewer::render(RenderService* service, const MeshMapType& meshes) {
     for (const auto& [_id, _mesh] : meshes) {
         if (_mesh_visibility.find(_id) == _mesh_visibility.end()) {
             _mesh_visibility[_id] = true;
+        }
+        if (_mesh_savepath.find(_id) == _mesh_savepath.end()) {
+#if defined(_WIN32)
+            _mesh_savepath[_id] = ".\\" + _mesh->get_name() + ".obj";
+#else
+            _mesh_savepath[_id] = "./" + _mesh->get_name() + ".obj";
+#endif
         }
         _mesh_alive[_id] = true;
         // hide checkbox lable
@@ -121,17 +131,37 @@ void MeshViewer::render_mesh(RenderService* service, const std::shared_ptr<Rende
     }
     ImGui::PopStyleColor(3);
     ImGui::PopID();
+
     // Button::Save
+    char savepath[128] = "";
+    strcpy(savepath, _mesh_savepath[mesh_id].c_str());
     ImGui::SameLine();
     ImGui::PushID(1);
     ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0.6f, 0.6f, 0.6f));
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0.6f, 0.7f, 0.7f));
     ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0.6f, 0.8f, 0.8f));
     if (ImGui::Button(IMGUI_NAME("save", mesh_name).c_str())) {
-        logger->log("TODO save mesh: " + mesh->get_name());
+        string path = string(savepath);
+        if (path.size() > 0 && path.substr(path.size() - 4, 4) == ".obj") {
+            if (mesh->save_OBJ(path)) {
+                logger->log("file save to `" + path + "`");
+            }
+        }
+        else {
+            logger->log("only OBJ format supported", LOG_ERROR);
+        }
     }
     ImGui::PopStyleColor(3);
     ImGui::PopID();
+    // file path
+    ImGui::SameLine();
+    ImGui::InputText(IMGUI_NAME("##", mesh_name).c_str(), savepath, IM_ARRAYSIZE(savepath));
+    _mesh_savepath[mesh_id] = string(savepath);
+
+    if (ImGui::TreeNode(IMGUI_NAME("parameterazation", mesh_name).c_str())) {
+
+        ImGui::TreePop();
+    }
 
     ImGui::Separator();
 }

@@ -48,7 +48,7 @@ void MeshViewer::render(RenderService* service, const MeshMapType& meshes) {
     }
 
     ImGui::End();
-    // ImGui::ShowDemoWindow();
+    ImGui::ShowDemoWindow();
 }
 
 void MeshViewer::render_mesh(RenderService* service, const std::shared_ptr<RenderSpace::MeshDrawable> mesh) {
@@ -66,7 +66,7 @@ void MeshViewer::render_mesh(RenderService* service, const std::shared_ptr<Rende
             shade_current = 2; break;
         default: break;
     }
-    if (ImGui::SliderInt(IMGUI_NAME("shade mode", mesh_name).c_str(), &shade_current, 0, 2, shade_str[shade_current])) {
+    if (ImGui::SliderInt(IMGUI_NAME("polygon mode", mesh_name).c_str(), &shade_current, 0, 2, shade_str[shade_current])) {
         GLenum shade_mode = GL_POINT;
         switch (shade_current) {
             case 0: shade_mode = GL_POINT; break;
@@ -75,7 +75,7 @@ void MeshViewer::render_mesh(RenderService* service, const std::shared_ptr<Rende
             default: break;
         }
         mesh->set_shade_mode(shade_mode);
-        logger->log("shade mode changed: " + mesh->get_name() + " => " + shade_str[shade_current]);
+        logger->log("polygon mode changed: " + mesh->get_name() + " => " + shade_str[shade_current]);
     }
     ImGui::SameLine(); HelpMarker("Different shading modes without changing topology.");
 
@@ -87,6 +87,20 @@ void MeshViewer::render_mesh(RenderService* service, const std::shared_ptr<Rende
         logger->log("color mode changed: " + mesh->get_name() + " => " + colortypes[clr_mode]);
     }
     ImGui::SameLine(); HelpMarker("Colormap depends on the curvature of the mesh, and it will be computed in realtime by now.");
+    ColorMode clrmd = static_cast<ColorMode>(clr_mode);
+    if (clr_mode == CM_ColorMap_Gauss || clrmd == CM_ColorMap_Mean) {
+        // 绘制图表
+        static float sample_rate = 0.5f;
+        vector<float> values;
+        mesh->sample_curvs(values, sample_rate);
+        float arrv[values.size() + 1];
+        for (int i = 0; i < values.size(); ++i) arrv[i] = values[i];
+        ImGui::PlotLines(IMGUI_NAME("##", mesh_name).c_str(), arrv, IM_ARRAYSIZE(arrv));
+        ImGui::SameLine();
+        ImGui::PushItemWidth(ImGui::GetFontSize() * 8);
+        ImGui::SliderFloat("##", &sample_rate, 0.0f, 1.0f, "rate = %.3f");
+        ImGui::PopItemWidth();
+    }
 
     // Button::Fit
     ImGui::PushID(0);

@@ -4,7 +4,6 @@
 #include <iostream>
 #include <iterator>
 #include <set>
-#include <chrono>
 #include "../glm_ext/curvature.hpp"
 #include "../imgui_ext/logger.h"
 #include "../libs/GLFW/glfw3.h"
@@ -13,7 +12,6 @@
 using namespace std;
 
 namespace RenderSpace {
-static auto st_micsec_time = chrono::steady_clock::now();
 Drawable::Drawable() {
     // 默认随机生成一个名字
     std::lock_guard<std::mutex> lk(m_mutex);
@@ -63,7 +61,8 @@ void Drawable::set_shade_mode(GLenum mode) {
 }
 
 void Drawable::set_color_mode(ColorMode mode) {
-    if (m_color_mode == mode) return;
+    if (m_color_mode == mode)
+        return;
     m_color_mode = mode;
     buf_colormap(mode);
     ready_to_update();
@@ -87,7 +86,7 @@ void Drawable::draw() {
     m_shader.setBool("randomColor", (m_color_mode == CM_Dynamic_Random));
     if (m_color_mode == CM_Dynamic_Random) {
         // get timestamp
-        float ut = static_cast<float>(chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - st_micsec_time).count()) / 1000.f;
+        float ut = static_cast<float>(glfwGetTime());
         m_shader.setFloat("u_time", ut);
     }
 
@@ -147,11 +146,10 @@ void Drawable::sync() {
     // color
     if (m_color_mode == CM_Original || m_color_mode == CM_Dynamic_Random) {
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                            (void*)offsetof(Vertex, Color));
-    }
-    else {
+                              (void*)offsetof(Vertex, Color));
+    } else {
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                            (void*)offsetof(Vertex, BufColor));
+                              (void*)offsetof(Vertex, BufColor));
     }
     glEnableVertexAttribArray(1);
     // normal
@@ -245,97 +243,34 @@ void Drawable::_deepcopy(const Drawable& element) {
 }
 
 void Drawable::buf_colormap(ColorMode mode) {
-    if (mode == CM_Original || mode == CM_Dynamic_Random) return;
+    if (mode == CM_Original || mode == CM_Dynamic_Random)
+        return;
     if (mode == CM_Static_Random) {
-
-
         return;
     }
     // curvature color map
     if (m_type != DrawableType::DRAWABLE_TRIANGLE)
         return;
-    // 对不同顶点，构造寻找邻接顶点的索引，且保证邻接点拓扑有序，围绕成环
-    // 拓扑无序的邻接表 (set本身是有序的)
-    vector<set<int>> adj_list;
-    adj_list.resize(m_vertices.size());
-    for (auto& tri : m_triangles) {
-        for (int i = 0; i < 3; i++) {
-            adj_list[tri.VertexIdx[i]].insert(tri.VertexIdx[(i + 1) % 3]);
-            adj_list[tri.VertexIdx[i]].insert(tri.VertexIdx[(i + 2) % 3]);
-        }
-    }
-    // 通过无序表构造拓扑有序邻接表(set有序)
-    vector<set<int>> ord_adj_list;
-    ord_adj_list.resize(m_vertices.size());
-    auto vec_size = adj_list.size();
-    for (int vidx = 0; vidx < vec_size; vidx++) {
-        // 选中任意邻接点
-        auto adj_vidx = *adj_list[vidx].begin();
-        ord_adj_list[vidx].insert(adj_vidx);
-        // 通过临界点
-        bool is_found = true;
-        while (is_found) {
-            // vidx 与 adj_vidx 邻接点集合的交，应该有1-2个点
-            set<int> intsets;
-            set_intersection(adj_list[adj_vidx].begin(), adj_list[adj_vidx].end(),
-                             adj_list[vidx].begin(), adj_list[vidx].end(),
-                             inserter(intsets, intsets.begin()));
-            is_found = false;
-            for (auto& iv : intsets) {
-                if (iv == adj_vidx)
-                    continue;  // 不应该出现
-                if (find(ord_adj_list[vidx].begin(), ord_adj_list[vidx].end(), iv) == ord_adj_list[vidx].end()) {
-                    // 不邻接表中，需要添加
-                    ord_adj_list[vidx].insert(iv);
-                    adj_vidx = iv;
-                    is_found = true;
-                    break;
-                }
-            }
-        }
-    }
-    // 对所有顶点，计算顶点的曲率
-    vector<float> curvs;
-    float min_curv = std::numeric_limits<float>::max();
-    float max_curv = std::numeric_limits<float>::min();
-    for (int vidx = 0; vidx < vec_size; ++vidx) {
-        vector<glm::vec3> neighbors;
-        for (auto& iv : ord_adj_list[vidx]) {
-            neighbors.emplace_back(m_vertices[iv].Position);
-        }
 
-        glm_ext::CurvatureType curv_type = glm_ext::CURVATURE_GAUSSIAN;
-        switch (mode) {
+    switch (mode) {
         case CM_ColorMap_Gauss:
-            curv_type = glm_ext::CURVATURE_GAUSSIAN;
+            compute_curvs(static_cast<int>(glm_ext::CURVATURE_GAUSSIAN));
             break;
         case CM_ColorMap_Mean:
-            curv_type = glm_ext::CURVATURE_MEAN;
+            compute_curvs(static_cast<int>(glm_ext::CURVATURE_MEAN));
             break;
         default:
-            break;
-        }
-        float curv = glm_ext::compute_curvature(m_vertices[vidx].Position, neighbors, curv_type);
-        if (curv < min_curv)
-            min_curv = curv;
-        if (curv > max_curv)
-            max_curv = curv;
-        curvs.emplace_back(curv);
+            return;
     }
-    // free memory
-    vector<set<int>>().swap(adj_list);
-    vector<set<int>>().swap(ord_adj_list);
-
-    // 对所有顶点，归一化曲率，计算顶点的颜色
-    cout << "min curvature: " << min_curv << "  max curvature: " << max_curv << endl;
-    for (int vidx = 0; vidx < vec_size; ++vidx) {
-        float curv = (curvs[vidx] - min_curv) / (max_curv - min_curv);
+    auto vec_size = m_vertices.size();
+    for (auto vidx = 0; vidx < vec_size; ++vidx) {
+        // float curv = (curvs[vidx] - min_curv) / (max_curv - min_curv);
         // color map: blue to red
         double r = 0.f, g = 0.f, b = 0.f;
         const double rone = 0.8;
         const double gone = 1.0;
         const double bone = 1.0;
-        double x = curv;
+        double x = m_curvs[vidx];
         //可以简单地理解：红色的曲率最大，蓝色的最小
         if (x < 1. / 8.) {
             r = 0;
@@ -360,5 +295,91 @@ void Drawable::buf_colormap(ColorMode mode) {
         }
         m_vertices[vidx].BufColor = glm::vec3(r, g, b);
     }
+
+    // sort curvs
+    std::sort(m_curvs.begin(), m_curvs.end());
 }
+
+void Drawable::compute_curvs(int mode) {
+    // 对不同顶点，构造寻找邻接顶点的索引，且保证邻接点拓扑有序，围绕成环
+    // 拓扑无序的邻接表 (set本身是有序的)
+    vector<set<int>> adj_list;
+    adj_list.resize(m_vertices.size());
+    for (auto& tri : m_triangles) {
+        for (int i = 0; i < 3; i++) {
+            adj_list[tri.VertexIdx[i]].insert(tri.VertexIdx[(i + 1) % 3]);
+            adj_list[tri.VertexIdx[i]].insert(tri.VertexIdx[(i + 2) % 3]);
+        }
+    }
+    // 通过无序表构造拓扑有序邻接表(set有序)
+    vector<set<int>> ord_adj_list;
+    ord_adj_list.resize(m_vertices.size());
+    auto vec_size = adj_list.size();
+    for (int vidx = 0; vidx < vec_size; vidx++) {
+        // 选中任意邻接点
+        auto adj_vidx = *adj_list[vidx].begin();
+        ord_adj_list[vidx].insert(adj_vidx);
+        // 通过临界点
+        bool is_found = true;
+        while (is_found) {
+            // vidx 与 adj_vidx 邻接点集合的交，应该有1-2个点
+            set<int> intsets;
+            set_intersection(adj_list[adj_vidx].begin(),
+                             adj_list[adj_vidx].end(), adj_list[vidx].begin(),
+                             adj_list[vidx].end(),
+                             inserter(intsets, intsets.begin()));
+            is_found = false;
+            for (auto& iv : intsets) {
+                if (iv == adj_vidx)
+                    continue;  // 不应该出现
+                if (find(ord_adj_list[vidx].begin(), ord_adj_list[vidx].end(),
+                         iv) == ord_adj_list[vidx].end()) {
+                    // 不邻接表中，需要添加
+                    ord_adj_list[vidx].insert(iv);
+                    adj_vidx = iv;
+                    is_found = true;
+                    break;
+                }
+            }
+        }
+    }
+    // 对所有顶点，计算顶点的曲率
+    m_curvs.clear();
+    float min_curv = std::numeric_limits<float>::max();
+    float max_curv = std::numeric_limits<float>::min();
+    for (int vidx = 0; vidx < vec_size; ++vidx) {
+        vector<glm::vec3> neighbors;
+        for (auto& iv : ord_adj_list[vidx]) {
+            neighbors.emplace_back(m_vertices[iv].Position);
+        }
+
+        float curv = glm_ext::compute_curvature(
+            m_vertices[vidx].Position, neighbors,
+            static_cast<glm_ext::CurvatureType>(mode));
+        if (curv < min_curv)
+            min_curv = curv;
+        if (curv > max_curv)
+            max_curv = curv;
+        m_curvs.emplace_back(curv);
+    }
+    // 对所有顶点，归一化曲率，计算顶点的颜色
+    cout << "min curvature: " << min_curv << "  max curvature: " << max_curv
+         << endl;
+    // normalize
+    for (auto& curv : m_curvs) {
+        curv = (curv - min_curv) / (max_curv - min_curv);
+    }
+}
+
+void Drawable::sample_curvs(vector<float>& values, float sample_rate) const {
+    values.clear();
+    int vec_size = m_vertices.size();
+    int sample_count = ceil(vec_size * sample_rate);
+    if (sample_count < 2) return;
+    int stride = std::max(static_cast<int>(floor(vec_size * 1. / (sample_count - 1))), 1);
+    for (int vidx = 0; vidx < vec_size; vidx += stride) {
+        values.emplace_back(m_curvs[vidx]);
+    }
+}
+
 }  // namespace RenderSpace

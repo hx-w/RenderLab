@@ -74,12 +74,19 @@ int main() {
     // 三角形面积
     float area = triangle_area(v1, v2, v3);
     float area_template = triangle_area_template(v1, v2, v3);
-    assert(area == area_template);
+    assert(fabs(area - area_template) < 1e-6);
 
     // 高斯曲率 (v2)
     vector<glm::vec3> nebs { v1, v3, v4 };
     float k = compute_curvature(v2, nebs, glm_ext::CURVATURE_GAUSSIAN);
     cout << "Gaussian curvature: " << k << endl;
+
+    // 高斯曲率部分
+    v1 = glm::vec3(0.);
+    v2 = glm::vec3(1., 0., 0.);
+    v3 = glm::vec3(1., 1., 0.);
+    float coff = curvature_Guassian(v1, v2, v3);
+    cout << "coff: " << coff << endl;
 
     cout << "test passed" << endl;
     return 0;

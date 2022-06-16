@@ -109,6 +109,7 @@ namespace RenderSpace {
         GLenum get_shade_mode() { return m_shade_mode; }
         void set_color_mode(ColorMode mode);
         ColorMode get_color_mode() { return m_color_mode; }
+        void sample_curvs(std::vector<float>& values, float sample_rate) const;
 
         std::string get_name() const { return m_name; }
 
@@ -145,6 +146,7 @@ namespace RenderSpace {
 
         // 可视化
         void buf_colormap(ColorMode);
+        void compute_curvs(int mode);
 
     protected:
         Shader m_shader;
@@ -166,6 +168,8 @@ namespace RenderSpace {
         std::atomic<bool> _ready_to_draw = false;
 
         DrawableType m_type;
+
+        std::vector<float> m_curvs; // 曲率(归一化后)
         // properties
         GLenum m_shade_mode = GL_LINE;
         ColorMode m_color_mode = CM_Original;

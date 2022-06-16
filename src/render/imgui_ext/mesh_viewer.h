@@ -21,13 +21,13 @@ namespace imgui_ext {
 
         static void render(
             RenderSpace::RenderService* service,
-            const MeshMapType& meshes
+            MeshMapType& meshes
         );
     
     private:
         static void render_mesh(
             RenderSpace::RenderService* service,
-            const std::shared_ptr<RenderSpace::MeshDrawable> mesh,
+            std::shared_ptr<RenderSpace::MeshDrawable> mesh,
             int mesh_id
         );
     };

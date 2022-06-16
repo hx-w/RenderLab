@@ -1,4 +1,8 @@
 .idea/
+.vs/
+CMakeSettings.json
+*.pdb
+*.ilk
 test*
 freetype/
 freetype_back/

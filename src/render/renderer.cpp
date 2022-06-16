@@ -117,8 +117,6 @@ namespace RenderSpace {
     int Renderer::exec() {
         while (!glfwWindowShouldClose(m_window)) {
             glfwPollEvents();
-
-            m_service->imGui_render();
             // clear
             // glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
             const auto& clr = m_win_widget->bgColor;
@@ -149,6 +147,7 @@ namespace RenderSpace {
     }
 
     void Renderer::draw() {
+        m_service->imGui_render();
         m_service->update();
         m_service->draw_all();
     }

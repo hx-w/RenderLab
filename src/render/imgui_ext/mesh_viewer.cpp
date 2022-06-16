@@ -40,11 +40,11 @@ static inline const string IMGUI_NAME(const char* name, const string& meshname) 
     return string(buff);
 }
 
-void MeshViewer::render(RenderService* service, const MeshMapType& meshes) {
+void MeshViewer::render(RenderService* service, MeshMapType& meshes) {
     ImGui::Begin("MeshViewer");
     ImGui::Text("All meshes created:");
 
-    for (const auto& [_id, _mesh] : meshes) {
+    for (auto& [_id, _mesh] : meshes) {
         if (_mesh_visibility.find(_id) == _mesh_visibility.end()) {
             _mesh_visibility[_id] = true;
         }
@@ -76,7 +76,7 @@ void MeshViewer::render(RenderService* service, const MeshMapType& meshes) {
     // ImGui::ShowDemoWindow();
 }
 
-void MeshViewer::render_mesh(RenderService* service, const std::shared_ptr<RenderSpace::MeshDrawable> mesh, int mesh_id) {
+void MeshViewer::render_mesh(RenderService* service, shared_ptr<RenderSpace::MeshDrawable> mesh, int mesh_id) {
     bool opened = ImGui::CollapsingHeader(mesh->get_name().c_str(), &_mesh_alive[mesh_id]);
     if (!_mesh_alive[mesh_id]) {
         service->delete_mesh(mesh_id);

@@ -20,6 +20,7 @@ namespace RenderSpace {
     RenderService::RenderService():
         m_autobus(make_unique<AutoBus>()) {
         setup();
+        load_mesh("test", ".\\static\\models\\uns.obj");
     }
 
     RenderService::~RenderService() {
@@ -102,7 +103,7 @@ namespace RenderSpace {
     }
 
     void RenderService::draw_all() {
-        for (auto [id, ptr]: m_meshes_map) {
+        for (auto& [id, ptr]: m_meshes_map) {
             ptr->draw();
         }
     }
@@ -114,7 +115,7 @@ namespace RenderSpace {
             int id = m_wait_deleted.top(); m_wait_deleted.pop();
             m_meshes_map.erase(id);
         }
-        for (auto [id, ptr]: m_meshes_map) {
+        for (auto& [id, ptr]: m_meshes_map) {
             ptr->sync();
         }
     }
@@ -140,7 +141,6 @@ namespace RenderSpace {
         auto new_mesh = make_shared<MeshDrawable>(name, type);
         new_mesh->set_shader(m_shader);
         m_meshes_map[_id] = new_mesh;
-
         logger->log("create mesh: " + name + "(" + to_string(_id) + ")");
         return _id;
     }
@@ -236,7 +236,7 @@ namespace RenderSpace {
     bool RenderService::load_mesh(const string& name, const string& path) {
         if (path.substr(path.size() - 4, 4) == ".obj") {
             auto _id = create_mesh(name, DrawableType::DRAWABLE_TRIANGLE);
-            return m_meshes_map.at(_id)->load_OBJ(path);
+            return m_meshes_map[_id]->load_OBJ(path);
         }
         return false;
     }

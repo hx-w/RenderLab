@@ -6,6 +6,7 @@
 #include <array>
 #include <unordered_map>
 #include <functional>
+#include <stack>
 #include "shader.hpp"
 #include "xwindow.h"
 #include "mesh/elements.h"
@@ -45,13 +46,12 @@ namespace RenderSpace {
         // return true if success, *.obj supported
         bool load_mesh(const std::string& name, const std::string& path);
 
+        int create_mesh(const std::string& name, DrawableType type);
+        void delete_mesh(int mesh_id);
+        void refresh(int mesh_id);
+
     private:
         void setup();
-
-        // 对外接口
-        int create_mesh(const std::string& name, DrawableType type);
-        void refresh(int mesh_id);
-        void delete_mesh(int mesh_id);
 
         // 添加图元
         void add_vertex_raw(int mesh_id, std::array<Point, 3>&& coords);
@@ -77,6 +77,8 @@ namespace RenderSpace {
 
         int m_id_gen = 0;
         std::mutex m_mutex;
+
+        std::stack<int> m_wait_deleted;
 
         // thread manage
         ThreadMap m_thread_map;

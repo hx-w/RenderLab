@@ -70,8 +70,9 @@ void Drawable::set_color_mode(ColorMode mode) {
 
 void Drawable::draw() {
     std::lock_guard<std::mutex> lk(m_mutex);
-    if (!_ready_to_draw)
+    if (!_ready_to_draw) {
         return;
+    }
     m_shader.use();
     glBindVertexArray(m_vao);
 

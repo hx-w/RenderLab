@@ -111,8 +111,6 @@ namespace RenderSpace {
     }
 
     void RenderService::notify_window_resize(uint32_t width, uint32_t height) {
-        // auto _event = ContextHub::getInstance()->getEventTable<void(uint32_t, uint32_t)>();
-        // _event->notify(m_symbol + "/window_resize", width, height);
         // 更新文本渲染器 正交投影
         m_shader_text.use();
         glm::mat4 projection = glm::ortho(0.0f, static_cast<GLfloat>(width), 0.0f, static_cast<GLfloat>(height));
@@ -126,6 +124,12 @@ namespace RenderSpace {
     }
 
     void RenderService::update() {
+        // delete stack
+        std::lock_guard<std::mutex> lock(m_mutex);
+        while (!m_wait_deleted.empty()) {
+            int id = m_wait_deleted.top(); m_wait_deleted.pop();
+            m_meshes_map.erase(id);
+        }
         for (auto [id, ptr]: m_meshes_map) {
             ptr->sync();
         }
@@ -143,8 +147,8 @@ namespace RenderSpace {
         if (m_meshes_map.find(mesh_id) == m_meshes_map.end()) {
             return;
         }
-        logger->log("delete mesh: " + m_meshes_map[mesh_id]->get_name() + "(" + to_string(mesh_id) + ")");
-        m_meshes_map.erase(mesh_id);
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_wait_deleted.push(mesh_id);
     }
 
     int RenderService::create_mesh(const string& name, DrawableType type) {

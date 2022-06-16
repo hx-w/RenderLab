@@ -27,7 +27,8 @@ namespace imgui_ext {
     private:
         static void render_mesh(
             RenderSpace::RenderService* service,
-            const std::shared_ptr<RenderSpace::MeshDrawable> mesh
+            const std::shared_ptr<RenderSpace::MeshDrawable> mesh,
+            int mesh_id
         );
     };
 }

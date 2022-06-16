@@ -10,6 +10,7 @@ using namespace RenderSpace;
 using namespace std;
 
 static unordered_map<int, bool> _mesh_visibility;
+static unordered_map<int, bool> _mesh_alive;
 static auto logger = imgui_ext::Logger::get_instance();
 
 static void HelpMarker(const char* desc) {
@@ -37,6 +38,7 @@ void MeshViewer::render(RenderService* service, const MeshMapType& meshes) {
         if (_mesh_visibility.find(_id) == _mesh_visibility.end()) {
             _mesh_visibility[_id] = true;
         }
+        _mesh_alive[_id] = true;
         // hide checkbox lable
         ImGui::Checkbox(("##" + _mesh->get_name()).c_str(), &_mesh_visibility[_id]);
         if (_mesh_visibility[_id] != _mesh->is_visible()) {
@@ -44,15 +46,22 @@ void MeshViewer::render(RenderService* service, const MeshMapType& meshes) {
         }
         ImGui::SameLine();
         // mesh widget
-        render_mesh(service, _mesh);
+        render_mesh(service, _mesh, _id);
     }
 
     ImGui::End();
     ImGui::ShowDemoWindow();
 }
 
-void MeshViewer::render_mesh(RenderService* service, const std::shared_ptr<RenderSpace::MeshDrawable> mesh) {
-    if (!ImGui::CollapsingHeader(mesh->get_name().c_str())) return;
+void MeshViewer::render_mesh(RenderService* service, const std::shared_ptr<RenderSpace::MeshDrawable> mesh, int mesh_id) {
+    bool opened = ImGui::CollapsingHeader(mesh->get_name().c_str(), &_mesh_alive[mesh_id]);
+    if (!_mesh_alive[mesh_id]) {
+        service->delete_mesh(mesh_id);
+        _mesh_alive.erase(mesh_id);
+        _mesh_visibility.erase(mesh_id);
+        return;
+    }
+    if (!opened) return;
     const string mesh_name = mesh->get_name().c_str();
     // ShadeMode
     const char* shade_str[] = { "GL_POINT", "GL_LINE", "GL_FILL" };
@@ -107,21 +116,22 @@ void MeshViewer::render_mesh(RenderService* service, const std::shared_ptr<Rende
     ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0.25f, 0.6f, 0.6f));
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0.25f, 0.7f, 0.7f));
     ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0.25f, 0.8f, 0.8f));
-    if (ImGui::Button(IMGUI_NAME("ViewFit", mesh_name).c_str())) {
+    if (ImGui::Button(IMGUI_NAME("view fit", mesh_name).c_str())) {
         service->viewfit_mesh(mesh);
     }
     ImGui::PopStyleColor(3);
     ImGui::PopID();
-    // Button::Delete
+    // Button::Save
     ImGui::SameLine();
     ImGui::PushID(1);
-    ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0.f, 0.6f, 0.6f));
-    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0.f, 0.7f, 0.7f));
-    ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0.f, 0.8f, 0.8f));
-    if (ImGui::Button("Delete")) {
-        logger->log("TODO delete mesh: " + mesh->get_name());
+    ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0.6f, 0.6f, 0.6f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0.6f, 0.7f, 0.7f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0.6f, 0.8f, 0.8f));
+    if (ImGui::Button(IMGUI_NAME("save", mesh_name).c_str())) {
+        logger->log("TODO save mesh: " + mesh->get_name());
     }
     ImGui::PopStyleColor(3);
     ImGui::PopID();
+
     ImGui::Separator();
 }

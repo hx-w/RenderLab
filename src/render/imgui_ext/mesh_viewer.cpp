@@ -128,12 +128,12 @@ void MeshViewer::render_mesh(RenderService* service, shared_ptr<RenderSpace::Mes
 		const int len = values.size() + 1;
 		float* arrv = new float[len];
         for (int i = 0; i < values.size(); ++i) arrv[i] = values[i];
-        ImGui::PlotLines(IMGUI_NAME("##", mesh_name).c_str(), arrv, IM_ARRAYSIZE(arrv));
+        ImGui::PlotLines(IMGUI_NAME("##", mesh_name).c_str(), arrv, len);
         ImGui::SameLine();
         ImGui::PushItemWidth(ImGui::GetFontSize() * 8);
         ImGui::SliderFloat("##", &sample_rate, 0.0f, 1.0f, "rate = %.3f");
         ImGui::PopItemWidth();
-		delete arrv;
+		delete[] arrv;
     }
 
     // Offset

@@ -20,7 +20,6 @@ namespace RenderSpace {
     RenderService::RenderService():
         m_autobus(make_unique<AutoBus>()) {
         setup();
-        load_mesh("test", ".\\static\\models\\uns.obj");
     }
 
     RenderService::~RenderService() {
@@ -138,7 +137,7 @@ namespace RenderSpace {
 
     int RenderService::create_mesh(const string& name, DrawableType type) {
         int _id = gen_id();
-        auto new_mesh = make_shared<MeshDrawable>(name, type);
+        auto new_mesh = make_shared<MeshDrawable>(name + "-" + to_string(_id), type);
         new_mesh->set_shader(m_shader);
         m_meshes_map[_id] = new_mesh;
         logger->log("create mesh: " + name + "(" + to_string(_id) + ")");

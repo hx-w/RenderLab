@@ -136,6 +136,12 @@ void MeshViewer::render_mesh(RenderService* service, shared_ptr<RenderSpace::Mes
 		delete arrv;
     }
 
+    // Offset
+    glm::vec3 offset = mesh->get_offset();
+    if (ImGui::DragFloat3(IMGUI_NAME("offset", mesh_name).c_str(), (float*)&offset)) {
+        mesh->set_offset(offset);
+    }
+
     // Button::Fit
     ImGui::PushID(0);
     ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0.25f, 0.6f, 0.6f));

@@ -106,9 +106,11 @@ namespace RenderSpace {
         void set_shader(Shader& shader);
 
         void set_shade_mode(GLenum mode);
-        GLenum get_shade_mode() { return m_shade_mode; }
+        inline GLenum get_shade_mode() { return m_shade_mode; }
         void set_color_mode(ColorMode mode);
-        ColorMode get_color_mode() { return m_color_mode; }
+        inline ColorMode get_color_mode() { return m_color_mode; }
+        void set_offset(glm::vec3 offset);
+        inline glm::vec3 get_offset() { return m_offset; }
         void sample_curvs(std::vector<float>& values, float sample_rate) const;
 
         std::string get_name() const { return m_name; }
@@ -173,6 +175,7 @@ namespace RenderSpace {
         // properties
         GLenum m_shade_mode = GL_LINE;
         ColorMode m_color_mode = CM_Original;
+        glm::vec3 m_offset = glm::vec3(0.0f);
     };
 }
 

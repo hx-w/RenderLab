@@ -68,6 +68,11 @@ void Drawable::set_color_mode(ColorMode mode) {
     ready_to_update();
 }
 
+void Drawable::set_offset(glm::vec3 offset) {
+    std::lock_guard<std::mutex> lk(m_mutex);
+    m_offset = offset;
+}
+
 void Drawable::draw() {
     std::lock_guard<std::mutex> lk(m_mutex);
     if (!_ready_to_draw) {
@@ -80,6 +85,8 @@ void Drawable::draw() {
     glm::mat4 model = glm::mat4(1.0f);
     m_shader.setMat4("model", model);
     glPointSize(3.0f);
+
+    m_shader.setVec3("offset", m_offset);
 
     // polygon mode
     glPolygonMode(GL_FRONT_AND_BACK, m_shade_mode);

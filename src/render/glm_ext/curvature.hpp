@@ -45,7 +45,8 @@ static float curvature_Mean(const glm::vec3& p,
     }
     float cotBeta = cosBeta / glm::sqrt(1 - cosBeta * cosBeta);
 
-    float coff = glm::sqrt(cotAlpha + cotBeta) * glm::length(neb - p);
+    float len = glm::length(neb - p);
+    float coff = (cotAlpha + cotBeta) * len * len;
 
     return coff;
 }
@@ -94,7 +95,7 @@ static float compute_curvature(const glm::vec3& p,
             curvature = (1.0 / sum_area) * (2 * M_PI - coff);
             break;
         case CURVATURE_MEAN:
-            curvature = 0.5f * (1.f / (sum_area * 2) * coff);
+            curvature = 0.5f * (1.f / (sum_area * 2) * glm::sqrt(coff));
             break;
         default:
             break;

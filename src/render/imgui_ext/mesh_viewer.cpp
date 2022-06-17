@@ -181,7 +181,7 @@ void MeshViewer::render_mesh(RenderService* service, shared_ptr<RenderSpace::Mes
 
     // parameteraztion
     if (ImGui::TreeNode(IMGUI_NAME("parameterazation", mesh_name).c_str())) {
-        ImGui::SliderInt(IMGUI_NAME("sample num", mesh_name).c_str(), &_mesh_sample_num.at(mesh_id), 50, 200);
+        ImGui::SliderInt(IMGUI_NAME("sample num", mesh_name).c_str(), &_mesh_sample_num.at(mesh_id), 10, 200);
 
         if (ImGui::Button(IMGUI_NAME("execute", mesh_name).c_str())) {
             service->execute_param(mesh_id, _mesh_progress.at(mesh_id), Laplace, _mesh_sample_num.at(mesh_id));

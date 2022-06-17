@@ -319,14 +319,14 @@ void Drawable::compute_curvs(int mode) {
             adj_list[tri.VertexIdx[i]].insert(tri.VertexIdx[(i + 2) % 3]);
         }
     }
-    // 通过无序表构造拓扑有序邻接表(set有序)
-    vector<set<int>> ord_adj_list;
+    // 通过无序表构造拓扑有序邻接表
+    vector<vector<int>> ord_adj_list;
     ord_adj_list.resize(m_vertices.size());
     auto vec_size = adj_list.size();
     for (int vidx = 0; vidx < vec_size; vidx++) {
         // 选中任意邻接点
         auto adj_vidx = *adj_list[vidx].begin();
-        ord_adj_list[vidx].insert(adj_vidx);
+        ord_adj_list[vidx].emplace_back(adj_vidx);
         // 通过临界点
         bool is_found = true;
         while (is_found) {
@@ -343,7 +343,7 @@ void Drawable::compute_curvs(int mode) {
                 if (find(ord_adj_list[vidx].begin(), ord_adj_list[vidx].end(),
                          iv) == ord_adj_list[vidx].end()) {
                     // 不邻接表中，需要添加
-                    ord_adj_list[vidx].insert(iv);
+                    ord_adj_list[vidx].emplace_back(iv);
                     adj_vidx = iv;
                     is_found = true;
                     break;

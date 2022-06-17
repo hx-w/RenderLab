@@ -93,8 +93,6 @@ void Parameterization::resample(uint32_t num_samples) {
                               vj_area * uns_vertices[spot_trias.VertexIdx.y].Position +
                               vk_area * uns_vertices[spot_trias.VertexIdx.z].Position) / tot_area;
             
-            // shift
-            str_point += vec3(10.0, 0.0, 0.0);
             str_vertices.emplace_back(Vertex(str_point, vec3(0.5), vec3(0.0)));
 
            for (int idx = 0; idx < 4; ++idx) {

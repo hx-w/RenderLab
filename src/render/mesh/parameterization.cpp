@@ -458,6 +458,17 @@ void Parameterization::_solve_Laplacian_equation(
     // 设置迭代初值
     f_1.resize(mat1_col_count, vec2(0.5f, 0.5f));
 
+    // cache index
+    m_cached_index.clear();
+    m_cached_index.resize(mat1_row_count);
+    for (int ir = 0; ir < mat1_row_count; ++ir) {
+        for (int ic = 0; ic < mat1_col_count; ++ic) {
+            if (fabs(_Laplacian_val(r_idx_1[ir], c_idx_1[ic]) - 0.0f) >= 1e-6) {
+                m_cached_index[ir].emplace_back(ic);
+            }
+        }
+    }
+
     // 进行迭代求解
     int itermax = 200;
     for (int epoch = 0; epoch < itermax; ++epoch) {
@@ -492,7 +503,8 @@ void Parameterization::Jacobi_Iteration(const vector<int>& r_idx,
 #pragma omp parallel for reduction(+:_residual)
         for (int ir = 0; ir < f_max; ++ir) {
             vec2 _val(0.0, 0.0);
-            for (int ic = 0; ic < f_max; ++ic) {
+            for (auto ic : m_cached_index[ir]) {
+            // for (int ic = 0; ic < f_max; ++ic) {
                 if (ir == ic)
                     continue;
                 float _lp = _Laplacian_val(r_idx[ir], c_idx[ic]);

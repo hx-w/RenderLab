@@ -135,6 +135,7 @@ namespace RenderSpace {
         // 中间结果
         float m_bound_length; // 边缘总长度
         std::unordered_map<OrderedEdge, float, pair_hash> m_weights;
+        std::vector<std::vector<int>> m_cached_index;
 
     private:
         std::shared_ptr<MeshDrawable> m_uns_mesh;

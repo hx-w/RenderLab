@@ -236,7 +236,7 @@ namespace RenderSpace {
     bool RenderService::load_mesh(const string& name, const string& path) {
         if (path.substr(path.size() - 4, 4) == ".obj") {
             auto _id = create_mesh(name, DrawableType::DRAWABLE_TRIANGLE);
-            return m_meshes_map[_id]->load_OBJ(path);
+            return m_meshes_map.at(_id)->load_OBJ(path);
         }
         return false;
     }

@@ -69,7 +69,7 @@ void Parameterization::resample(uint32_t num_samples) {
     vector<Vertex> str_vertices;
     vector<Triangle> str_trias;
 
-    TGAImage image(int(num_samples) * 2, int(num_samples) * 2, TGAImage::RGB);
+    TGAImage image(int(num_samples), int(num_samples), TGAImage::RGB);
     for (auto ir = 0; ir < num_samples; ++ir) {
         for (auto ic = 0; ic < num_samples; ++ic) {
             // 在参数平面上的点
@@ -135,10 +135,9 @@ void Parameterization::resample(uint32_t num_samples) {
     str_v.swap(str_vertices);
     auto& str_tri = m_str_mesh->get_triangles();
     str_tri.swap(str_trias);
-    // image.write_tga_file("static/geoimage/resample.tga");
+    image.write_tga_file("static/geoimage/resample.tga");
 
     m_str_mesh->ready_to_update();
-    // m_str_mesh->save_OBJ("static/models/test.obj");
 }
 
 void Parameterization::_remark_edges(vector<OrderedEdge>& edge_bound,

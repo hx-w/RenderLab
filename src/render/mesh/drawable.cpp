@@ -235,6 +235,8 @@ void Drawable::compute_BBOX() {
         if (v.Position.z > m_aabb.second.z)
             m_aabb.second.z = v.Position.z;
     }
+    m_aabb.first += m_offset;
+    m_aabb.second += m_offset;
 }
 
 void Drawable::_deepcopy(const Drawable& element) {

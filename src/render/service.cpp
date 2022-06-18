@@ -229,6 +229,7 @@ namespace RenderSpace {
 
     void RenderService::viewfit_mesh(const shared_ptr<Drawable> mesh) {
         logger->log("fit view to mesh: " + mesh->get_name());
+        mesh->compute_BBOX();
         m_win_widget->viewfit_BBOX(mesh->get_BBOX());
     }
 

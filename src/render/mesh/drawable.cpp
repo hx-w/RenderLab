@@ -138,6 +138,7 @@ void Drawable::sync() {
     std::lock_guard<std::mutex> lk(m_mutex);
     if (!_ready_to_update)
         return;
+	if (m_vertices.size() == 0) return;
     _ready_to_update = false;
     if (m_vao == 0) {
         _gen_vao();
@@ -342,8 +343,7 @@ void Drawable::compute_curvs(int mode) {
             for (auto& iv : intsets) {
                 if (iv == adj_vidx)
                     continue;  // 不应该出现
-                if (find(ord_adj_list[vidx].begin(), ord_adj_list[vidx].end(),
-                         iv) == ord_adj_list[vidx].end()) {
+                if (find(ord_adj_list[vidx].begin(), ord_adj_list[vidx].end(), iv) == ord_adj_list[vidx].end()) {
                     // 不邻接表中，需要添加
                     ord_adj_list[vidx].emplace_back(iv);
                     adj_vidx = iv;
@@ -351,6 +351,14 @@ void Drawable::compute_curvs(int mode) {
                     break;
                 }
             }
+			/**
+            if (!is_found && adj_list[vidx].size() != ord_adj_list[vidx].size()) {
+                is_found = true;
+                adj_vidx = ord_adj_list[vidx].back();
+                ord_adj_list[vidx].clear();
+                ord_adj_list[vidx].emplace_back(adj_vidx);
+            }
+			*/
         }
     }
     // 对所有顶点，计算顶点的曲率

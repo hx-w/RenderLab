@@ -60,34 +60,40 @@ static void print_vec3(const glm::vec3& v) {
 }
 
 int main() {
-    glm::vec3 v1(4, 5, 0);
-    glm::vec3 v2(3, 2, 0);
-    glm::vec3 v3(9, 2, 0);
+    //! glm_ext/triangle.hpp
+    {
+        glm::vec3 v1(4, 5, 0);
+        glm::vec3 v2(3, 2, 0);
+        glm::vec3 v3(9, 2, 0);
 
-    glm::vec3 v4(7, 4, 2);
+        glm::vec3 v4(7, 4, 2);
 
-    // 三角形外心
-    Point3d my = triangle_circumcircle_center(v1, v2, v3);
-    Point3d true_template = triangle_circumcircle_center_template(v1, v2, v3);
-    assert(my == true_template);
+        // 三角形外心
+        Point3d my = triangle_circumcircle_center(v1, v2, v3);
+        Point3d true_template = triangle_circumcircle_center_template(v1, v2, v3);
+        assert(my == true_template);
 
-    // 三角形面积
-    float area = triangle_area(v1, v2, v3);
-    float area_template = triangle_area_template(v1, v2, v3);
-    assert(fabs(area - area_template) < 1e-6);
+        // 三角形面积
+        float area = triangle_area(v1, v2, v3);
+        float area_template = triangle_area_template(v1, v2, v3);
+        assert(fabs(area - area_template) < 1e-6);
+    }
 
-    // 高斯曲率 (v2)
-    vector<glm::vec3> nebs { v1, v3, v4 };
-    float k = compute_curvature(v2, nebs, glm_ext::CURVATURE_GAUSSIAN);
-    cout << "Gaussian curvature: " << k << endl;
+    //! glm_ext/curvature.hpp
+    {
+        Point3d p(-6.13622999, -61.2943993, -14.3997002);
+        Point3d n1(-6.56057978, -61.4015007, -15.0757999);
+        Point3d n2(-5.87774992, -61.8502998, -14.8935003);
+        Point3d n3(-5.59214020, -61.4595985, -13.9681997);
+        // 高斯曲率 (p)
+        vector<glm::vec3> nebs { n1, n2, n3 };
+        float k = compute_curvature(p, nebs, glm_ext::CURVATURE_GAUSSIAN);
+        cout << "Gaussian curvature: " << k << endl;
 
-    // 高斯曲率部分
-    v1 = glm::vec3(0.);
-    v2 = glm::vec3(1., 0., 0.);
-    v3 = glm::vec3(1., 1., 0.);
-    float coff = curvature_Guassian(v1, v2, v3);
-    cout << "coff: " << coff << endl;
-
+        // 高斯曲率部分
+        float coff = curvature_Guassian(p, n1, n2);
+        cout << "coff: " << coff << endl;
+    }
     cout << "test passed" << endl;
     return 0;
 }

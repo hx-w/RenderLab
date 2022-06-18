@@ -81,10 +81,20 @@ static float compute_curvature(const glm::vec3& p,
     // 计算Voronoi三角形面积和
     float sum_area = 0.f;
     auto voronoi_size = voronoi_points.size();
+#ifdef DEBUG
     for (auto i = 0; i < voronoi_size; ++i) {
         auto& v1 = voronoi_points[i];
-        auto& v2 = voronoi_points[(i + 1) % voronoi_points.size()];
+        auto& v2 = voronoi_points[(i + 1) % voronoi_size];
         sum_area += triangle_area(p, v1, v2);
+    }
+#endif
+    for (auto i = 0; i < voronoi_size; ++i) {
+        auto& neb = neighbors[i];
+        auto& neb_next = neighbors[(i + 1) % neb_size];
+        auto mid1 = (p + neb) * 0.5f;
+        auto mid2 = (p + neb_next) * 0.5f;
+        sum_area += triangle_area(p, mid1, voronoi_points[i]);
+        sum_area += triangle_area(p, voronoi_points[i], mid2);
     }
 
     if (sum_area <= 0.f) {
@@ -100,6 +110,7 @@ static float compute_curvature(const glm::vec3& p,
         default:
             break;
     }
+
     return curvature;
 }
 }  // namespace glm_ext

@@ -219,9 +219,9 @@ namespace RenderSpace {
             return;
         }
 
-        logger->render();
         imgui_ext::Controller::render(this);
         imgui_ext::MeshViewer::render(this, m_meshes_map);
+		logger->render();
 
         // Rendering
         ImGui::Render();

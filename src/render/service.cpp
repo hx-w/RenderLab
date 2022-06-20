@@ -20,6 +20,12 @@ namespace RenderSpace {
     RenderService::RenderService():
         m_autobus(make_unique<AutoBus>()) {
         setup();
+        //! DEBUG
+        // {
+        //     int mesh_id = load_mesh("N10", "static/models/N10.obj");
+        //     float progress = 0.0f;
+        //     execute_param(mesh_id, progress, ParamMethod::Laplace, 10);
+        // }
     }
 
     RenderService::~RenderService() {
@@ -233,10 +239,12 @@ namespace RenderSpace {
         m_win_widget->viewfit_BBOX(mesh->get_BBOX());
     }
 
-    bool RenderService::load_mesh(const string& name, const string& path) {
+    int RenderService::load_mesh(const string& name, const string& path) {
         if (path.substr(path.size() - 4, 4) == ".obj") {
             auto _id = create_mesh(name, DrawableType::DRAWABLE_TRIANGLE);
-            return m_meshes_map.at(_id)->load_OBJ(path);
+            if (m_meshes_map.at(_id)->load_OBJ(path)) {
+                return _id;
+            }
         }
         return false;
     }

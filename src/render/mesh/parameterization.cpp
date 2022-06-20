@@ -395,17 +395,21 @@ void Parameterization::_convert_edge_to_vertex(vector<OrderedEdge>&& edge_bound,
     vt_bound.emplace_back(edge_bound[0].first);
     for (size_t eidx = 0; eidx < sz - 1; ++eidx) {
         const int _last_vt = vt_bound.back();
+        int picked = -1;
         if (edge_bound[eidx].first == _last_vt) {
-            vt_bound.emplace_back(edge_bound[eidx].second);
+            picked = edge_bound[eidx].second;
         } else if (edge_bound[eidx].second == _last_vt) {
-            vt_bound.emplace_back(edge_bound[eidx].first);
-        } else {
+            picked = edge_bound[eidx].first;
+        }
+        if (picked == -1) {
             cout << "Error: edge_bound is not topology sorted" << endl;
+            continue;
+        }
+        if (find(vt_bound.begin(), vt_bound.end(), picked) == vt_bound.end()) {
+            vt_bound.emplace_back(picked);
         }
     }
     // 计算vt_inner
-    // 先将vt_bound 构造成集合，查找效率高
-    // (vt_bound元素少，使用基于hash的unordered_set)
     unordered_set<int> vt_bound_set(vt_bound.begin(), vt_bound.end());
     set<int> vt_inner_set;
     for (auto& edge : edge_inner) {

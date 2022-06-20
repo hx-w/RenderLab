@@ -44,8 +44,8 @@ namespace RenderSpace {
         void notify_clear_picking(); // refresh all picking ray
         void notify_window_resize(uint32_t width, uint32_t height);
 
-        // return true if success, *.obj supported
-        bool load_mesh(const std::string& name, const std::string& path);
+        // return -1 if failed, *.obj supported
+        int load_mesh(const std::string& name, const std::string& path);
 
         int create_mesh(const std::string& name, DrawableType type);
         void delete_mesh(int mesh_id);

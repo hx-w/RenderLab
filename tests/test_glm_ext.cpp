@@ -1,5 +1,6 @@
 #include <iostream>
 #include "../src/render/glm_ext/curvature.hpp"
+#include "../src/render/glm_ext/LU_decompose.hpp"
 using namespace std;
 using namespace glm_ext;
 
@@ -59,41 +60,74 @@ static void print_vec3(const glm::vec3& v) {
     cout << "(" << v.x << ", " << v.y << ", " << v.z << ")" << endl;
 }
 
+//! test method
+void test_triangle() {
+    glm::vec3 v1(4, 5, 0);
+    glm::vec3 v2(3, 2, 0);
+    glm::vec3 v3(9, 2, 0);
+
+    glm::vec3 v4(7, 4, 2);
+
+    // 三角形外心
+    Point3d my = triangle_circumcircle_center(v1, v2, v3);
+    Point3d true_template = triangle_circumcircle_center_template(v1, v2, v3);
+    assert(my == true_template);
+
+    // 三角形面积
+    float area = triangle_area(v1, v2, v3);
+    float area_template = triangle_area_template(v1, v2, v3);
+    assert(fabs(area - area_template) < 1e-6);
+    cout << "[TEST] triangle.hpp pass" << endl;
+}
+
+void test_curvature() {
+    Point3d p(-6.13622999, -61.2943993, -14.3997002);
+    Point3d n1(-6.56057978, -61.4015007, -15.0757999);
+    Point3d n2(-5.87774992, -61.8502998, -14.8935003);
+    Point3d n3(-5.59214020, -61.4595985, -13.9681997);
+    // 高斯曲率 (p)
+    vector<glm::vec3> nebs { n1, n2, n3 };
+    float k = compute_curvature(p, nebs, glm_ext::CURVATURE_GAUSSIAN);
+    cout << "Gaussian curvature: " << k << endl;
+
+    // 高斯曲率部分
+    float coff = curvature_Guassian(p, n1, n2);
+    cout << "coff: " << coff << endl;
+
+    cout << "[TEST] curvature.hpp pass" << endl;
+}
+
+void test_LU_decompose() {
+    // matrix decompose
+    SparseMatrix A(4, 4);
+    A.set(0, 0, 2); A.set(0, 1, 10); A.set(0, 2, 0); A.set(0, 3, -3);
+    A.set(1, 0, -3); A.set(1, 1, -4); A.set(1, 2, -12); A.set(1, 3, 13);
+    A.set(2, 0, 1); A.set(2, 1, 2); A.set(2, 2, 3); A.set(2, 3, -4);
+    A.set(3, 0, 4); A.set(3, 1, 14); A.set(3, 2, 9); A.set(3, 3, -13);
+    SparseMatrix b(4, 1);
+    b.set(0, 0, 10); b.set(1, 0, 5); b.set(2, 0, -2); b.set(3, 0, 7);
+
+    // Doolite LU decompose
+    {
+        SparseMatrix L(4, 4);
+        SparseMatrix U(4, 4);
+        Doolitte_decompose(A, L, U);
+        L.print();
+        U.print();
+    }
+    // solve
+    {
+        SparseMatrix x(4, 1);
+        solve_equations(A, b, x);
+        x.print();
+    }
+}
+
 int main() {
-    //! glm_ext/triangle.hpp
-    {
-        glm::vec3 v1(4, 5, 0);
-        glm::vec3 v2(3, 2, 0);
-        glm::vec3 v3(9, 2, 0);
+    test_triangle();
+    test_curvature();
+    test_LU_decompose();
 
-        glm::vec3 v4(7, 4, 2);
-
-        // 三角形外心
-        Point3d my = triangle_circumcircle_center(v1, v2, v3);
-        Point3d true_template = triangle_circumcircle_center_template(v1, v2, v3);
-        assert(my == true_template);
-
-        // 三角形面积
-        float area = triangle_area(v1, v2, v3);
-        float area_template = triangle_area_template(v1, v2, v3);
-        assert(fabs(area - area_template) < 1e-6);
-    }
-
-    //! glm_ext/curvature.hpp
-    {
-        Point3d p(-6.13622999, -61.2943993, -14.3997002);
-        Point3d n1(-6.56057978, -61.4015007, -15.0757999);
-        Point3d n2(-5.87774992, -61.8502998, -14.8935003);
-        Point3d n3(-5.59214020, -61.4595985, -13.9681997);
-        // 高斯曲率 (p)
-        vector<glm::vec3> nebs { n1, n2, n3 };
-        float k = compute_curvature(p, nebs, glm_ext::CURVATURE_GAUSSIAN);
-        cout << "Gaussian curvature: " << k << endl;
-
-        // 高斯曲率部分
-        float coff = curvature_Guassian(p, n1, n2);
-        cout << "coff: " << coff << endl;
-    }
     cout << "test passed" << endl;
     return 0;
 }

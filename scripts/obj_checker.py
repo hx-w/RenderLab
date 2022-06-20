@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 
 import sys
+from copy import deepcopy
 from typing import List, Dict
 
 
@@ -17,12 +18,6 @@ class Vertex:
 class Triangle:
     def __init__(self, v1: int, v2: int, v3: int):
         self.vts = [v1, v2, v3]
-        self.vts.sort()
-
-    def __eq__(self, __o: object) -> bool:
-        if isinstance(__o, Triangle):
-            return self.vts == __o.vts
-        return False
 
     def __repr__(self) -> str:
         return f'Tri({self.vts[0]}, {self.vts[1]}, {self.vts[2]})'

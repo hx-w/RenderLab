@@ -1,84 +1,112 @@
+# -*- coding:utf-8 -*-
 
-path = '../static/models/tooth/N5.obj'
-
-count = 0
-vt = 0
-vtlist = set()
-
-container = []
-
-with open(path, 'r') as ifile:
-    while (line := ifile.readline()):
-        xx = line.split()
-        if len(xx) == 0:
-            continue
-        if xx[0] == 'v':
-            vt += 1
-        if xx[0] != 'f':
-            continue
-        xx = xx[1:]
-        xx.sort()
-        e1 = (xx[0], xx[1])
-        e2 = (xx[0], xx[2])
-        e3 = (xx[1], xx[2])
-        vtlist.add(xx[0])
-        vtlist.add(xx[1])
-        vtlist.add(xx[2])
-        if e1 not in container:
-            container.append(e1)
-            count += 1
-        if e2 not in container:
-            container.append(e2)
-            count += 1
-        if e3 not in container:
-            container.append(e3)
-            count += 1
-
-print(count)
-print(vt)
-
-vtlist = list(vtlist)
-vtlist.sort()
-
-c = 0
-invalid_vt = []
-for i in range(1, vt + 1):
-    if str(i) not in vtlist:
-        invalid_vt.append(i)
-        c += 1
-
-print('invalid vertices:', c)
-print('invalid vertices:', len(invalid_vt))
-
-print('real valid vertices:', vt - c)
-
-if c == 0:
-    exit(0)
-
-print('validating')
+import sys
+from typing import List, Dict
 
 
-ifile = open('../static/models/tooth/N5.obj', 'r')
-ofile = open('../static/models/tooth/valid.obj', 'w')
+class Vertex:
+    def __init__(self, x: float, y: float, z: float):
+        self.x = x
+        self.y = y
+        self.z = z
+
+    def __repr__(self) -> str:
+        return f'Vertex({self.x}, {self.y}, {self.z})'
 
 
-vtidx = 1
-x = 0
-while (line := ifile.readline()):
-    xx = line.split()
-    if len(xx) == 0:
-        continue
-    if xx[0] == 'v':
-        if vtidx in invalid_vt:
-            vtidx += 1
-            continue
-        ofile.write(line)
-        x += 1
-        vtidx += 1
-    if xx[0] == 'f':
-        if int(xx[1]) in valid
+class Triangle:
+    def __init__(self, v1: int, v2: int, v3: int):
+        self.vts = [v1, v2, v3]
+        self.vts.sort()
+
+    def __eq__(self, __o: object) -> bool:
+        if isinstance(__o, Triangle):
+            return self.vts == __o.vts
+        return False
+
+    def __repr__(self) -> str:
+        return f'Tri({self.vts[0]}, {self.vts[1]}, {self.vts[2]})'
 
 
-ifile.close()
-ofile.close()
+class MeshValidator:
+    def __init__(self, path: str):
+        self.path = path
+        self.vertices: List[Vertex] = []
+        self.triangles: List[Triangle] = []
 
+    def read_obj(self):
+        self.vertices = []
+        self.triangles = []
+        f = open(self.path, 'r')
+        for line in f:
+            if line.startswith('v'):
+                x, y, z = line.split()[1:]
+                self.vertices.append(Vertex(float(x), float(y), float(z)))
+            elif line.startswith('f'):
+                v1, v2, v3 = line.split()[1:]
+                self.triangles.append(
+                    Triangle(int(v1) - 1, int(v2) - 1, int(v3) - 1))
+        f.close()
+
+    def save_obj(self):
+        f = open(self.path[:-4] + '_modified.obj', 'w')
+        for v in self.vertices:
+            f.write(f'v {v.x} {v.y} {v.z}\n')
+        for tri in self.triangles:
+            f.write(f'f {tri.vts[0] + 1} {tri.vts[1] + 1} {tri.vts[2] + 1}\n')
+        f.close()
+
+    def validate(self):
+        # valid vertex
+        self.valid_vertex_idx: List[int] = []
+        for tri in self.triangles:
+            if tri.vts[0] not in self.valid_vertex_idx:
+                self.valid_vertex_idx.append(tri.vts[0])
+            if tri.vts[1] not in self.valid_vertex_idx:
+                self.valid_vertex_idx.append(tri.vts[1])
+            if tri.vts[2] not in self.valid_vertex_idx:
+                self.valid_vertex_idx.append(tri.vts[2])
+        self.valid_vertex_idx.sort()
+        vvi_size = len(self.valid_vertex_idx)
+        tvi_size = len(self.vertices)
+        if vvi_size != tvi_size:
+            print(
+                '[WARN] total vertex:', tvi_size,
+                'valid vertex:', vvi_size
+            )
+        else:
+            print('[INFO] total vertex:', tvi_size)
+            return
+        self.__trim()
+
+    def __trim(self):
+        '''
+        删除无效顶点
+        '''
+        self.invalid_vertex_idx_map: Dict[int, int] = {}
+        vtsize = len(self.vertices)
+        counter = 1
+        for vidx in range(vtsize):
+            if vidx in self.valid_vertex_idx:
+                continue
+            self.invalid_vertex_idx_map[vidx] = counter
+            counter += 1
+
+        for tri in self.triangles:
+            for i in range(3):
+                for vidx, c in self.invalid_vertex_idx_map.items():
+                    if vidx > tri.vts[i]:
+                        tri.vts[i] -= c - 1
+                        break
+        self.vertices = [self.vertices[i] for i in self.valid_vertex_idx]
+
+
+if __name__ == '__main__':
+    '''
+    Usage: python obj_checker.py <path>
+    '''
+    assert(len(sys.argv) == 2)
+    mesher = MeshValidator(sys.argv[1])
+    mesher.read_obj()
+    mesher.validate()
+    mesher.save_obj()

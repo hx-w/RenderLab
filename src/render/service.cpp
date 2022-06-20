@@ -20,12 +20,6 @@ namespace RenderSpace {
     RenderService::RenderService():
         m_autobus(make_unique<AutoBus>()) {
         setup();
-        //! DEBUG
-        // {
-        //     int mesh_id = load_mesh("N10", "static/models/N10.obj");
-        //     float progress = 0.0f;
-        //     execute_param(mesh_id, progress, ParamMethod::Laplace, 10);
-        // }
     }
 
     RenderService::~RenderService() {

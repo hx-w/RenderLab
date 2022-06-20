@@ -335,7 +335,7 @@ void Parameterization::_init_weights(
         for (auto& adj_v : adj_list[vi]) {
             // 判断(adj_v, vj, vi)是否构成三角形
             if (adj_v != vj && trias_set.count(Triangle(vi, vj, adj_v)) != 0) {
-                adj_vt.push_back(adj_v);
+                adj_vt.emplace_back(adj_v);
             }
         }
         if (adj_vt.size() != 2) {
@@ -471,7 +471,7 @@ void Parameterization::_solve_Laplacian_equation(
     }
 
     // 进行迭代求解
-    int itermax = 200;
+    int itermax = 500;
     for (int epoch = 0; epoch < itermax; ++epoch) {
         progress = epoch * 1.0 / itermax;
         Jacobi_Iteration(r_idx_1, c_idx_1, f_1, _value_mat, 0.1f, 5);

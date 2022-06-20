@@ -94,6 +94,18 @@ namespace RenderSpace {
             uint32_t num_samples
         );
 
+        // LU decompose solver
+        void _solve_Laplacian_equation_LU(
+            const std::vector<int>& r_idx_1,
+            const std::vector<int>& c_idx_1,
+            std::vector<glm::vec2>& f_1,  // 结果保存在这里
+            const std::vector<int>& r_idx_2,
+            const std::vector<int>& c_idx_2,
+            const std::vector<glm::vec2>& f_2,
+            float& progress,
+            uint32_t num_samples
+        );
+
         // Jacobi 迭代求解方程组
         void Jacobi_Iteration(
             const std::vector<int>& r_idx,

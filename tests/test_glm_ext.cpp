@@ -99,26 +99,26 @@ void test_curvature() {
 
 void test_LU_decompose() {
     // matrix decompose
-    SparseMatrix A(4, 4);
+    SparseMatrix<float> A(4, 4);
     A.set(0, 0, 2); A.set(0, 1, 10); A.set(0, 2, 0); A.set(0, 3, -3);
     A.set(1, 0, -3); A.set(1, 1, -4); A.set(1, 2, -12); A.set(1, 3, 13);
     A.set(2, 0, 1); A.set(2, 1, 2); A.set(2, 2, 3); A.set(2, 3, -4);
     A.set(3, 0, 4); A.set(3, 1, 14); A.set(3, 2, 9); A.set(3, 3, -13);
-    SparseMatrix b(4, 1);
+    SparseMatrix<float> b(4, 1);
     b.set(0, 0, 10); b.set(1, 0, 5); b.set(2, 0, -2); b.set(3, 0, 7);
 
     // Doolite LU decompose
     {
-        SparseMatrix L(4, 4);
-        SparseMatrix U(4, 4);
-        Doolitte_decompose(A, L, U);
+        SparseMatrix<float> L(4, 4);
+        SparseMatrix<float> U(4, 4);
+        Doolitte_decompose<float>(A, L, U);
         L.print();
         U.print();
     }
     // solve
     {
-        SparseMatrix x(4, 1);
-        solve_equations(A, b, x);
+        SparseMatrix<float> x(4, 1);
+        solve_equations<float, float>(A, b, x);
         x.print();
     }
 }

@@ -11,6 +11,7 @@
 #include <chrono>
 #include <ctime>
 #include <thread>
+#include "../glm_ext/LU_decompose.hpp"
 #include "../libs/tgaimage/tgaimage.h"
 
 using namespace std;
@@ -424,6 +425,50 @@ void Parameterization::_convert_edge_to_vertex(vector<OrderedEdge>&& edge_bound,
     // 释放内存
     vector<OrderedEdge>().swap(edge_bound);
     vector<OrderedEdge>().swap(edge_inner);
+}
+
+void Parameterization::_solve_Laplacian_equation_LU(
+    const vector<int>& r_idx_1,
+    const vector<int>& c_idx_1,
+    vector<vec2>& f_1,  // 结果保存在这里
+    const vector<int>& r_idx_2,
+    const vector<int>& c_idx_2,
+    const vector<vec2>& f_2,
+    float& progress,
+    uint32_t num_samples) {
+    const int mat1_row_count = r_idx_1.size();
+    const int mat1_col_count = c_idx_1.size();
+    const int mat2_row_count = r_idx_2.size();
+    const int mat2_col_count = c_idx_2.size();
+    assert(mat2_col_count == f_2.size());
+    // 计算b
+    glm_ext::SparseMatrix<glm::vec2> b(mat2_row_count, 1);
+    for (int ir = 0; ir < mat2_row_count; ++ir) {
+        vec2 _row_vec(0.0, 0.0);
+        for (int ic = 0; ic < mat2_col_count; ++ic) {
+            float _v = _Laplacian_val(r_idx_2[ir], c_idx_2[ic]);
+            _row_vec += _v * f_2[ic];
+        }
+        b.set(ir, 0, -_row_vec);
+    }
+    // 计算A
+    glm_ext::SparseMatrix<float> A(mat1_row_count, mat1_col_count);
+    for (int ir = 0; ir < mat1_row_count; ++ir) {
+        for (int ic = 0; ic < mat1_col_count; ++ic) {
+            float _v = _Laplacian_val(ir, ic);
+            if (_v != 0.0f) {
+                A.set(ir, ic, _v);
+            }
+        }
+    }
+    // 计算x
+    glm_ext::SparseMatrix<glm::vec2> x(mat1_row_count, 1);
+    glm_ext::solve_equations<float, glm::vec2>(A, b, x);
+    // x to vector f_1
+    f_1.clear();
+    for (int ir = 0; ir < mat1_row_count; ++ir) {
+        f_1.emplace_back(x.get(ir, 0));
+    }
 }
 
 void Parameterization::_solve_Laplacian_equation(

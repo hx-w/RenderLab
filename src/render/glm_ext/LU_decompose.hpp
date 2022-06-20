@@ -18,27 +18,25 @@ struct pair_hash {
     }
 };
 
+template <typename T>
 class SparseMatrix {
 public:
     SparseMatrix(int n, int m) : _n(n), _m(m) {}
     ~SparseMatrix() {}
 
-    void set(int i, int j, float v) {
+    void set(int i, int j, T v) {
         if (i < 0 || i >= _n || j < 0 || j >= _m) {
-            return;
-        }
-        if (v == 0.f) {
             return;
         }
         _mat[std::make_pair(i, j)] = v;
     }
 
-    float get(int i, int j) const {
+    T get(int i, int j) const {
         if (i < 0 || i >= _n || j < 0 || j >= _m) {
-            return 0.f;
+            return static_cast<T>(0);
         }
         if (_mat.find(std::make_pair(i, j)) == _mat.end()) {
-            return 0.f;
+            return static_cast<T>(0);
         }
         return _mat.at(std::make_pair(i, j));
     }
@@ -61,14 +59,15 @@ public:
 private:
     int _n;
     int _m;
-    std::unordered_map<std::pair<int, int>, float, pair_hash> _mat;
+    std::unordered_map<std::pair<int, int>, T, pair_hash> _mat;
 };
 
-static void Doolitte_decompose(const SparseMatrix& ori, SparseMatrix& L, SparseMatrix& U) {
+template <typename T>
+static void Doolitte_decompose(const SparseMatrix<T>& ori, SparseMatrix<T>& L, SparseMatrix<T>& U) {
     const int n = ori.n();
     const int m = ori.m();
-    L = SparseMatrix(n, m);
-    U = SparseMatrix(n, m);
+    L = SparseMatrix<T>(n, m);
+    U = SparseMatrix<T>(n, m);
     // implement LU decomposition(Doolitte)
     for (int k = 0; k < n; ++k) {
         for (int j = k; j < n; ++j) {           // dolittle分解
@@ -78,7 +77,7 @@ static void Doolitte_decompose(const SparseMatrix& ori, SparseMatrix& L, SparseM
                 U.set(k, j, _v - L.get(k, i) * U.get(i, j));
             }
         }
-        L.set(k, k, 1.0f);
+        L.set(k, k, static_cast<T>(1));
         for (int i = k + 1; i < n; ++i) {
             L.set(i, k, ori.get(i, k));
             for (int j = 0; j <= k - 1; ++j) {
@@ -90,16 +89,17 @@ static void Doolitte_decompose(const SparseMatrix& ori, SparseMatrix& L, SparseM
     }
 }
 
-static void solve_equations(const SparseMatrix& A, const SparseMatrix& b, SparseMatrix& x) {
+template <typename T1, typename T2>
+static void solve_equations(const SparseMatrix<T1>& A, const SparseMatrix<T2>& b, SparseMatrix<T2>& x) {
     const int n = A.n();
     const int m = A.m();
-    assert(n == m);
-    SparseMatrix L(n, m);
-    SparseMatrix U(n, m);
-    Doolitte_decompose(A, L, U);
+    assert(A.n() == b.n());
+    SparseMatrix<T1> L(n, m);
+    SparseMatrix<T1> U(n, m);
+    Doolitte_decompose<T1>(A, L, U);
 
     // solve Ly = b
-    SparseMatrix y(n, 1);
+    SparseMatrix<T2> y(n, 1);
     for (int i = 0; i < n; ++i) {
         y.set(i, 0, b.get(i, 0));
         for (int j = 0; j < i; ++j) {
@@ -108,7 +108,7 @@ static void solve_equations(const SparseMatrix& A, const SparseMatrix& b, Sparse
     }
 
     // solve Ux = y
-    x = SparseMatrix(n, 1);
+    x = SparseMatrix<T2>(n, 1);
     for (int i = n - 1; i >= 0; --i) {
         x.set(i, 0, y.get(i, 0));
         for (int j = i + 1; j < n; ++j) {

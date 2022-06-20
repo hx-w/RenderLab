@@ -168,7 +168,6 @@ void Parameterization::_remark_edges(vector<OrderedEdge>& edge_bound,
     }
     edge_bound.assign(edge_bound_set.begin(), edge_bound_set.end());
     edge_inner.assign(edge_inner_set.begin(), edge_inner_set.end());
-
 }
 
 void Parameterization::_cut_mesh_open(const vector<OrderedEdge>& tot_edge) {
@@ -479,7 +478,6 @@ void Parameterization::_solve_Laplacian_equation(
         if (epoch % 5 == 0)
             resample(num_samples);
     }
-    
 }
 
 void Parameterization::Jacobi_Iteration(const vector<int>& r_idx,

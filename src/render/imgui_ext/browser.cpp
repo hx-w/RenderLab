@@ -68,12 +68,10 @@ const bool file_browser_modal::render(const bool isVisible, std::string& outPath
             //Make the modal visible.
             ImGui::OpenPopup(m_title);
         }
-
     }
 
     bool isOpen = true;
     if (ImGui::BeginPopupModal(m_title, &isOpen, modal_flags)) {
-
         if (ImGui::ListBox("##", &m_selection, vector_file_items_getter, &m_filesInScope, m_filesInScope.size(), 10)) {
             //Update current path to the selected list item.
             m_currentPath = m_filesInScope[m_selection].path;
@@ -93,7 +91,6 @@ const bool file_browser_modal::render(const bool isVisible, std::string& outPath
 
         // Make the "Select" button look / act disabled if the current selection is a directory.
         if (m_currentPathIsDir) {
-
             static const ImVec4 disabledColor = { 0.3f, 0.3f, 0.3f, 1.0f };
 
             ImGui::PushStyleColor(ImGuiCol_Button, disabledColor);

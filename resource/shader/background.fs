@@ -1,14 +1,20 @@
 #version 330 core
 
-out vec4 color;
+in vec3 FragPos;
 
-in vec3 vertexPosition;
+out vec4 FragColor;
 
 void main() {
-	float c = (
-		int(round(vertexPosition.x * 5.0)) +
-		int(round(vertexPosition.y * 5.0))
+	float scale = 5.0f;
+
+	int c = (
+		int(round(FragPos.x * 10.0)) +
+		int(round(FragPos.z * 10.0))
 	) % 2;
 
-	color = vec4(vec3(c / 2.0 + 0.3), 1);
+	if (c == 0) {
+		FragColor = vec4(0.3f, 0.3f, 0.3f, 1.0f);
+	} else {
+		FragColor = vec4(0.8f, 0.8f, 0.8f, 1.0f);
+	}
 }

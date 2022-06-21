@@ -20,6 +20,21 @@ namespace RenderSpace {
     RenderService::RenderService():
         m_autobus(make_unique<AutoBus>()) {
         setup();
+        // render background
+        m_background_mesh = make_shared<MeshDrawable>("_background", DrawableType::DRAWABLE_TRIANGLE);
+        m_background_mesh->set_shader(m_shaders[1]);
+        m_background_mesh->add_triangle_raw(
+            Vertex(glm::vec3(-1.0f, 0.0f, -1.0f), glm::vec3(0.0f), glm::vec3(0.0f)),
+            Vertex(glm::vec3(1.0f, 0.0f, -1.0f), glm::vec3(0.0f), glm::vec3(0.0f)),
+            Vertex(glm::vec3(-1.0f, 0.0f, 1.0f), glm::vec3(0.0f), glm::vec3(0.0f))
+        );
+        m_background_mesh->add_triangle_raw(
+            Vertex(glm::vec3(1.0f, 0.0f, 1.0f), glm::vec3(0.0f), glm::vec3(0.0f)),
+            Vertex(glm::vec3(-1.0f, 0.0f, 1.0f), glm::vec3(0.0f), glm::vec3(0.0f)),
+            Vertex(glm::vec3(1.0f, 0.0f, -1.0f), glm::vec3(0.0f), glm::vec3(0.0f))
+        );
+        m_background_mesh->set_shade_mode(GL_FILL);
+        m_background_mesh->ready_to_update();
     }
 
     RenderService::~RenderService() {
@@ -101,6 +116,7 @@ namespace RenderSpace {
         for (auto& [id, ptr]: m_meshes_map) {
             ptr->draw();
         }
+        m_background_mesh->draw();
     }
 
     void RenderService::update() {
@@ -113,6 +129,7 @@ namespace RenderSpace {
         for (auto& [id, ptr]: m_meshes_map) {
             ptr->sync();
         }
+        m_background_mesh->sync();
     }
 
     void RenderService::refresh(int mesh_id) {

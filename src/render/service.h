@@ -70,6 +70,9 @@ namespace RenderSpace {
         // 网格列表
         std::unordered_map<int, std::shared_ptr<MeshDrawable>> m_meshes_map;
 
+        // background mesh
+        std::shared_ptr<MeshDrawable> m_background_mesh;
+
         std::vector<Shader> m_shaders; // [default, background]
 
         // 交互

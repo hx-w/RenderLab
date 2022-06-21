@@ -89,6 +89,10 @@ class MeshValidator:
 
         for tri in self.triangles:
             for i in range(3):
+                lastvidx, lastc = list(self.invalid_vertex_idx_map.items())[-1]
+                if tri.vts[i] > lastvidx:
+                    tri.vts[i] -= lastc
+                    continue
                 for vidx, c in self.invalid_vertex_idx_map.items():
                     if vidx > tri.vts[i]:
                         tri.vts[i] -= c - 1

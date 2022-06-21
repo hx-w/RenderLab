@@ -30,7 +30,7 @@ namespace RenderSpace {
         void update_win(std::shared_ptr<RenderWindowWidget> win);
         std::shared_ptr<RenderWindowWidget> get_win() { return m_win_widget; }
 
-        Shader& get_shader() { return m_shader; }
+        std::vector<Shader>& get_shaders() { return m_shaders; }
 
         void draw_all();
 
@@ -70,8 +70,7 @@ namespace RenderSpace {
         // 网格列表
         std::unordered_map<int, std::shared_ptr<MeshDrawable>> m_meshes_map;
 
-        Shader m_shader; // 带光照模型的
-        Shader m_shader_text; // 文本渲染着色器
+        std::vector<Shader> m_shaders; // [default, background]
 
         // 交互
         std::shared_ptr<RenderWindowWidget> m_win_widget;

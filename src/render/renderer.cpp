@@ -153,26 +153,36 @@ namespace RenderSpace {
     }
 
     void Renderer::update_transform() {
-        auto& m_shader = m_service->get_shader();
+        auto& shaders = m_service->get_shaders();
         // --------------------
         auto currentFrame = static_cast<float>(glfwGetTime());
         m_win_widget->deltaTime = currentFrame - m_win_widget->lastFrame;
         m_win_widget->lastFrame = currentFrame;
 
         // activate shader
-        m_shader.use();
+        glm::mat4 projection = glm::perspective(
+            glm::radians(m_win_widget->fov),
+            (float)m_win_widget->m_scr_width / (float)m_win_widget->m_scr_height,
+            0.1f, 500.0f
+        );
+        glm::mat4 view = glm::lookAt(
+            m_win_widget->cameraPos,
+            m_win_widget->cameraPos + m_win_widget->cameraFront,
+            m_win_widget->cameraUp
+        );
+        for (auto& shader : shaders) {
+            shader.use();
 
-        // pass projection matrix to shader (note that in this case it could change every frame)
-        glm::mat4 projection = glm::perspective(glm::radians(m_win_widget->fov), (float)m_win_widget->m_scr_width / (float)m_win_widget->m_scr_height, 0.1f, 100.0f);
-        m_shader.setMat4("projection", projection);
+            // pass projection matrix to shader (note that in this case it could change every frame)
+            shader.setMat4("projection", projection);
 
-        // camera/view transformation
-        glm::mat4 view = glm::lookAt(m_win_widget->cameraPos, m_win_widget->cameraPos + m_win_widget->cameraFront, m_win_widget->cameraUp);
-        m_shader.setMat4("view", view);
+            // camera/view transformation
+            shader.setMat4("view", view);
 
-        m_shader.setVec3("lightColor",  m_win_widget->lightColor);
-        m_shader.setVec3("lightPos", m_win_widget->lightPos);
-        m_shader.setVec3("viewPos", m_win_widget->cameraPos);
+            shader.setVec3("lightColor",  m_win_widget->lightColor);
+            shader.setVec3("lightPos", m_win_widget->lightPos);
+            shader.setVec3("viewPos", m_win_widget->cameraPos);
+        }
     }
 
     shared_ptr<RenderService> Renderer::get_service() {

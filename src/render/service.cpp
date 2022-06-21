@@ -37,8 +37,8 @@ namespace RenderSpace {
 #ifdef _WIN32
         shader_dir = ".\\resource\\shader\\";
 #endif
-        m_shader.fromFile(shader_dir + "default.vs", shader_dir + "default.fs");
-        m_shader_text.fromFile(shader_dir + "text.vs", shader_dir + "text.fs");
+        m_shaders.emplace_back(shader_dir + "default.vs", shader_dir + "default.fs");
+        m_shaders.emplace_back(shader_dir + "background.vs", shader_dir + "background.fs");
 
         // 如果逻辑线程计算太快，可能在下面方法注册前调用，会出错
         // 模块间通讯
@@ -95,10 +95,6 @@ namespace RenderSpace {
     }
 
     void RenderService::notify_window_resize(uint32_t width, uint32_t height) {
-        // 更新文本渲染器 正交投影
-        m_shader_text.use();
-        glm::mat4 projection = glm::ortho(0.0f, static_cast<GLfloat>(width), 0.0f, static_cast<GLfloat>(height));
-        m_shader_text.setMat4("projection", projection);
     }
 
     void RenderService::draw_all() {
@@ -138,7 +134,7 @@ namespace RenderSpace {
     int RenderService::create_mesh(const string& name, DrawableType type) {
         int _id = gen_id();
         auto new_mesh = make_shared<MeshDrawable>(name + "-" + to_string(_id), type);
-        new_mesh->set_shader(m_shader);
+        new_mesh->set_shader(m_shaders[0]);
         m_meshes_map[_id] = new_mesh;
         logger->log("create mesh: " + name + "(" + to_string(_id) + ")");
         return _id;

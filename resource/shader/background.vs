@@ -13,6 +13,6 @@ out vec3 far;
 
 void main() {
     FragPos.xz = (aPos.xz * 200.0f) + viewPos.xz;
-    FragPos.y = 0.0f;
+    FragPos.y = -10.0f;
     gl_Position = projection * view * vec4(FragPos, 1.0f);
 }

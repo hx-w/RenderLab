@@ -4,17 +4,23 @@
 ![cmake-build](https://github.com/hx-w/RenderLab/workflows/cmake-build/badge.svg)
 
 
-This is about **Topology** and **Render**
+This is about **Topology** and **Rendering**
 
 ## screenshot
 
 ![screenshot](docs/img/screenshot-1.jpg)
+
+## Introduction
 
 ### Build and run
 
 - **Win32**: `.\build.bat && .\main.exe` **or** go [here](https://github.com/hx-w/RenderLab/actions) to download compiled Windows-x86 artifact
 - **MacOS**: `sh build.sh && ./main`
 
-### Introduction
+### Usage
 
 TODO
+
+## Dependency
+- [**glm**](https://github.com/g-truc/glm) linear math libary.
+- [**Dear ImGui**](https://github.com/ocornut/imgui) light weight GUI module

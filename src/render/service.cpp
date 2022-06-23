@@ -11,6 +11,7 @@
 #include "imgui_ext/logger.h"
 #include "imgui_ext/mesh_viewer.h"
 #include "imgui_ext/controller.h"
+#include "../libs/coords.h"
 
 using namespace std;
 using namespace fundamental;
@@ -62,24 +63,12 @@ namespace RenderSpace {
             [this](const string& name, int drawable_type)->int {
                 return create_mesh(name, static_cast<DrawableType>(drawable_type));
             });
-
-        m_autobus->registerMethod<void(int, array<Point, 3>&&)>(
-            m_symbol + "/add_vertex_raw",
-            [this](int mesh_id, array<Point, 3>&& coords) {
-                this->add_vertex_raw(mesh_id, move(coords));
-            });
-
-        m_autobus->registerMethod<void(int, array<Point, 6>&&)>(
-            m_symbol + "/add_edge_raw",
-            [this](int mesh_id, array<Point, 6>&& coords) {
-                this->add_edge_raw(mesh_id, move(coords));
-            });
-
-        // { Point1, Color1, Normal1, Point2, Color2, Normal2, Point3, Color3, Normal3 }
-        m_autobus->registerMethod<void(int, array<Point, 9>&&)>(
-            m_symbol + "/add_triangle_raw",
-            [this](int mesh_id, array<Point, 9>&& coords) {
-                this->add_triangle_raw(mesh_id, move(coords));
+        
+        m_autobus->registerMethod<shared_ptr<Drawable>(const string&)>(
+            m_symbol + "/load_mesh",
+            [this](const string& path)->shared_ptr<Drawable> {
+                auto id = load_mesh(path, path);
+                return m_meshes_map[id];
             });
 
         m_autobus->registerMethod<void(int)>(
@@ -107,9 +96,6 @@ namespace RenderSpace {
     void RenderService::notify_clear_picking() {
         auto _event = ContextHub::getInstance()->getEventTable<void()>();
         _event->notify(m_symbol + "/clear_picking");
-    }
-
-    void RenderService::notify_window_resize(uint32_t width, uint32_t height) {
     }
 
     void RenderService::draw_all() {
@@ -155,58 +141,6 @@ namespace RenderSpace {
         m_meshes_map[_id] = new_mesh;
         logger->log("create mesh: " + name + "(" + to_string(_id) + ")");
         return _id;
-    }
-
-    void RenderService::add_vertex_raw(int mesh_id, array<Point, 3>&& coords) {
-        if (m_meshes_map.find(mesh_id) == m_meshes_map.end()) {
-            return;
-        }
-        m_meshes_map[mesh_id]->add_vertex_raw(Vertex(
-            glm::vec3(coords[0].x(), coords[0].y(), coords[0].z()),
-            glm::vec3(coords[1].x(), coords[1].y(), coords[1].z()),
-            glm::vec3(coords[2].x(), coords[2].y(), coords[2].z())
-        ));
-    }
-
-    void RenderService::add_edge_raw(int mesh_id, array<Point, 6>&& coords) {
-        if (m_meshes_map.find(mesh_id) == m_meshes_map.end()) {
-            return;
-        }
-        m_meshes_map[mesh_id]->add_edge_raw(
-            Vertex(
-                glm::vec3(coords[0].x(), coords[0].y(), coords[0].z()),
-                glm::vec3(coords[1].x(), coords[1].y(), coords[1].z()),
-                glm::vec3(coords[2].x(), coords[2].y(), coords[2].z())
-            ),
-            Vertex(
-                glm::vec3(coords[3].x(), coords[3].y(), coords[3].z()),
-                glm::vec3(coords[4].x(), coords[4].y(), coords[4].z()),
-                glm::vec3(coords[5].x(), coords[5].y(), coords[5].z())
-            )
-        );
-    }
-
-    void RenderService::add_triangle_raw(int mesh_id, array<Point, 9>&& coords) {
-        if (m_meshes_map.find(mesh_id) == m_meshes_map.end()) {
-            return;
-        }
-        m_meshes_map[mesh_id]->add_triangle_raw(
-            Vertex(
-                glm::vec3(coords[0].x(), coords[0].y(), coords[0].z()),
-                glm::vec3(coords[1].x(), coords[1].y(), coords[1].z()),
-                glm::vec3(coords[2].x(), coords[2].y(), coords[2].z())
-            ),
-            Vertex(
-                glm::vec3(coords[3].x(), coords[3].y(), coords[3].z()),
-                glm::vec3(coords[4].x(), coords[4].y(), coords[4].z()),
-                glm::vec3(coords[5].x(), coords[5].y(), coords[5].z())
-            ),
-            Vertex(
-                glm::vec3(coords[6].x(), coords[6].y(), coords[6].z()),
-                glm::vec3(coords[7].x(), coords[7].y(), coords[7].z()),
-                glm::vec3(coords[8].x(), coords[8].y(), coords[8].z())
-            )
-        );
     }
 
     int RenderService::gen_id() {

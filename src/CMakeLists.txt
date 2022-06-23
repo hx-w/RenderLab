@@ -1,8 +1,9 @@
 add_subdirectory(libs)
 add_subdirectory(infrastructure)
-add_subdirectory(tooth)
+# add_subdirectory(tooth)
+add_subdirectory(xtooth)
 add_subdirectory(render)
-list(APPEND LIBS NURBS_LIB INFRASTRUCTURE TOOTH_ENGINE XRENDER)
+list(APPEND LIBS NURBS_LIB INFRASTRUCTURE XTOOTH_ENGINE XRENDER)
 
 set_target_properties(${TARGET} PROPERTIES COMPILE_FLAGS "-pthread" LINK_FLAGS "-pthread")
 

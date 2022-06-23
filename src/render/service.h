@@ -11,7 +11,6 @@
 #include "xwindow.h"
 #include "mesh/elements.h"
 #include "mesh/parameterization.h"
-#include "../libs/coords.h"
 #include "../infrastructure/communication/AutoBus.hpp"
 
 namespace RenderSpace {
@@ -42,7 +41,6 @@ namespace RenderSpace {
 
         void notify_picking(const glm::vec3& origin, const glm::vec3& direction);
         void notify_clear_picking(); // refresh all picking ray
-        void notify_window_resize(uint32_t width, uint32_t height);
 
         // return -1 if failed, *.obj supported
         int load_mesh(const std::string& name, const std::string& path);
@@ -56,11 +54,6 @@ namespace RenderSpace {
 
     private:
         void setup();
-
-        // 添加图元
-        void add_vertex_raw(int mesh_id, std::array<Point, 3>&& coords);
-        void add_edge_raw(int mesh_id, std::array<Point, 6>&& coords);
-        void add_triangle_raw(int mesh_id, std::array<Point, 9>&& coords);
 
         int gen_id();
 

@@ -1,9 +1,8 @@
 ﻿#include <iostream>
 #include <thread>
 #include "render/engine.h"
-#include "tooth/engine.h"
-#include "tooth/execute.h"
-#include "train_and_test.hpp"
+#include "xtooth/engine.h"
+// #include "train_and_test.hpp"
 
 using namespace std;
 
@@ -13,6 +12,12 @@ int main() {
 
     // thread ml_thread(train_and_test, 100, renderer->get_service());
     // ml_thread.detach();
+
+    thread xtooth_thread([&](){
+        auto xtooth = XToothSpace::make_service("xtooth");
+        xtooth->simulate();
+        });
+    xtooth_thread.detach();
 
     return renderer->exec();
 }

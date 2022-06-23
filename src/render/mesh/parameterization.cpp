@@ -32,35 +32,43 @@ bool Parameterization::parameterize(ParamMethod pmodel, float& progress, uint32_
     vector<OrderedEdge> edge_inner;
     // 先获取边缘和非边缘边
     _remark_edges(edge_bound, edge_inner);
-    if (edge_bound.empty()) {
-        return false;
-        _cut_mesh_open(edge_inner);
-        _remark_edges(edge_bound, edge_inner);
-    }
-    // 需要将边缘边有序遍历 v1->v3, v3->v2, v2->v1
-    _topology_reorder(edge_bound);
-    // 参数平面 边缘点 根据edge_bound 顺序计算得到
-    vector<vec2> param_bound;
-    _parameterize_bound(edge_bound, param_bound);
-    cout << "param_bound mapping finished" << endl;
-    // 初始化weights
-    // weight[(i, j)] = weight[(j, i)], 故存储时令i < j
-    // 这里元素量太大，可以使用map进行优化，但是map对于key的查找有问题(?)
-    _init_weights(edge_bound, edge_inner, pmodel);
+    if (!edge_bound.empty()) {
+        // non-sphecial case
+        // 需要将边缘边有序遍历 v1->v3, v3->v2, v2->v1
+        _topology_reorder(edge_bound);
+        // 参数平面 边缘点 根据edge_bound 顺序计算得到
+        vector<vec2> param_bound;
+        _parameterize_bound(edge_bound, param_bound);
+        cout << "param_bound mapping finished" << endl;
+        // 初始化weights
+        // weight[(i, j)] = weight[(j, i)], 故存储时令i < j
+        // 这里元素量太大，可以使用map进行优化，但是map对于key的查找有问题(?)
+        _init_weights(edge_bound, edge_inner, pmodel);
 
-    // 将边集 转换为 点集 保存映射的顺序关系
-    // 其中边缘点的顺序不能变，应与param_bound一致
-    vector<int> vt_bound;
-    vector<int> vt_inner;
-    _convert_edge_to_vertex(move(edge_bound), move(edge_inner), vt_bound,
-                            vt_inner);
-    // 解方程组
-    vector<vec2> param_inner;
-    cout << "solving Laplacian equation" << endl;
-    _solve_Laplacian_equation(vt_inner, vt_inner, param_inner, vt_inner,
-                              vt_bound, param_bound, progress, num_samples);
-    cout << "building mesh" << endl;
-    _build_param_mesh(vt_inner, vt_bound, param_inner, param_bound);
+        // 将边集 转换为 点集 保存映射的顺序关系
+        // 其中边缘点的顺序不能变，应与param_bound一致
+        vector<int> vt_bound;
+        vector<int> vt_inner;
+        _convert_edge_to_vertex(move(edge_bound), move(edge_inner), vt_bound, vt_inner);
+        // 解方程组
+        vector<vec2> param_inner;
+        cout << "solving Laplacian equation" << endl;
+        _solve_Laplacian_equation(vt_inner, vt_inner, param_inner, vt_inner,
+                                vt_bound, param_bound, progress, num_samples);
+        cout << "building mesh" << endl;
+        _build_param_mesh(vt_inner, vt_bound, param_inner, param_bound);
+    }
+    else {
+        // sphecial case
+        cout << "sphecial case" << endl;
+        _init_weights(edge_bound, edge_inner, pmodel);
+        vector<int> vt_bound;
+        vector<int> vt_inner;
+        _convert_edge_to_vertex(move(edge_bound), move(edge_inner), vt_bound, vt_inner);
+        vector<vec3> param_vert;
+        _solve_sherical_param(vt_inner, param_vert, progress, num_samples);
+		_build_spherical_mesh(vt_inner, param_vert);
+    }
     return true;
 }
 
@@ -383,7 +391,7 @@ void Parameterization::_convert_edge_to_vertex(vector<OrderedEdge>&& edge_bound,
                                                vector<OrderedEdge>&& edge_inner,
                                                vector<int>& vt_bound,
                                                vector<int>& vt_inner) {
-    if (edge_bound.empty() || edge_inner.empty()) {
+    if (edge_inner.empty()) {
         return;
     }
     vt_bound.clear();
@@ -392,23 +400,26 @@ void Parameterization::_convert_edge_to_vertex(vector<OrderedEdge>&& edge_bound,
     // 由于边缘边拓扑有序，所以尽量避免在vt_bound中查重操作
     const auto sz = edge_bound.size();
     // 最后一个边包含的两个点都应已经被包含在vt_bound中
-    vt_bound.emplace_back(edge_bound[0].first);
-    for (size_t eidx = 0; eidx < sz - 1; ++eidx) {
-        const int _last_vt = vt_bound.back();
-        int picked = -1;
-        if (edge_bound[eidx].first == _last_vt) {
-            picked = edge_bound[eidx].second;
-        } else if (edge_bound[eidx].second == _last_vt) {
-            picked = edge_bound[eidx].first;
-        }
-        if (picked == -1) {
-            cout << "Error: edge_bound is not topology sorted" << endl;
-            continue;
-        }
-        if (find(vt_bound.begin(), vt_bound.end(), picked) == vt_bound.end()) {
-            vt_bound.emplace_back(picked);
-        }
-    }
+	if (sz != 0) {
+		vt_bound.emplace_back(edge_bound[0].first);
+		for (size_t eidx = 0; eidx < sz - 1; ++eidx) {
+			const int _last_vt = vt_bound.back();
+			int picked = -1;
+			if (edge_bound[eidx].first == _last_vt) {
+				picked = edge_bound[eidx].second;
+			}
+			else if (edge_bound[eidx].second == _last_vt) {
+				picked = edge_bound[eidx].first;
+			}
+			if (picked == -1) {
+				cout << "Error: edge_bound is not topology sorted" << endl;
+				continue;
+			}
+			if (find(vt_bound.begin(), vt_bound.end(), picked) == vt_bound.end()) {
+				vt_bound.emplace_back(picked);
+			}
+		}
+	}
     // 计算vt_inner
     unordered_set<int> vt_bound_set(vt_bound.begin(), vt_bound.end());
     set<int> vt_inner_set;
@@ -572,6 +583,47 @@ void Parameterization::Jacobi_Iteration(const vector<int>& r_idx,
     }
 }
 
+void Parameterization::_solve_sherical_param(
+    const std::vector<int>& vlist,
+    std::vector<glm::vec3>& f,
+    float& progress,
+    uint32_t num_samples
+) {
+    f.clear();
+    auto vsize = vlist.size();
+	const auto verts = m_uns_mesh->get_vertices();
+    for (auto vidx = 0; vidx < vsize; ++vidx) {
+        // compute L[i] * U
+        glm::vec3 XYZ(0.0f);
+        for (auto fidx = 0; fidx < vsize; ++fidx) {
+            auto lv = _Laplacian_val(vidx, fidx);
+            XYZ += lv * verts[fidx].Position;
+        }
+        // compute alpha
+        float r = 10.0f; // radius of sphere
+        float alpha = glm::length(XYZ) / glm::sqrt(r);
+		glm::vec3 new_vert = XYZ / alpha;
+		f.emplace_back(new_vert);
+    }
+}
+
+void Parameterization::_build_spherical_mesh(const vector<int>& vlist, const vector<vec3>& param_vert) {
+	// 倒排索引
+	const auto vsize = vlist.size();
+	const auto ori_tris = m_uns_mesh->get_triangles();
+
+	auto& param_vt = m_param_mesh->get_vertices();
+	auto& param_tris = m_param_mesh->get_triangles();
+
+	param_vt.clear();
+	for (auto& vert : param_vert) {
+		param_vt.emplace_back(Vertex(vert, glm::vec3(0.0f), glm::vec3(0.0f)));
+	}
+
+	param_tris.assign(ori_tris.begin(), ori_tris.end());
+	m_param_mesh->ready_to_update();
+}
+
 void Parameterization::_build_param_mesh(const vector<int>& vt_inner,
                                    const vector<int>& vt_bound,
                                    const vector<vec2>& param_inner,
@@ -590,7 +642,6 @@ void Parameterization::_build_param_mesh(const vector<int>& vt_inner,
     vector<Triangle> tar_tris;
     const auto ori_vertices = m_uns_mesh->get_vertices();
     const auto ori_tris = m_uns_mesh->get_triangles();
-    tar_vertices.clear();
 
     // 三角面片索引应相同
     tar_tris.assign(ori_tris.begin(), ori_tris.end());

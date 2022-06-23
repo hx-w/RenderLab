@@ -35,6 +35,12 @@ namespace RenderSpace {
         );
         m_background_mesh->set_shade_mode(GL_FILL);
         m_background_mesh->ready_to_update();
+
+#if !defined(DEBUG)
+    auto uns_id = load_mesh("cow", "static/models/cow.obj");
+    float progress = 0.0f;
+    execute_param(uns_id, progress, ParamMethod::Laplace, 100);
+#endif
     }
 
     RenderService::~RenderService() {

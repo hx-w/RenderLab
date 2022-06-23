@@ -116,6 +116,13 @@ namespace RenderSpace {
             const int max_iter // 最大迭代次数
         );
 
+        void _solve_sherical_param(
+            const std::vector<int>& vlist,
+            std::vector<glm::vec3>& f,
+            float& progress,
+            uint32_t num_samples
+        );
+
         // 通过vt_inner, vt_bound, param_inner, param_bound
         // 构建mesh:uns_param的拓扑结构
         void _build_param_mesh(
@@ -124,6 +131,11 @@ namespace RenderSpace {
             const std::vector<glm::vec2>& param_inner,
             const std::vector<glm::vec2>& param_bound
         );
+
+		void _build_spherical_mesh(
+			const std::vector<int>& vlist,
+			const std::vector<glm::vec3>& param_vert
+		);
 
         float _Laplacian_val(int i, int j);
 

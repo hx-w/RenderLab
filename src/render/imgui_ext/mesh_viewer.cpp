@@ -180,19 +180,23 @@ void MeshViewer::render_mesh(RenderService* service, shared_ptr<RenderSpace::Mes
     _mesh_savepath[mesh_id] = string(savepath);
 
     // parameteraztion
-    if (ImGui::TreeNode(IMGUI_NAME("parameterazation", mesh_name).c_str())) {
-        ImGui::SliderInt(IMGUI_NAME("sample num", mesh_name).c_str(), &_mesh_sample_num.at(mesh_id), 10, 200);
-
-        if (ImGui::Button(IMGUI_NAME("execute", mesh_name).c_str())) {
-            service->execute_param(mesh_id, _mesh_progress.at(mesh_id), Laplace, _mesh_sample_num.at(mesh_id));
-        }
-        float progress = _mesh_progress.at(mesh_id);
-        if (progress >= 0.0f) {
-            ImGui::SameLine();
-            ImGui::ProgressBar(progress);
-        }
-        ImGui::TreePop();
+    if (ImGui::Button(IMGUI_NAME("remesh", mesh_name).c_str())) {
+        
     }
+
+    // if (ImGui::TreeNode(IMGUI_NAME("parameterazation", mesh_name).c_str())) {
+    //     ImGui::SliderInt(IMGUI_NAME("sample num", mesh_name).c_str(), &_mesh_sample_num.at(mesh_id), 10, 200);
+
+    //     if (ImGui::Button(IMGUI_NAME("execute", mesh_name).c_str())) {
+    //         service->execute_param(mesh_id, _mesh_progress.at(mesh_id), Laplace, _mesh_sample_num.at(mesh_id));
+    //     }
+    //     float progress = _mesh_progress.at(mesh_id);
+    //     if (progress >= 0.0f) {
+    //         ImGui::SameLine();
+    //         ImGui::ProgressBar(progress);
+    //     }
+    //     ImGui::TreePop();
+    // }
 
     ImGui::Separator();
 }

@@ -33,6 +33,8 @@ namespace RenderSpace {
         // view control
         void viewfit_BBOX(const AABB& aabb);
 
+        void set_pickable(bool pickable) noexcept { m_pickable = pickable; }
+
     public:
         unsigned int m_scr_width = 800;
         unsigned int m_scr_height = 600;
@@ -73,6 +75,7 @@ namespace RenderSpace {
         bool R_down = false;
         bool H_down = false;
         bool CTRL_down = false;
+        bool m_pickable = false;
     
     private:
         void T_EventHandler();

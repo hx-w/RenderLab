@@ -54,6 +54,11 @@ namespace RenderSpace {
         // parameterization
         void execute_param(int mesh_id, float& progress, ParamMethod mtd, int sample_num);
 
+        // set pickable
+        // 选定参数化4个特征点
+        void set_pickable(bool pickable) { m_win_widget->set_pickable(pickable); };
+
+
     private:
         void setup();
 

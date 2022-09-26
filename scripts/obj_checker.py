@@ -1,7 +1,6 @@
 # -*- coding:utf-8 -*-
 
 import sys
-from copy import deepcopy
 from typing import List, Dict
 
 

@@ -35,12 +35,6 @@ namespace RenderSpace {
         );
         m_background_mesh->set_shade_mode(GL_FILL);
         m_background_mesh->ready_to_update();
-
-// #if !defined(DEBUG)
-//     auto uns_id = load_mesh("cow", "static/models/cow.obj");
-//     float progress = 0.0f;
-//     execute_param(uns_id, progress, ParamMethod::Laplace, 100);
-// #endif
     }
 
     RenderService::~RenderService() {
@@ -72,20 +66,20 @@ namespace RenderSpace {
         m_autobus->registerMethod<void(int, array<Point, 3>&&)>(
             m_symbol + "/add_vertex_raw",
             [this](int mesh_id, array<Point, 3>&& coords) {
-                this->add_vertex_raw(mesh_id, move(coords));
+                this->add_vertex_raw(mesh_id, std::move(coords));
             });
 
         m_autobus->registerMethod<void(int, array<Point, 6>&&)>(
             m_symbol + "/add_edge_raw",
             [this](int mesh_id, array<Point, 6>&& coords) {
-                this->add_edge_raw(mesh_id, move(coords));
+                this->add_edge_raw(mesh_id, std::move(coords));
             });
 
         // { Point1, Color1, Normal1, Point2, Color2, Normal2, Point3, Color3, Normal3 }
         m_autobus->registerMethod<void(int, array<Point, 9>&&)>(
             m_symbol + "/add_triangle_raw",
             [this](int mesh_id, array<Point, 9>&& coords) {
-                this->add_triangle_raw(mesh_id, move(coords));
+                this->add_triangle_raw(mesh_id, std::move(coords));
             });
 
         m_autobus->registerMethod<void(int)>(
@@ -105,9 +99,10 @@ namespace RenderSpace {
         m_win_widget = win;
     }
 
-    void RenderService::notify_picking(const glm::vec3& ori, const glm::vec3& dir) {
-        auto _event = ContextHub::getInstance()->getEventTable<void(const Point&, const Direction&)>();
-        _event->notify(m_symbol + "/picking_ray", Point(ori.x, ori.y, ori.z), Direction(dir.x, dir.y, dir.z));
+    void RenderService::ray_pick(const glm::vec3& ori, const glm::vec3& dir) {
+        for (auto& [id, ptr]: m_meshes_map) {
+            ptr->pick_cmd(ori, dir, 1e-1f);
+        }
     }
 
     void RenderService::notify_clear_picking() {
@@ -189,6 +184,16 @@ namespace RenderSpace {
                 glm::vec3(coords[4].x(), coords[4].y(), coords[4].z()),
                 glm::vec3(coords[5].x(), coords[5].y(), coords[5].z())
             )
+        );
+    }
+
+    void RenderService::add_edge_raw(int mesh_id, array<glm::vec3, 6>&& coords) {
+        if (m_meshes_map.find(mesh_id) == m_meshes_map.end()) {
+            return;
+        }
+        m_meshes_map[mesh_id]->add_edge_raw(
+            Vertex(coords[0], coords[1], coords[2]),
+            Vertex(coords[3], coords[4], coords[5])
         );
     }
 

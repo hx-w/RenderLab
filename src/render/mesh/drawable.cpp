@@ -5,6 +5,7 @@
 #include <iterator>
 #include <set>
 #include "../glm_ext/curvature.hpp"
+#include "../glm_ext/ray.hpp"
 #include "../imgui_ext/logger.h"
 #include "../libs/GLFW/glfw3.h"
 #include "../libs/glad/glad.h"
@@ -398,6 +399,29 @@ void Drawable::sample_curvs(vector<float>& values, float sample_rate) const {
     for (int vidx = 0; vidx < vec_size; vidx += stride) {
         values.emplace_back(m_curvs[vidx]);
     }
+}
+
+int Drawable::pick_cmd(const glm::vec3& pos, const glm::vec3& dir, float dist) {
+    // for each vertex, find the nearest point on the ray
+    // if the distance is less than dist, then pick it
+    int picked = -1;
+    float min_dist = std::numeric_limits<float>::max();
+    auto _vsize = m_vertices.size();
+    for (int vidx = 0; vidx < _vsize; ++vidx) {
+        auto& vp = m_vertices[vidx].Position;
+        // compute distance between vp and the ray
+        auto _dist = glm_ext::distance_point_to_ray(vp, pos, dir);
+        if (_dist < min_dist) {
+            min_dist = _dist;
+            picked = vidx;
+        }
+    }
+    if (picked != -1) {
+        m_picked_vertices.emplace_back(picked);
+        m_vertices[picked].Color = glm::vec3(1.0f, 0.0f, 0.0f);
+        ready_to_update();
+    }
+    return picked;
 }
 
 }  // namespace RenderSpace

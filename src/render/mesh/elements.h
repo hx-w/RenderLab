@@ -4,6 +4,7 @@
 #include "drawable.h"
 
 namespace RenderSpace {
+    class RenderService;
     class MeshDrawable : public Drawable {
     public:
         MeshDrawable() = default;
@@ -15,7 +16,7 @@ namespace RenderSpace {
         MeshDrawable& operator=(const MeshDrawable&) = default;
 
         bool load_STL(const std::string& filename);
-        bool load_OBJ(const std::string& filename);
+        bool load_OBJ(const std::string& filename, bool validate=true);
         bool save_OBJ(const std::string& filename);
 
         // 根据原始坐标点创建顶点以及顶点索引三角形
@@ -25,11 +26,18 @@ namespace RenderSpace {
 
         void add_triangle_by_idx(const Triangle& tri);
 
+        void remesh(RenderService*);
+
     private:
         void _deepcopy(const MeshDrawable&);
         bool _read_STL_ASCII(const std::string& filename);
         bool _read_STL_Binary(const std::string& filename);
         void _split_words(const std::string& line, std::vector<std::string>& words, const char delim=' ');
+
+        bool _remesh_check() const;
+
+    private:
+        std::string m_filename;
     };
 }
 

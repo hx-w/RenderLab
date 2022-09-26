@@ -6,17 +6,18 @@
 #include "../imgui_ext/logger.h"
 
 using namespace std;
+
+#define _LOG(str, tag) imgui_ext::Logger::get_instance()->log(str, tag);
+
 namespace RenderSpace {
     bool MeshDrawable::load_STL(const std::string& filename) {
         m_mutex.lock();
         ifstream ifs(filename);
         if (!ifs.good()) {
-            imgui_ext::Logger::get_instance()->log(
-                "can't open file: " + filename,
-                imgui_ext::LOG_ERROR
-            );
+            _LOG("Failed to open file: " + filename, imgui_ext::LOG_ERROR);
             return false;
         }
+        m_filename = filename;
         string headStr;
         getline(ifs, headStr, ' ');
         ifs.close();
@@ -142,12 +143,10 @@ namespace RenderSpace {
         _ready_to_update = false;
         ifstream ifs(filename);
         if (!ifs.good()) {
-            imgui_ext::Logger::get_instance()->log(
-                "can't open file: " + filename,
-                imgui_ext::LOG_ERROR
-            );
+            _LOG("Failed to open file: " + filename, imgui_ext::LOG_ERROR);
             return false;
         }
+        m_filename = filename;
 
         string line;
         while (getline(ifs, line)) {
@@ -250,5 +249,28 @@ namespace RenderSpace {
         while (getline(ss, word, delim)) {
             words.emplace_back(word);
         }
+    }
+
+    void MeshDrawable::remesh() {
+        if (_remesh_check()) {
+            _LOG("start to remesh", imgui_ext::LOG_INFO);
+        }
+
+        // reset picked info
+        for (auto& vi: m_picked_vertices) {
+            m_vertices[vi].Color = glm::vec3(0.5, 0.5, 0.5);
+        }
+        if (m_picked_vertices.size() != 0) {
+            m_picked_vertices.clear();
+            ready_to_update();
+        }
+    }
+
+    bool MeshDrawable::_remesh_check() const {
+        if (m_picked_vertices.size() != 4) {
+            _LOG("picked vertices size != 4", imgui_ext::LOG_ERROR);
+            return false;
+        }
+        return true;
     }
 }

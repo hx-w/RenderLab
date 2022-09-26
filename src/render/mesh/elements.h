@@ -25,11 +25,18 @@ namespace RenderSpace {
 
         void add_triangle_by_idx(const Triangle& tri);
 
+        void remesh();
+
     private:
         void _deepcopy(const MeshDrawable&);
         bool _read_STL_ASCII(const std::string& filename);
         bool _read_STL_Binary(const std::string& filename);
         void _split_words(const std::string& line, std::vector<std::string>& words, const char delim=' ');
+
+        bool _remesh_check() const;
+
+    private:
+        std::string m_filename;
     };
 }
 

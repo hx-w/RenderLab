@@ -141,6 +141,8 @@ namespace RenderSpace {
 
         void draw();
 
+        int pick_cmd(const glm::vec3& pos, const glm::vec3& dir, float dist);
+
     protected:
         void _gen_vao();
         void _reset();
@@ -176,6 +178,9 @@ namespace RenderSpace {
         GLenum m_shade_mode = GL_LINE;
         ColorMode m_color_mode = CM_Original;
         glm::vec3 m_offset = glm::vec3(0.0f);
+
+        // 设置参数化四个顶点
+        std::vector<size_t> m_picked_vertices;
     };
 }
 

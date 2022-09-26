@@ -40,7 +40,7 @@ namespace RenderSpace {
 
         void viewfit_mesh(const std::shared_ptr<Drawable> mesh);
 
-        void notify_picking(const glm::vec3& origin, const glm::vec3& direction);
+        void ray_pick(const glm::vec3& origin, const glm::vec3& direction);
         void notify_clear_picking(); // refresh all picking ray
         void notify_window_resize(uint32_t width, uint32_t height);
 
@@ -54,17 +54,13 @@ namespace RenderSpace {
         // parameterization
         void execute_param(int mesh_id, float& progress, ParamMethod mtd, int sample_num);
 
-        // set pickable
-        // 选定参数化4个特征点
-        void set_pickable(bool pickable) { m_win_widget->set_pickable(pickable); };
-
-
     private:
         void setup();
 
         // 添加图元
         void add_vertex_raw(int mesh_id, std::array<Point, 3>&& coords);
         void add_edge_raw(int mesh_id, std::array<Point, 6>&& coords);
+        void add_edge_raw(int mesh_id, std::array<glm::vec3, 6>&& coords);
         void add_triangle_raw(int mesh_id, std::array<Point, 9>&& coords);
 
         int gen_id();

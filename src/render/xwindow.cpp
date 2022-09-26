@@ -162,10 +162,10 @@ namespace RenderSpace {
             switch(button) {
 			case GLFW_MOUSE_BUTTON_LEFT:
                 leftMousePressed = false;
-                if (CTRL_down && m_pickable) {
+                if (CTRL_down) {
                     glm::vec3 direction(0.0);
                     pickingRay(glm::vec2(realX, realY), direction);
-                    m_service->notify_picking(cameraPos, direction);
+                    m_service->ray_pick(cameraPos, direction);
                 }
 				break;
 			case GLFW_MOUSE_BUTTON_MIDDLE:

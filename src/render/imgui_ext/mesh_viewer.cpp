@@ -181,7 +181,7 @@ void MeshViewer::render_mesh(RenderService* service, shared_ptr<RenderSpace::Mes
 
     // parameteraztion
     if (ImGui::Button(IMGUI_NAME("remesh", mesh_name).c_str())) {
-        service->set_pickable(true);
+        mesh->remesh();
     }
 
     // if (ImGui::TreeNode(IMGUI_NAME("parameterazation", mesh_name).c_str())) {

@@ -35,8 +35,6 @@ namespace RenderSpace {
         );
         m_background_mesh->set_shade_mode(GL_FILL);
         m_background_mesh->ready_to_update();
-
-        // load_mesh("test", "static/models/tooth/N8.obj");
     }
 
     RenderService::~RenderService() {

@@ -4,10 +4,12 @@
 #include "../libs/glad/glad.h"
 #include "../libs/GLFW/glfw3.h"
 #include "../imgui_ext/logger.h"
+#include "../executor.h"
 
 using namespace std;
 
 #define _LOG(str, tag) imgui_ext::Logger::get_instance()->log(str, tag);
+#define _REMESH_COMMAND_FORMAT string("python3 scripts/remesh/run.py --input %s --output %s")
 
 namespace RenderSpace {
     bool MeshDrawable::load_STL(const std::string& filename) {
@@ -137,7 +139,10 @@ namespace RenderSpace {
         return true;
     }
 
-    bool MeshDrawable::load_OBJ(const std::string& filename) {
+    bool MeshDrawable::load_OBJ(const std::string& filename, bool validate) {
+        if (validate) {
+            command(_REMESH_COMMAND_FORMAT + " --validate", filename.c_str(), filename.c_str());
+        }
         _reset();
         _ready_to_draw = false;
         _ready_to_update = false;
@@ -199,10 +204,7 @@ namespace RenderSpace {
     bool MeshDrawable::save_OBJ(const string& filename) {
         ofstream ofs(filename);
         if (!ofs.good()) {
-            imgui_ext::Logger::get_instance()->log(
-                "can't open file: " + filename,
-                imgui_ext::LOG_ERROR
-            );
+            _LOG("Failed to open file: " + filename, imgui_ext::LOG_ERROR);
             return false;
         }
         for (int i = 0; i < m_vertices.size(); ++i) {

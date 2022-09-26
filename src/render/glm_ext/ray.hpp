@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GLM_EXT_RAY_HPP
+#define GLM_EXT_RAY_HPP
 
 /**
  *  @author hx-w
@@ -26,3 +27,5 @@ float distance_point_to_ray(const glm::vec3& p, const glm::vec3& ray_origin, con
     return glm::length(v - t * ray_dir / l2);
 }
 }
+
+#endif

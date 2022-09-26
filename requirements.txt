@@ -1,3 +1,4 @@
 sklearn
 pandas
 fastapi[all]
+trimesh

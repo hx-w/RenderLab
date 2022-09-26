@@ -1,10 +1,12 @@
 ﻿#include "elements.h"
 #include <iostream>
+#include <thread>
 
 #include "../libs/glad/glad.h"
 #include "../libs/GLFW/glfw3.h"
 #include "../imgui_ext/logger.h"
 #include "../executor.h"
+#include "../service.h"
 
 using namespace std;
 
@@ -253,14 +255,18 @@ namespace RenderSpace {
         }
     }
 
-    void MeshDrawable::remesh() {
+    void MeshDrawable::remesh(RenderService* service) {
         if (_remesh_check()) {
-            _LOG("start to remesh", imgui_ext::LOG_INFO);
-            command(
-                _REMESH_COMMAND_FORMAT + " --remesh --pivots %d %d %d %d",
-                m_filename.c_str(), (m_filename + ".remesh.obj").c_str(),
-                m_picked_vertices[0], m_picked_vertices[1], m_picked_vertices[2], m_picked_vertices[3]
-            );
+            // std::thread([&]() {
+                _LOG("start to remesh", imgui_ext::LOG_INFO);
+                command(
+                    _REMESH_COMMAND_FORMAT + " --remesh --pivots %d %d %d %d",
+                    m_filename.c_str(), (m_filename + ".remesh.obj").c_str(),
+                    m_picked_vertices[0], m_picked_vertices[1], m_picked_vertices[2], m_picked_vertices[3]
+                );
+                _LOG("remesh finished", imgui_ext::LOG_INFO);
+                service->load_mesh("str_mesh", m_filename + ".remesh.obj");
+            // }).detach();
         }
 
         // reset picked info

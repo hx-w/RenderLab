@@ -21,7 +21,7 @@ template <class ...Args>
 decltype(auto)
 command(const std::string& format, const Args&... args) {
     char buf[1024] = "";
-    sprintf(buf, format.c_str(), args...);
+    snprintf(buf, sizeof(buf), format.c_str(), args...);
     return execute(buf);
 }
 

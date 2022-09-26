@@ -256,6 +256,11 @@ namespace RenderSpace {
     void MeshDrawable::remesh() {
         if (_remesh_check()) {
             _LOG("start to remesh", imgui_ext::LOG_INFO);
+            command(
+                _REMESH_COMMAND_FORMAT + " --remesh --pivots %d %d %d %d",
+                m_filename.c_str(), (m_filename + ".remesh.obj").c_str(),
+                m_picked_vertices[0], m_picked_vertices[1], m_picked_vertices[2], m_picked_vertices[3]
+            );
         }
 
         // reset picked info

@@ -104,5 +104,5 @@ std::string execute_short(const std::string& cmd) {
     }
     return std::string(buffer);
 }
-}
 #endif
+}

@@ -47,6 +47,7 @@ return f_B: list
 '''
 def mapping_boundary(msh: Trimesh, bnd_verts: list, pivots: list, scale: float=2.) -> list:
     # find pivots[0] in bnd_verts, and shift it to the first with rotate
+    _bak = deepcopy(bnd_verts)
     bnd_verts = np.roll(bnd_verts, -np.where(bnd_verts == pivots[0])[0][0])
     # split bnd_verts into 4 parts
     splitted = np.split(bnd_verts, [
@@ -54,6 +55,11 @@ def mapping_boundary(msh: Trimesh, bnd_verts: list, pivots: list, scale: float=2
         np.where(bnd_verts == pivots[2])[0][0],
         np.where(bnd_verts == pivots[3])[0][0],
     ])
+    for sub_bnd in splitted:
+        if len(sub_bnd) == 0:
+            # reverse order of _bak
+            return mapping_boundary(msh, _bak[::-1], pivots, scale)
+
     # empty ndarray with shape (n, 2)
     f_B = np.empty((0, 2))
     for i in range(4):

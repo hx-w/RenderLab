@@ -143,7 +143,7 @@ namespace RenderSpace {
 
     bool MeshDrawable::load_OBJ(const std::string& filename, bool validate) {
         if (validate) {
-            command(_REMESH_COMMAND_FORMAT + " --validate", filename.c_str(), filename.c_str());
+           //  command(_REMESH_COMMAND_FORMAT + " --validate", filename.c_str(), filename.c_str());
         }
         _reset();
         _ready_to_draw = false;

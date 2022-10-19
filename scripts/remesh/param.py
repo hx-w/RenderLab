@@ -60,12 +60,52 @@ def mapping_boundary(msh: Trimesh, bnd_verts: list, pivots: list, scale: float=2
             # reverse order of _bak
             return mapping_boundary(msh, _bak[::-1], pivots, scale)
 
+    print(bnd_verts)
     # empty ndarray with shape (n, 2)
-    f_B = np.empty((0, 2))
-    for i in range(4):
-        sub_f_B = mapping_1_boundary(msh, splitted[i], splitted[(i + 1) % 4][0], scale)
-        f_B = np.append(f_B, __rotate_90(sub_f_B, i), axis=0)
+    # f_B = np.empty((0, 2))
+    # for i in range(4):
+    #     print('mapping:', splitted[i][0], 'to', splitted[(i + 1) % 4][0])
+    #     sub_f_B = mapping_1_boundary(msh, splitted[i], splitted[(i + 1) % 4][0], scale)
+    #     f_B = np.append(f_B, __rotate_90(sub_f_B, i), axis=0)
+
+    f_B = mapping_fixed_boundary(msh, bnd_verts, scale)
     
+    return f_B
+
+def mapping_fixed_boundary(msh: Trimesh, bnds: list, scale: float) -> list:
+    bnds = np.append(bnds, bnds[0])
+    bnd_size = len(bnds)
+    lengths = sum([mesh_vert_dist(msh, *bnds[i:i+2]) for i in range(bnd_size - 1)])
+    f_B = np.empty((0, 2))
+
+    last_v = bnds[0]
+    bnds = bnds[1:]
+    accumed = 0.
+    for bnd in bnds: # last_v to bnd
+        old_ratio = accumed / lengths
+        accumed += mesh_vert_dist(msh, last_v, bnd)
+        new_ratio = accumed / lengths
+        flag = -reduce(
+            lambda x, y: x * (
+                1 if ((y - old_ratio) * (y - new_ratio)) > 0 
+                else -y
+            ),
+            [0.25, 0.5, 0.75],
+            1
+        )
+        if flag > 0:
+            new_ratio = flag
+        vpos = (0., 0.)
+        if new_ratio < 0.25:
+            vpos = (-(scale / 2) + scale * (new_ratio / 0.25), -scale / 2)
+        elif new_ratio < 0.5:
+            vpos = (scale / 2,  -(scale / 2) + scale * ((new_ratio - 0.25) / 0.25))
+        elif new_ratio < 0.75:
+            vpos = ((scale / 2) - scale * ((new_ratio - 0.5) / 0.25), scale / 2)
+        else:
+            vpos = (-scale / 2, (scale / 2) - scale * ((new_ratio - 0.75) / 0.25))
+        f_B = np.append(f_B, [vpos], axis=0)
+        last_v = bnd
     return f_B
 
 def mapping_1_boundary(msh: Trimesh, sub_bnds: list, last_idx: int, scale: float) -> list:
@@ -235,7 +275,7 @@ def build_str_mesh_custom(uns_mesh: Trimesh, param_mesh: Trimesh, sample_pnts: l
     str_mesh.faces = np.vstack([half_trias1, half_trias2])
 
     str_mesh.remove_infinite_values()
-    # str_mesh.remove_degenerate_faces()
+    str_mesh.remove_degenerate_faces()
     str_mesh.remove_unreferenced_vertices()
     str_mesh.fill_holes()
     str_mesh.fix_normals()

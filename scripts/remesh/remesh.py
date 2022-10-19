@@ -11,6 +11,7 @@ def convert(inp: str, otp: str, pivots: list):
     # remesh mesh
     str_mesh = remesh_mesh(mesh, pivots)
 
+    print(str_mesh, 'save to', otp)
     # save mesh
     str_mesh.export(otp)
 
@@ -21,6 +22,7 @@ def remesh_mesh(uns_msh: trimesh.Trimesh, pivots: list) -> trimesh.Trimesh:
     if not all([p in bnd_verts for p in pivots]):
         raise Exception('pivots not in boundary')
 
+    print('pivots: ', pivots)
     # parameterize boundary
     bnd_verts = bnd_verts[1:] # first == last
     f_B = mapping_boundary(uns_msh, bnd_verts, pivots)

@@ -56,7 +56,7 @@ namespace RenderSpace {
 
         std::shared_ptr<RenderService> m_service;
         bool all_visible = true;
-        glm::vec4 bgColor = glm::vec4(0.8f, 0.8f, 0.8f, 1.00f);
+        glm::vec4 bgColor = glm::vec4(0.1f, 0.1f, 0.1f, 1.00f);
 
         float realX = 0.0f;
         float realY = 0.0f;

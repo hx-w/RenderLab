@@ -13,6 +13,8 @@
 using namespace std;
 
 namespace RenderSpace {
+#define _LOG(str, tag) imgui_ext::Logger::get_instance()->log(str, tag);
+
 Drawable::Drawable() {
     // 默认随机生成一个名字
     std::lock_guard<std::mutex> lk(m_mutex);
@@ -419,6 +421,7 @@ int Drawable::pick_cmd(const glm::vec3& pos, const glm::vec3& dir, float dist) {
     if (picked != -1) {
         m_picked_vertices.emplace_back(picked);
         m_vertices[picked].Color = glm::vec3(1.0f, 0.0f, 0.0f);
+        _LOG(string("picked vertex: ") + to_string(picked), imgui_ext::LOG_INFO);
         ready_to_update();
     }
     return picked;

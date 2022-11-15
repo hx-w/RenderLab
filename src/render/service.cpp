@@ -34,7 +34,9 @@ namespace RenderSpace {
             Vertex(glm::vec3(1.0f, 0.0f, -1.0f), glm::vec3(0.0f), glm::vec3(0.0f))
         );
         m_background_mesh->set_shade_mode(GL_FILL);
-        m_background_mesh->ready_to_update();
+        // m_background_mesh->ready_to_update();
+
+        load_mesh("N-mesh", "../deepshape/static/CBCT/N20/face1.obj");
     }
 
     RenderService::~RenderService() {

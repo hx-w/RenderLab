@@ -36,7 +36,7 @@ namespace RenderSpace {
         m_background_mesh->set_shade_mode(GL_FILL);
         // m_background_mesh->ready_to_update();
 
-        load_mesh("N-mesh", "../deepshape/static/CBCT/N20/face1.obj");
+        load_mesh("N-mesh", "../deepshape/static/IOS/N4/face1.obj");
     }
 
     RenderService::~RenderService() {

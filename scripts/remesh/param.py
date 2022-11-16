@@ -57,17 +57,12 @@ def mapping_boundary(msh: Trimesh, bnd_verts: list, pivots: list, scale: float=2
     ])
     for sub_bnd in splitted:
         if len(sub_bnd) == 0:
+            print('reverse bound')
             # reverse order of _bak
-            return mapping_boundary(msh, _bak[::-1], pivots, scale)
+            bnd_verts = np.append([bnd_verts[0], bnd_verts[1:][::-1]])
+            # return mapping_boundary(msh, _bak[::-1], pivots, scale)
 
-    print(bnd_verts)
-    # empty ndarray with shape (n, 2)
-    # f_B = np.empty((0, 2))
-    # for i in range(4):
-    #     print('mapping:', splitted[i][0], 'to', splitted[(i + 1) % 4][0])
-    #     sub_f_B = mapping_1_boundary(msh, splitted[i], splitted[(i + 1) % 4][0], scale)
-    #     f_B = np.append(f_B, __rotate_90(sub_f_B, i), axis=0)
-
+    print('bound: ', bnd_verts[:3])
     f_B = mapping_fixed_boundary(msh, bnd_verts, scale)
     
     return f_B
@@ -81,6 +76,7 @@ def mapping_fixed_boundary(msh: Trimesh, bnds: list, scale: float) -> list:
     last_v = bnds[0]
     bnds = bnds[1:]
     accumed = 0.
+    _first = 3
     for bnd in bnds: # last_v to bnd
         old_ratio = accumed / lengths
         accumed += mesh_vert_dist(msh, last_v, bnd)
@@ -104,6 +100,9 @@ def mapping_fixed_boundary(msh: Trimesh, bnds: list, scale: float) -> list:
             vpos = ((scale / 2) - scale * ((new_ratio - 0.5) / 0.25), scale / 2)
         else:
             vpos = (-scale / 2, (scale / 2) - scale * ((new_ratio - 0.75) / 0.25))
+        if _first > 0:
+            _first -= 1
+            print('bound:', bnd, 'vpos:', vpos)
         f_B = np.append(f_B, [vpos], axis=0)
         last_v = bnd
     return f_B

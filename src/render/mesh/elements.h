@@ -4,7 +4,7 @@
 #include "drawable.h"
 
 namespace RenderSpace {
-    class RenderService;
+    // class RenderService;
     class MeshDrawable : public Drawable {
     public:
         MeshDrawable() = default;
@@ -26,7 +26,7 @@ namespace RenderSpace {
 
         void add_triangle_by_idx(const Triangle& tri);
 
-        void remesh(RenderService*);
+        // void remesh(RenderService*);
 
     private:
         void _deepcopy(const MeshDrawable&);

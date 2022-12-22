@@ -4,7 +4,6 @@
 #include <thread>
 
 #include "xwindow.h"
-#include "mesh/parameterization.h"
 #include "libs/imgui/imgui.h"
 #include "libs/imgui/imgui_impl_glfw.h"
 #include "libs/imgui/imgui_impl_opengl3.h"
@@ -34,9 +33,7 @@ namespace RenderSpace {
             Vertex(glm::vec3(1.0f, 0.0f, -1.0f), glm::vec3(0.0f), glm::vec3(0.0f))
         );
         m_background_mesh->set_shade_mode(GL_FILL);
-        // m_background_mesh->ready_to_update();
-
-        load_mesh("N-mesh", "../deepshape/static/CBCT/N20/face1.obj");
+        m_background_mesh->ready_to_update();
     }
 
     RenderService::~RenderService() {
@@ -267,23 +264,5 @@ namespace RenderSpace {
             }
         }
         return false;
-    }
-
-    void RenderService::execute_param(int mesh_id, float& progress, ParamMethod mtd, int sample_num) {
-        auto mesh_name = m_meshes_map.at(mesh_id)->get_name();
-        auto _id_param = create_mesh(mesh_name + "/param", DrawableType::DRAWABLE_TRIANGLE);
-        auto _id_str = create_mesh(mesh_name + "/str", DrawableType::DRAWABLE_TRIANGLE);
-
-        start_thread(mesh_name + "/param_thread", [&, _id_param, _id_str]() {
-            Parameterization pmethod(
-                m_meshes_map.at(mesh_id),
-                m_meshes_map.at(_id_param),
-                m_meshes_map.at(_id_str)
-            );
-            if (!pmethod.parameterize(mtd, progress, sample_num)) {
-                delete_mesh(_id_param);
-                delete_mesh(_id_str);
-            }
-        });
     }
 }

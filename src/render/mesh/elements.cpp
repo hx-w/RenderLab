@@ -6,7 +6,7 @@
 #include "../libs/GLFW/glfw3.h"
 #include "../imgui_ext/logger.h"
 #include "../executor.h"
-#include "../service.h"
+// #include "../service.h"
 
 using namespace std;
 
@@ -255,29 +255,29 @@ namespace RenderSpace {
         }
     }
 
-    void MeshDrawable::remesh(RenderService* service) {
-        if (_remesh_check()) {
-            // std::thread([&]() {
-                _LOG("start to remesh", imgui_ext::LOG_INFO);
-                command(
-                    _REMESH_COMMAND_FORMAT + " --remesh --pivots %d %d %d %d",
-                    m_filename.c_str(), (m_filename + ".remesh.obj").c_str(),
-                    m_picked_vertices[0], m_picked_vertices[1], m_picked_vertices[2], m_picked_vertices[3]
-                );
-                _LOG("remesh finished", imgui_ext::LOG_INFO);
-                service->load_mesh("str_mesh", m_filename + ".remesh.obj");
-            // }).detach();
-        }
+    // void MeshDrawable::remesh(RenderService* service) {
+    //     if (_remesh_check()) {
+    //         // std::thread([&]() {
+    //             _LOG("start to remesh", imgui_ext::LOG_INFO);
+    //             command(
+    //                 _REMESH_COMMAND_FORMAT + " --remesh --pivots %d %d %d %d",
+    //                 m_filename.c_str(), (m_filename + ".remesh.obj").c_str(),
+    //                 m_picked_vertices[0], m_picked_vertices[1], m_picked_vertices[2], m_picked_vertices[3]
+    //             );
+    //             _LOG("remesh finished", imgui_ext::LOG_INFO);
+    //             service->load_mesh("str_mesh", m_filename + ".remesh.obj");
+    //         // }).detach();
+    //     }
 
-        // reset picked info
-        for (auto& vi: m_picked_vertices) {
-            m_vertices[vi].Color = glm::vec3(0.5, 0.5, 0.5);
-        }
-        if (m_picked_vertices.size() != 0) {
-            m_picked_vertices.clear();
-            ready_to_update();
-        }
-    }
+    //     // reset picked info
+    //     for (auto& vi: m_picked_vertices) {
+    //         m_vertices[vi].Color = glm::vec3(0.5, 0.5, 0.5);
+    //     }
+    //     if (m_picked_vertices.size() != 0) {
+    //         m_picked_vertices.clear();
+    //         ready_to_update();
+    //     }
+    // }
 
     bool MeshDrawable::_remesh_check() const {
         if (m_picked_vertices.size() != 4) {

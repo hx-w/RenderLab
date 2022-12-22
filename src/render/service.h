@@ -10,7 +10,6 @@
 #include "shader.hpp"
 #include "xwindow.h"
 #include "mesh/elements.h"
-#include "mesh/parameterization.h"
 #include "../libs/coords.h"
 #include "../infrastructure/communication/AutoBus.hpp"
 
@@ -50,9 +49,6 @@ namespace RenderSpace {
         int create_mesh(const std::string& name, DrawableType type);
         void delete_mesh(int mesh_id);
         void refresh(int mesh_id);
-
-        // parameterization
-        void execute_param(int mesh_id, float& progress, ParamMethod mtd, int sample_num);
 
     private:
         void setup();

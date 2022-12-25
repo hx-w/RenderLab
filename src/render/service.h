@@ -10,8 +10,7 @@
 #include "xwindow.h"
 #include "shader.h"
 #include "mesh/elements.h"
-#include "../libs/coords.h"
-#include "../infrastructure/communication/AutoBus.hpp"
+#include <communication/AutoBus.hpp>
 
 namespace RenderSpace {
     class RenderWindowWidget;
@@ -52,12 +51,6 @@ namespace RenderSpace {
 
     private:
         void setup();
-
-        // 添加图元
-        void add_vertex_raw(int mesh_id, std::array<Point, 3>&& coords);
-        void add_edge_raw(int mesh_id, std::array<Point, 6>&& coords);
-        void add_edge_raw(int mesh_id, std::array<glm::vec3, 6>&& coords);
-        void add_triangle_raw(int mesh_id, std::array<Point, 9>&& coords);
 
         int gen_id();
 

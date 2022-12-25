@@ -16,11 +16,10 @@ jobs:
           submodules: recursive
       - uses: ilammy/msvc-dev-cmd@v1
         with:
-          arch: x86
+          arch: amd64
       - name: Build
         shell: cmd
         run: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars32.bat"
           md build
           cd build
           cmake -DCMAKE_BUILD_TYPE=Release -G "NMake Makefiles" ..
@@ -28,7 +27,7 @@ jobs:
       - name: Archive production artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: RenderLab_win32.zip
+          name: RenderLab_win.zip
           path: |
             main.exe
             resource

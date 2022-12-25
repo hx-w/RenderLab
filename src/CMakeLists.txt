@@ -1,13 +1,28 @@
-add_subdirectory(libs)
 add_subdirectory(infrastructure)
 add_subdirectory(tooth)
 add_subdirectory(render)
-list(APPEND LIBS NURBS_LIB INFRASTRUCTURE TOOTH_ENGINE XRENDER)
 
-set_target_properties(${TARGET} PROPERTIES COMPILE_FLAGS "-pthread" LINK_FLAGS "-pthread")
+list(APPEND LIBS INFRASTRUCTURE XTOOTH XRENDER)
+
+list(APPEND DEPS glm imgui glad glfw)
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR})
 
-add_executable(${PROJECT_NAME} main.cpp train_and_test.hpp)
-target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBS}) 
-target_include_directories(${PROJECT_NAME} PUBLIC "${PROJECT_BINARY_DIR}")
+# install deps
+include(${PROJECT_SOURCE_DIR}/cmake/dependency.cmake)
+
+add_executable(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
+# pybind11_add_module(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
+
+GroupSourcesByFolder(${PROJECT_NAME})
+
+# link deps to libs
+target_link_libraries(XRENDER PRIVATE ${DEPS} INFRASTRUCTURE)
+target_link_libraries(XTOOTH PRIVATE glm INFRASTRUCTURE)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE ${DEPS} ${LIBS} pybind11::embed)
+include_directories(${imgui_SOURCE_DIR} ${imgui_SOURCE_DIR}/backends)
+
+# include
+target_include_directories(XTOOTH PRIVATE ${INFRASTRUCTURE_INCLUDE_DIRS})
+target_include_directories(XRENDER PRIVATE ${INFRASTRUCTURE_INCLUDE_DIRS})

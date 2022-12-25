@@ -35,6 +35,13 @@ CPMAddPackage(
   "GLFW_USE_HYBRID_HPG On"
 )
 
+# get pybind11 and build
+CPMAddPackage(
+  NAME pybind11
+  GITHUB_REPOSITORY pybind/pybind11
+  VERSION 2.10.2
+)
+
 # put all external targets into a seperate folder to not pollute the project folder
 set_target_properties(glad glad-generate-files glfw PROPERTIES FOLDER ExternalTargets)
 

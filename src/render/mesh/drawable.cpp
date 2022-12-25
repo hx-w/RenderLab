@@ -7,8 +7,9 @@
 #include "../glm_ext/curvature.hpp"
 #include "../glm_ext/ray.hpp"
 #include "../imgui_ext/logger.h"
-#include "../libs/GLFW/glfw3.h"
-#include "../libs/glad/glad.h"
+
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 
 using namespace std;
 
@@ -20,6 +21,7 @@ Drawable::Drawable() {
     std::lock_guard<std::mutex> lk(m_mutex);
     m_name = "Drawable_" + to_string(rand());
     m_type = DrawableType::DRAWABLE_POINT;
+    m_shade_mode = GL_LINE;
     _ready_to_draw = false;
     _ready_to_update = false;
 }

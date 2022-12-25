@@ -1,7 +1,7 @@
 #include "controller.h"
 #include "browser.h"
 #include "../service.h"
-#include "../libs/imgui/imgui.h"
+#include <imgui.h>
 #include <iostream>
 
 using namespace imgui_ext;

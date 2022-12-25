@@ -7,8 +7,8 @@
 #include <unordered_map>
 #include <functional>
 #include <stack>
-#include "shader.hpp"
 #include "xwindow.h"
+#include "shader.h"
 #include "mesh/elements.h"
 #include "../libs/coords.h"
 #include "../infrastructure/communication/AutoBus.hpp"

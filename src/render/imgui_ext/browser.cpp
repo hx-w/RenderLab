@@ -1,7 +1,7 @@
 #include "browser.h"
 
 #include <limits>
-#include "../libs/imgui/imgui.h"
+#include <imgui.h>
 
 using namespace imgui_ext;
 

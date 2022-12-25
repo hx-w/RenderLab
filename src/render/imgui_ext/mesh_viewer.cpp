@@ -1,17 +1,15 @@
 #include "mesh_viewer.h"
 #include "logger.h"
 #include "../service.h"
-#include "../libs/imgui/imgui.h"
 #include "../mesh/elements.h"
 #include <filesystem>
 #include <cstring>
 #include <iostream>
+#include <imgui.h>
 
 using namespace imgui_ext;
 using namespace RenderSpace;
 using namespace std;
-
-#define VERTICES_MAX int(1e6)
 
 static unordered_map<int, bool> _mesh_visibility;
 static unordered_map<int, bool> _mesh_alive;

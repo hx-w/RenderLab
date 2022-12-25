@@ -6,7 +6,7 @@
 
 #include <vector>
 #include "triangle.hpp"
-#include "../libs/glm/gtx/vector_angle.hpp"
+#include <glm/gtx/vector_angle.hpp>
 
 namespace glm_ext {
 

@@ -5,9 +5,9 @@
  */
 
 #include <cmath>
-#include "../libs/glm/glm.hpp"
-#include "../libs/glm/gtc/matrix_transform.hpp"
-#include "../libs/glm/gtc/type_ptr.hpp"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace glm_ext {
 static inline float vec_angle(const glm::vec3& v1, const glm::vec3& v2) {

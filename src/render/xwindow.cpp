@@ -1,5 +1,4 @@
-﻿#include "libs/glad/glad.h"
-#include "xwindow.h"
+﻿#include "xwindow.h"
 #include "service.h"
 #include <iostream>
 
@@ -86,7 +85,6 @@ namespace RenderSpace {
     void RenderWindowWidget::framebuffer_size_callback(GLFWwindow* window, int width, int height) {
         // make sure the viewport matches the new window dimensions; note that width and 
         // height will be significantly larger than specified on retina displays.
-        glViewport(0, 0, width, height);
         m_scr_width = width;
         m_scr_height = height;
         m_service->notify_window_resize(m_scr_width, m_scr_height);

@@ -5,10 +5,10 @@
 #include <string>
 #include <atomic>
 #include <algorithm>
-#include "../shader.hpp"
-#include "../libs/glm/glm.hpp"
-#include "../libs/glm/gtc/matrix_transform.hpp"
-#include "../libs/glm/gtc/type_ptr.hpp"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include "../shader.h"
 
 namespace RenderSpace {
     typedef std::pair<glm::vec3, glm::vec3> AABB; // min, max
@@ -105,8 +105,8 @@ namespace RenderSpace {
 
         void set_shader(Shader& shader);
 
-        void set_shade_mode(GLenum mode);
-        inline GLenum get_shade_mode() { return m_shade_mode; }
+        void set_shade_mode(uint32_t mode);
+        inline uint32_t get_shade_mode() { return m_shade_mode; }
         void set_color_mode(ColorMode mode);
         inline ColorMode get_color_mode() { return m_color_mode; }
         void set_offset(glm::vec3 offset);
@@ -154,9 +154,9 @@ namespace RenderSpace {
 
     protected:
         Shader m_shader;
-        GLuint m_vao = 0;
-        GLuint m_vbo = 0;
-        GLuint m_ebo = 0;
+        uint32_t m_vao = 0;
+        uint32_t m_vbo = 0;
+        uint32_t m_ebo = 0;
 
         std::vector<Triangle> m_triangles;
         std::vector<Edge> m_edges;
@@ -175,7 +175,7 @@ namespace RenderSpace {
 
         std::vector<float> m_curvs; // 曲率(归一化后)
         // properties
-        GLenum m_shade_mode = GL_LINE;
+        uint32_t m_shade_mode;
         ColorMode m_color_mode = CM_Original;
         glm::vec3 m_offset = glm::vec3(0.0f);
 

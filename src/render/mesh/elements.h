@@ -15,7 +15,6 @@ namespace RenderSpace {
         MeshDrawable(const MeshDrawable&) = default;
         MeshDrawable& operator=(const MeshDrawable&) = default;
 
-        bool load_STL(const std::string& filename);
         bool load_OBJ(const std::string& filename, bool validate=true);
         bool save_OBJ(const std::string& filename);
 
@@ -30,8 +29,6 @@ namespace RenderSpace {
 
     private:
         void _deepcopy(const MeshDrawable&);
-        bool _read_STL_ASCII(const std::string& filename);
-        bool _read_STL_Binary(const std::string& filename);
         void _split_words(const std::string& line, std::vector<std::string>& words, const char delim=' ');
 
         bool _remesh_check() const;

@@ -2,10 +2,10 @@
 #define RENDER_WINDOW_H
 
 #include <memory>
-#include "./libs/glm/glm.hpp"
-#include "./libs/glm/gtc/matrix_transform.hpp"
-#include "./libs/glm/gtc/type_ptr.hpp"
-#include "./libs/GLFW/glfw3.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <GLFW/glfw3.h>
 
 namespace RenderSpace {
     typedef std::pair<glm::vec3, glm::vec3> AABB; // min, max

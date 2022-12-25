@@ -8,9 +8,9 @@
 
 
 #include <cmath>
-#include "../libs/glm/glm.hpp"
-#include "../libs/glm/gtc/matrix_transform.hpp"
-#include "../libs/glm/gtc/type_ptr.hpp"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace glm_ext {
 float distance_point_to_ray(const glm::vec3& p, const glm::vec3& ray_origin, const glm::vec3& ray_dir) {

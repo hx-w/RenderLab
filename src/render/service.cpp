@@ -4,9 +4,9 @@
 #include <thread>
 
 #include "xwindow.h"
-#include "libs/imgui/imgui.h"
-#include "libs/imgui/imgui_impl_glfw.h"
-#include "libs/imgui/imgui_impl_opengl3.h"
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
 #include "imgui_ext/logger.h"
 #include "imgui_ext/mesh_viewer.h"
 #include "imgui_ext/controller.h"

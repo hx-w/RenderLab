@@ -1,12 +1,4 @@
 # 添加目标链接
-if (APPLE)
-    set(GLFW_LINK ${CMAKE_CURRENT_SOURCE_DIR}/libs/GLFW/libglfw.3.dylib)
-endif()
-if (WIN32)
-    set(GLFW_LINK ${CMAKE_CURRENT_SOURCE_DIR}/libs/GLFW/glfw3_x86.lib)
-endif()
-link_libraries(${GLFW_LINK})
-
 file(GLOB_RECURSE CPPSRCS ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 file(GLOB_RECURSE CSRCS ${CMAKE_CURRENT_SOURCE_DIR}/*.c)
 file(GLOB_RECURSE HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.h)

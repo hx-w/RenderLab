@@ -10,8 +10,7 @@ using namespace std;
 int main() {
     try {
         py::scoped_interpreter guard{};
-        auto trimesh = py::module_::import("numpy");
-        py::print(trimesh.attr("__file__"));
+        py::print("Python interpreter is initialized!");
     }
     catch (const std::exception& e) {
         std::cout << e.what() << std::endl;

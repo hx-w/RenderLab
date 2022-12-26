@@ -12,8 +12,11 @@
 
 #include "xwindow.h"
 
+#include <types.h>
+
 using namespace std;
 using namespace fundamental;
+using namespace geometry;
 static auto logger = imgui_ext::Logger::get_instance();
 
 namespace RenderSpace {
@@ -93,6 +96,17 @@ namespace RenderSpace {
         //     [this](int mesh_id) {
         //         this->delete_mesh(mesh_id);
         //     });
+    }
+
+    void RenderService::register_methods() {
+        /// @brief add points
+        m_autobus->registerMethod<bool(int, const vector<Point3f>&)>(
+            m_symbol + "/add_points",
+            [this](int mesh_id, const vector<Point3f>& points)->bool {
+                return true;
+                // return this->add_points(mesh_id, points);
+            }
+        );
     }
 
     void RenderService::update_win(shared_ptr<RenderWindowWidget> win) {

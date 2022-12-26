@@ -25,6 +25,8 @@ namespace RenderSpace {
         RenderService();
         ~RenderService();
 
+        void register_methods();
+
         void update_win(std::shared_ptr<RenderWindowWidget> win);
         std::shared_ptr<RenderWindowWidget> get_win() { return m_win_widget; }
 

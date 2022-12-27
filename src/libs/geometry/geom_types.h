@@ -15,9 +15,11 @@ namespace geometry {
 
     using Vector3d = glm::dvec3;
     using Vector3f = glm::vec3;
+    using Vector3u = glm::uvec3;
 
-    using Coord3d = glm::dvec3;
-    using Coord3f = glm::vec3;
+    using Vector2d = glm::dvec2;
+    using Vector2f = glm::vec2;
+    using Vector2u = glm::uvec2;
 
     class Line;
     class Ray;

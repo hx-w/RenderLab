@@ -6,7 +6,7 @@
 #include <vector>
 #include <string>
 
-#include "types.h"
+#include "geom_types.h"
 
 namespace geometry {
     class Mesh {
@@ -19,14 +19,14 @@ namespace geometry {
         static Mesh load_obj(const std::string& filename, bool& status);   
 
         std::vector<Point3f> get_vertices() const { return m_vertices; }
-        std::vector<glm::uvec3> get_faces() const { return m_faces; }
+        std::vector<Vector3u> get_faces() const { return m_faces; }
         std::vector<Point3f>& vertices() { return m_vertices; }
-        std::vector<glm::uvec3>& faces() { return m_faces; }
+        std::vector<Vector3u>& faces() { return m_faces; }
 
         uint32_t hash() const;
 
     private:    
         std::vector<Point3f> m_vertices;
-        std::vector<glm::uvec3> m_faces;
+        std::vector<Vector3u> m_faces;
     };
 }

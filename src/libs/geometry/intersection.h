@@ -4,7 +4,7 @@
 
 #include <vector>
 #include <glm/glm.hpp>
-#include "types.h"
+#include "geom_types.h"
 
 
 namespace geometry {

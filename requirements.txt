@@ -1,6 +1,0 @@
-sklearn
-pandas
-fastapi[all]
-trimesh
-numpy
-numpy_indexed

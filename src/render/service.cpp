@@ -17,7 +17,7 @@
 using namespace std;
 using namespace fundamental;
 using namespace geometry;
-static auto logger = imgui_ext::Logger::get_instance();
+using namespace imgui_ext;
 
 namespace RenderSpace {
     RenderService::RenderService():
@@ -151,7 +151,7 @@ namespace RenderSpace {
         if (m_meshes_map.find(mesh_id) == m_meshes_map.end()) {
             return;
         }
-        logger->log("refresh mesh: " + m_meshes_map[mesh_id]->get_name() + "(" + to_string(mesh_id) + ")");
+        Logger::log("refresh mesh: " + m_meshes_map[mesh_id]->get_name() + "(" + to_string(mesh_id) + ")");
         m_meshes_map[mesh_id]->ready_to_update();
     }
 
@@ -168,7 +168,7 @@ namespace RenderSpace {
         auto new_mesh = make_shared<MeshDrawable>(name + "-" + to_string(_id), type);
         new_mesh->set_shader(m_shaders[0]);
         m_meshes_map[_id] = new_mesh;
-        logger->log("create mesh: " + name + "(" + to_string(_id) + ")");
+        Logger::log("create mesh: " + name + "(" + to_string(_id) + ")");
         return _id;
     }
 
@@ -197,14 +197,14 @@ namespace RenderSpace {
 
         imgui_ext::Controller::render(this);
         imgui_ext::MeshViewer::render(this, m_meshes_map);
-		logger->render();
+        imgui_ext::Logger::render();
 
         // Rendering
         ImGui::Render();
     }
 
     void RenderService::viewfit_mesh(const shared_ptr<Drawable> mesh) {
-        logger->log("fit view to mesh: " + mesh->get_name());
+        Logger::log("fit view to mesh: " + mesh->get_name());
         mesh->compute_BBOX();
         m_win_widget->viewfit_BBOX(mesh->get_BBOX());
     }

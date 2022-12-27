@@ -18,8 +18,6 @@ static unordered_map<int, string> _mesh_savepath;
 static unordered_map<int, float> _mesh_progress;
 static unordered_map<int, int> _mesh_sample_num;
 
-static auto logger = imgui_ext::Logger::get_instance();
-
 static void HelpMarker(const char* desc) {
     ImGui::TextDisabled("(?)");
     if (ImGui::IsItemHovered()) {
@@ -104,7 +102,7 @@ void MeshViewer::render_mesh(RenderService* service, shared_ptr<RenderSpace::Mes
             default: break;
         }
         mesh->set_shade_mode(shade_mode);
-        logger->log("polygon mode changed: " + mesh->get_name() + " => " + shade_str[shade_current]);
+        Logger::log("polygon mode changed: " + mesh->get_name() + " => " + shade_str[shade_current]);
     }
     ImGui::SameLine(); HelpMarker("Different shading modes without changing topology.");
 
@@ -113,7 +111,7 @@ void MeshViewer::render_mesh(RenderService* service, shared_ptr<RenderSpace::Mes
     auto clr_mode = static_cast<int>(mesh->get_color_mode());
     if (ImGui::Combo(IMGUI_NAME("color mode", mesh_name).c_str(), &clr_mode, colortypes, IM_ARRAYSIZE(colortypes))) {
         mesh->set_color_mode(static_cast<ColorMode>(clr_mode));
-        logger->log("color mode changed: " + mesh->get_name() + " => " + colortypes[clr_mode]);
+        Logger::log("color mode changed: " + mesh->get_name() + " => " + colortypes[clr_mode]);
     }
     ImGui::SameLine(); HelpMarker("Colormap depends on the curvature of the mesh, and it will be computed in realtime by now.");
     ColorMode clrmd = static_cast<ColorMode>(clr_mode);
@@ -162,11 +160,11 @@ void MeshViewer::render_mesh(RenderService* service, shared_ptr<RenderSpace::Mes
         string path = string(savepath);
         if (path.size() > 0 && path.substr(path.size() - 4, 4) == ".obj") {
             if (mesh->save_OBJ(path)) {
-                logger->log("file save to `" + path + "`");
+                Logger::log("file save to `" + path + "`");
             }
         }
         else {
-            logger->log("only OBJ format supported", LOG_ERROR);
+            Logger::log("only OBJ format supported", LOG_ERROR);
         }
     }
     ImGui::PopStyleColor(3);

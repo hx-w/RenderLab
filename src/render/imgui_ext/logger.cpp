@@ -31,42 +31,25 @@ bool LogMessage::operator < (const LogMessage& other) const {
     return timestamp < other.timestamp;
 }
 
-Logger* Logger::m_instance = nullptr;
-std::once_flag Logger::m_inited;
-
-Logger* Logger::get_instance() {
-    std::call_once(m_inited, []() {
-        m_instance = new Logger();
-    });
-    return m_instance;
-}
-
-void Logger::destroy() {
-    if (m_instance) {
-        delete m_instance;
-        m_instance = nullptr;
-    }
-}
-
 void Logger::log(const string& raw_msg, const LOG_LEVEL lvl) {
-    if (lvl < m_level) return;
-    m_messages.emplace_back(LogMessage(raw_msg, lvl));
-    if (m_messages.size() > m_maxsize) {
-        m_messages.erase(m_messages.begin());
+    if (lvl < st_logger_level) return;
+    st_logger_messages.emplace_back(LogMessage(raw_msg, lvl));
+    if (st_logger_messages.size() > st_logger_maxsize) {
+        st_logger_messages.erase(st_logger_messages.begin());
     }
 }
 
 void Logger::flush() {
-    m_messages.clear();
+    st_logger_messages.clear();
 }
 
 void Logger::set_level(LOG_LEVEL lvl) {
-    m_level = lvl;
+    st_logger_level = lvl;
 }
 
 void Logger::render() {
     ImGui::Begin("Logger");
-    for (auto& msg : m_messages) {
+    for (auto& msg : st_logger_messages) {
         ImVec4 clr = ImVec4(0.7, 0.7, 0.7, 1.);
         switch (msg.level) {
         case LOG_ERROR:

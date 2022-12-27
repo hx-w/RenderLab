@@ -10,8 +10,8 @@
 #include "../executor.h"
 
 using namespace std;
+using namespace imgui_ext;
 
-#define _LOG(str, tag) imgui_ext::Logger::get_instance()->log(str, tag);
 #define _REMESH_COMMAND_FORMAT string("python3 scripts/remesh/run.py --input %s --output %s")
 
 namespace RenderSpace {
@@ -24,7 +24,7 @@ namespace RenderSpace {
         _ready_to_update = false;
         ifstream ifs(filename);
         if (!ifs.good()) {
-            _LOG("Failed to open file: " + filename, imgui_ext::LOG_ERROR);
+            Logger::log("Failed to open file: " + filename, imgui_ext::LOG_ERROR);
             return false;
         }
         m_filename = filename;
@@ -80,7 +80,7 @@ namespace RenderSpace {
     bool MeshDrawable::save_OBJ(const string& filename) {
         ofstream ofs(filename);
         if (!ofs.good()) {
-            _LOG("Failed to open file: " + filename, imgui_ext::LOG_ERROR);
+            Logger::log("Failed to open file: " + filename, imgui_ext::LOG_ERROR);
             return false;
         }
         for (int i = 0; i < m_vertices.size(); ++i) {
@@ -132,13 +132,13 @@ namespace RenderSpace {
     // void MeshDrawable::remesh(RenderService* service) {
     //     if (_remesh_check()) {
     //         // std::thread([&]() {
-    //             _LOG("start to remesh", imgui_ext::LOG_INFO);
+    //             Logger::log("start to remesh", imgui_ext::LOG_INFO);
     //             command(
     //                 _REMESH_COMMAND_FORMAT + " --remesh --pivots %d %d %d %d",
     //                 m_filename.c_str(), (m_filename + ".remesh.obj").c_str(),
     //                 m_picked_vertices[0], m_picked_vertices[1], m_picked_vertices[2], m_picked_vertices[3]
     //             );
-    //             _LOG("remesh finished", imgui_ext::LOG_INFO);
+    //             Logger::log("remesh finished", imgui_ext::LOG_INFO);
     //             service->load_mesh("str_mesh", m_filename + ".remesh.obj");
     //         // }).detach();
     //     }
@@ -155,7 +155,7 @@ namespace RenderSpace {
 
     bool MeshDrawable::_remesh_check() const {
         if (m_picked_vertices.size() != 4) {
-            _LOG("picked vertices size != 4", imgui_ext::LOG_ERROR);
+            Logger::log("picked vertices size != 4", imgui_ext::LOG_ERROR);
             return false;
         }
         return true;

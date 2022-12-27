@@ -3,6 +3,7 @@
 
 #include "service.h"
 #include "xwindow.h"
+#include "container.h"
 
 namespace RenderSpace {
     class RenderEngine;
@@ -28,6 +29,8 @@ namespace RenderSpace {
     private:
         RenderEngine& m_engine;
         std::shared_ptr<RenderService> m_service;
+
+        std::shared_ptr<RenderContainer> m_container;
     };
 }
 

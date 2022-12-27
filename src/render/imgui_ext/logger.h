@@ -32,30 +32,23 @@ namespace imgui_ext {
 
     class Logger {
     public:
-        static Logger* get_instance();
-        static void destroy();
         ~Logger() = default;
         Logger(const Logger&) = delete;
         Logger& operator=(const Logger&) = delete;
 
-        void log(const std::string& raw_msg, const LOG_LEVEL lvl = LOG_INFO);
-        void flush();
-        void resize(uint32_t maxsize);
-        void set_level(LOG_LEVEL lvl);
+        static void log(const std::string& raw_msg, const LOG_LEVEL lvl = LOG_INFO);
+        static void flush();
+        static void resize(uint32_t maxsize);
+        static void set_level(LOG_LEVEL lvl);
 
-        void render();
+        static void render();
 
     private:
         Logger() = default;
 
-    private:
-        uint32_t m_maxsize = 8;
-        LOG_LEVEL m_level = LOG_INFO;
-        std::vector<LogMessage> m_messages;
-    
-    private:
-        static Logger* m_instance;
-        static std::once_flag m_inited;
     };
 
+    static uint32_t st_logger_maxsize = 8;
+    static LOG_LEVEL st_logger_level = LOG_INFO;
+    static std::vector<LogMessage> st_logger_messages;
 }

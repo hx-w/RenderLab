@@ -17,6 +17,9 @@ jobs:
       - uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: amd64
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10.9'
       - name: Build
         shell: cmd
         run: |

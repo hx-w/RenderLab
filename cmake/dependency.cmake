@@ -79,3 +79,8 @@ target_link_libraries(imgui PUBLIC glfw)
 target_include_directories(imgui INTERFACE ${imgui_SOURCE_DIR} ${imgui_SOURCE_DIR}/backends)
 target_compile_definitions(imgui PUBLIC -DIMGUI_DISABLE_OBSOLETE_FUNCTIONS) # optional imgui setting
 set_target_properties(imgui PROPERTIES CXX_STANDARD 17) # use c++17
+
+# set pybind11 include path
+if (APPLE)
+  set(PYTHON_INCLUDE_DIRS "~/opt/anaconda3/include/python3.9")
+endif()

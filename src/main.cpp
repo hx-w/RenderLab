@@ -8,9 +8,13 @@ namespace py = pybind11;
 using namespace std;
 
 int main() {
-    py::scoped_interpreter guard{}; // start the interpreter and keep it alive
-
-    py::print("Hello, World!"); // use the Python API
+    try {
+        py::scoped_interpreter guard{};
+        py::print("Python interpreter is initialized!");
+    }
+    catch (const std::exception& e) {
+        std::cout << e.what() << std::endl;
+    }
 
     cout << "main thread ID: " << this_thread::get_id() << endl;
     auto renderer = RenderSpace::make_renderer(1200, 800);

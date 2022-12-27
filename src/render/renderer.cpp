@@ -18,6 +18,8 @@ namespace RenderSpace {
         m_service = std::make_shared<RenderService>();
         m_win_widget->init(_width, _height, m_service);
         m_service->update_win(m_win_widget);
+
+        m_container = std::make_shared<RenderContainer>();
     }
 
     void Renderer::setup(unsigned int w, unsigned int h) {
@@ -151,10 +153,14 @@ namespace RenderSpace {
         m_service->imGui_render();
         m_service->update();
         m_service->draw_all();
+
+        m_container->update_all();
+        m_container->draw_all();
     }
 
     void Renderer::update_transform() {
-        auto& shaders = m_service->get_shaders();
+        auto& shaders = m_container->shaders();
+        // auto& shaders = m_service->get_shaders();
         // --------------------
         auto currentFrame = static_cast<float>(glfwGetTime());
         m_win_widget->deltaTime = currentFrame - m_win_widget->lastFrame;
@@ -171,7 +177,7 @@ namespace RenderSpace {
             m_win_widget->cameraPos + m_win_widget->cameraFront,
             m_win_widget->cameraUp
         );
-        for (auto& shader : shaders) {
+        for (auto& [_, shader] : shaders) {
             shader.use();
 
             // pass projection matrix to shader (note that in this case it could change every frame)

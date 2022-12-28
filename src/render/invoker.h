@@ -41,16 +41,25 @@ namespace RenderSpace {
 
     class CommandQueue {
     public:
-        CommandQueue() = default;
         ~CommandQueue() = default;
+
+        static std::shared_ptr<CommandQueue> get_instance();
+        static void destroy();
 
         void push(Command&& cmd);
 
         void invoke();
 
     private:
+        CommandQueue() = default;
+
+    private:
         std::mutex m_mutex;
         fundamental::queue<Command> m_queue;
+
+    private:
+        static std::shared_ptr<CommandQueue> m_instance;
+        static std::once_flag m_inited;
     };
 }
 

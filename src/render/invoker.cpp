@@ -45,4 +45,21 @@ namespace RenderSpace {
         }
     }
 
+    std::shared_ptr<CommandQueue> CommandQueue::m_instance = nullptr;
+    std::once_flag CommandQueue::m_inited;
+
+    std::shared_ptr<CommandQueue> CommandQueue::get_instance() {
+        std::call_once(m_inited, []() {
+            m_instance = std::shared_ptr<CommandQueue>(new CommandQueue());
+            // m_instance = std::make_shared<CommandQueue>();  // <- cant use default private constructor
+        });
+        return m_instance;
+    }
+
+    void CommandQueue::destroy() {
+        if (m_instance) {
+            m_instance.reset();
+            m_instance = nullptr;
+        }
+    }
 }

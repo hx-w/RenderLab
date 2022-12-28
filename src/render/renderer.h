@@ -6,7 +6,6 @@
 
 namespace RenderSpace {
     class RenderEngine;
-    class CommandQueue;
     class RenderService;
     class RenderContainer;
     class RenderWindowWidget;
@@ -34,7 +33,6 @@ namespace RenderSpace {
         std::shared_ptr<RenderWindowWidget> m_win_widget;
         std::shared_ptr<RenderService> m_service;
         std::shared_ptr<RenderContainer> m_container;
-        std::shared_ptr<CommandQueue> m_queue;
     };
 }
 

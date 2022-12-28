@@ -30,8 +30,6 @@ namespace RenderSpace {
         void update_win(std::shared_ptr<RenderWindowWidget> win);
         std::shared_ptr<RenderWindowWidget> get_win() { return m_win_widget; }
 
-        std::vector<Shader>& get_shaders() { return m_shaders; }
-
         void draw_all();
 
         void update();
@@ -47,13 +45,10 @@ namespace RenderSpace {
         // return -1 if failed, *.obj supported
         int load_mesh(const std::string& name, const std::string& path);
 
-        int create_mesh(const std::string& name, DrawableType type);
         void delete_mesh(int mesh_id);
         void refresh(int mesh_id);
 
     private:
-        void setup();
-
         int gen_id();
 
         void start_thread(std::string tname, std::function<void()>&& func);
@@ -61,11 +56,6 @@ namespace RenderSpace {
     private:
         // 网格列表
         std::unordered_map<int, std::shared_ptr<MeshDrawable>> m_meshes_map;
-
-        // background mesh
-        std::shared_ptr<MeshDrawable> m_background_mesh;
-
-        std::vector<Shader> m_shaders; // [default, background]
 
         // 交互
         std::shared_ptr<RenderWindowWidget> m_win_widget;

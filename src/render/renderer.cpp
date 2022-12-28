@@ -25,7 +25,6 @@ namespace RenderSpace {
         m_service->update_win(m_win_widget);
 
         m_container = std::make_shared<RenderContainer>();
-        m_queue = std::make_shared<CommandQueue>();
     }
 
     void Renderer::setup(unsigned int w, unsigned int h) {
@@ -124,10 +123,12 @@ namespace RenderSpace {
     }
 
     int Renderer::exec() {
+        auto cmd_queue = CommandQueue::get_instance();
+
         while (!glfwWindowShouldClose(m_window)) {
             glfwPollEvents();
 
-            m_queue->invoke();            
+            cmd_queue->invoke();            
 
             const auto& clr = m_win_widget->bgColor;
             glClearColor(clr.x * clr.w, clr.y * clr.w, clr.z * clr.w, clr.w);

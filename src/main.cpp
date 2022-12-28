@@ -9,8 +9,8 @@ using namespace std;
 
 int main() {
     try {
-        py::scoped_interpreter guard{};
-        py::print("Python interpreter is initialized!");
+        // py::scoped_interpreter guard{};
+        // py::print("Python interpreter is initialized!");
     }
     catch (const std::exception& e) {
         std::cout << e.what() << std::endl;

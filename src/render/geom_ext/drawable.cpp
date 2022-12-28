@@ -90,6 +90,7 @@ namespace RenderSpace {
             m_vertices[i].Normal = glm::normalize(m_vertices[i].Normal);
         }
         m_faces = mesh.get_faces();
+        m_type = GeomType::GeomTypeMesh;
     }
 
     void NewMeshDrawable::_draw() {

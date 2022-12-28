@@ -12,7 +12,7 @@ namespace geometry {
     class Mesh {
     public:
         Mesh() = default;
-        Mesh(const std::vector<Point3f>& vertices, const std::vector<glm::uvec3>& faces)
+        Mesh(const std::vector<Point3f>& vertices, const std::vector<Vector3u>& faces)
             : m_vertices(vertices), m_faces(faces) {}
         Mesh(const Mesh& mesh): m_vertices(mesh.m_vertices), m_faces(mesh.m_faces) {}
 

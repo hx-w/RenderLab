@@ -1,9 +1,14 @@
 ﻿#include <glad/glad.h>
-#include "renderer.h"
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 #include "./mesh/elements.h"
+
+#include "renderer.h"
+#include "service.h"
+#include "xwindow.h"
+#include "container.h"
+#include "invoker.h"
 
 using namespace std;
 using namespace fundamental;
@@ -20,6 +25,7 @@ namespace RenderSpace {
         m_service->update_win(m_win_widget);
 
         m_container = std::make_shared<RenderContainer>();
+        m_queue = std::make_shared<CommandQueue>();
     }
 
     void Renderer::setup(unsigned int w, unsigned int h) {
@@ -120,8 +126,9 @@ namespace RenderSpace {
     int Renderer::exec() {
         while (!glfwWindowShouldClose(m_window)) {
             glfwPollEvents();
-            // clear
-            // glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
+
+            m_queue->invoke();            
+
             const auto& clr = m_win_widget->bgColor;
             glClearColor(clr.x * clr.w, clr.y * clr.w, clr.z * clr.w, clr.w);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 

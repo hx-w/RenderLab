@@ -11,6 +11,12 @@
 #include "../shader.h"
 
 namespace RenderSpace {
+    enum GeomType {
+        GeomTypePoint = 0x00,
+        GeomTypeArrow = 0x01,
+        GeomTypeMesh = 0x02,
+    };
+
     struct VertexPrimitive {
         VertexPrimitive() = default;
         VertexPrimitive(const geometry::Vector3f& pos, const geometry::Vector3f& clr, const geometry::Vector3f& nml) :
@@ -39,6 +45,7 @@ namespace RenderSpace {
 
         Shader& _shader() { return m_shader; }
 
+        GeomType _type() { return m_type; }
 
     protected:
         void _init_buffer();
@@ -54,6 +61,7 @@ namespace RenderSpace {
         geometry::Vector3f m_offset;
 
         Shader m_shader;
+        GeomType m_type;
  
     protected:
         std::atomic<bool> _ready_to_update = false;

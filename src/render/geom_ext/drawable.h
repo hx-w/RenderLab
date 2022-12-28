@@ -69,9 +69,9 @@ namespace RenderSpace {
         // copy from geometry::mesh
         NewMeshDrawable(geometry::Mesh&, geometry::Vector3f clr);
 
-        void _update();
+        void _update() override;
     
-        void _draw();
+        void _draw() override;
 
     private:
         std::vector<VertexPrimitive> m_vertices;

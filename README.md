@@ -1,6 +1,6 @@
 ## RenderLab
 
-[![CodeFactor](https://www.codefactor.io/repository/github/hx-w/renderlab/badge)](https://www.codefactor.io/repository/github/hx-w/renderlab)
+[![CodeFactor](https://www.codefactor.io/repository/github/hx-w/renderlab/badge?s=b4657c0436a3b87a49f53abbc5eb664fd9b0bb6d)](https://www.codefactor.io/repository/github/hx-w/renderlab)
 ![cmake-build](https://github.com/hx-w/RenderLab/workflows/cmake-build/badge.svg)
 
 

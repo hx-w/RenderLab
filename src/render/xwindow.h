@@ -11,6 +11,7 @@ namespace RenderSpace {
     typedef std::pair<glm::vec3, glm::vec3> AABB; // min, max
 
     class RenderService;
+    class RenderContext;
     class RenderWindowWidget {
     public:
         RenderWindowWidget() = default;
@@ -18,6 +19,7 @@ namespace RenderSpace {
         ~RenderWindowWidget();
         RenderWindowWidget(const RenderWindowWidget&) = delete;
 
+        void init_context(uint32_t width, uint32_t height, std::shared_ptr<RenderContext> ctx);
         void init(unsigned int width, unsigned int height, std::shared_ptr<RenderService> service);
 
     public:
@@ -76,6 +78,10 @@ namespace RenderSpace {
     
     private:
         void T_EventHandler();
+
+
+    private:
+        std::shared_ptr<RenderContext> m_context;
     };
 }
 

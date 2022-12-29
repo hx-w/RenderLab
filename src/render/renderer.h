@@ -15,8 +15,6 @@ namespace RenderSpace {
 
         int exec();
     
-        std::shared_ptr<RenderService> get_service();
-
     private:
         void setup(unsigned int w, unsigned int h);
         void update_transform();

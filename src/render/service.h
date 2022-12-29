@@ -14,6 +14,7 @@
 
 namespace RenderSpace {
     class RenderWindowWidget;
+    class RenderContext;
 #if defined(_WIN32)
     typedef std::unordered_map<std::string, std::thread::native_handle_type> ThreadMap;
 #else
@@ -24,6 +25,8 @@ namespace RenderSpace {
     public:
         RenderService();
         ~RenderService();
+
+        void init_context(std::shared_ptr<RenderContext>);
 
         void register_methods();
 
@@ -59,6 +62,9 @@ namespace RenderSpace {
 
         // 交互
         std::shared_ptr<RenderWindowWidget> m_win_widget;
+
+        // context
+        std::shared_ptr<RenderContext> m_context;
 
         std::string m_symbol = "render";
         std::unique_ptr<fundamental::AutoBus> m_autobus;

@@ -19,14 +19,21 @@ namespace RenderSpace {
     Renderer::Renderer(RenderEngine& engine, unsigned int _width, unsigned int _height):
         m_engine(engine) {
         // DO NOT CHANGE THE ORDER OF THE FOLLOWING LINES
-        m_context = make_shared<RenderContext>(
-            make_shared<RenderService>(),
-            make_shared<RenderContainer>(),
-            make_shared<RenderWindowWidget>()
-        );
+//        m_context = make_shared<RenderContext>(
+//            make_shared<RenderService>(),
+//            make_shared<RenderContainer>(),
+//            make_shared<RenderWindowWidget>()
+//        );
         setup(_width, _height);
-        m_context->window()->init(_width, _height, m_context->service());
-        m_context->service()->update_win(m_context->window());
+
+        m_context = make_shared<RenderContext>(
+                make_shared<RenderService>(),
+                make_shared<RenderContainer>(),
+                make_shared<RenderWindowWidget>()
+        );
+
+//        m_context->window()->init(_width, _height, m_context->service());
+//        m_context->service()->update_win(m_context->window());
 
         // m_win_widget = std::make_shared<RenderWindowWidget>();
         // setup(_width, _height);
@@ -207,9 +214,5 @@ namespace RenderSpace {
             shader.setVec3("lightPos", m_win_widget->lightPos);
             shader.setVec3("viewPos", m_win_widget->cameraPos);
         }
-    }
-
-    shared_ptr<RenderService> Renderer::get_service() {
-        return m_context->service();
     }
 }

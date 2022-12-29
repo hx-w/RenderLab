@@ -11,6 +11,7 @@
 #include "imgui_ext/controller.h"
 
 #include "xwindow.h"
+#include "context.h"
 
 using namespace std;
 using namespace fundamental;
@@ -28,6 +29,11 @@ namespace RenderSpace {
 #endif
             m_thread_map.erase(tname);
         }
+    }
+
+    void RenderService::init_context(std::shared_ptr <RenderContext> ctx) {
+        m_context = ctx;
+        update_win(m_context->window());
     }
 
     void RenderService::register_methods() {

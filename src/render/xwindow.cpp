@@ -1,5 +1,6 @@
 ﻿#include "xwindow.h"
 #include "service.h"
+#include "context.h"
 #include <iostream>
 
 using namespace std;
@@ -7,6 +8,11 @@ using namespace std;
 namespace RenderSpace {
     RenderWindowWidget::RenderWindowWidget(unsigned int width, unsigned int height, shared_ptr<RenderService> service) {
         init(width, height, service);
+    }
+
+    void RenderWindowWidget::init_context(uint32_t width, uint32_t height, std::shared_ptr <RenderContext> ctx) {
+        m_context = ctx;
+        init(width, height, m_context->service());
     }
 
     void RenderWindowWidget::init(unsigned int width, unsigned int height, shared_ptr<RenderService> service) {

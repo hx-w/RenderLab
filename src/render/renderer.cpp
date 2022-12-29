@@ -83,7 +83,7 @@ namespace RenderSpace {
         glfwMakeContextCurrent(m_window);
         glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
-        glfwSetWindowUserPointer(m_window, m_win_widget.get());
+        glfwSetWindowUserPointer(m_window, m_context->window().get());
 
         glfwSetCursorPosCallback(m_window, [](GLFWwindow* w, double xpos, double ypos) {
             if (!ImGui::GetIO().WantCaptureMouse)
@@ -147,7 +147,7 @@ namespace RenderSpace {
 
             cmd_queue->invoke();            
 
-            const auto& clr = m_win_widget->bgColor;
+            const auto& clr = m_context->window()->bgColor;
             glClearColor(clr.x * clr.w, clr.y * clr.w, clr.z * clr.w, clr.w);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 

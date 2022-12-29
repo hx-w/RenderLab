@@ -1,5 +1,6 @@
 # add dependencies via CPM
 include(${PROJECT_SOURCE_DIR}/cmake/CPM.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/OpenMP.cmake)
 
 # GLAD
 CPMAddPackage(

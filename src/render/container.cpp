@@ -2,7 +2,7 @@
 #include <functional>
 #include <iostream>
 #include <chrono>
-#include <omp.h>
+//#include <omp.h>
 
 #include <mesh.h>
 
@@ -48,7 +48,7 @@ namespace RenderSpace {
 
     void RenderContainer::draw_all() {
         lock_guard<mutex> lock(m_mutex);
-#pragma omp parallel for
+//#pragma omp parallel for
         for (auto& [id, drawable] : m_drawables) {
             drawable->draw();
         }

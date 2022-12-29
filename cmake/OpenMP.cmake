@@ -1,7 +1,8 @@
 FIND_PACKAGE(OpenMP REQUIRED)
 
 if (APPLE)
-    set(CMAKE_CXX_COMPILER /usr/bin/c++)
+#    set(CMAKE_CXX_COMPILER /usr/bin/c++)
+    set(CMAKE_CXX_COMPILER /Library/Developer/CommandLineTools/usr/bin/c++)
     set(OPENMP_LIBRARIES "/opt/homebrew/opt/libomp/lib")
     set(OPENMP_INCLUDES "/opt/homebrew/opt/libomp/include")
     set(OpenMP_CXX "${CMAKE_CXX_COMPILER}")

@@ -5,10 +5,12 @@
 #include "./mesh/elements.h"
 
 #include "renderer.h"
-#include "service.h"
-#include "xwindow.h"
-#include "container.h"
 #include "invoker.h"
+
+#include "context.h"
+#include "service.h"
+#include "container.h"
+#include "xwindow.h"
 
 using namespace std;
 using namespace fundamental;
@@ -17,14 +19,23 @@ namespace RenderSpace {
     Renderer::Renderer(RenderEngine& engine, unsigned int _width, unsigned int _height):
         m_engine(engine) {
         // DO NOT CHANGE THE ORDER OF THE FOLLOWING LINES
-        m_win_widget = std::make_shared<RenderWindowWidget>();
+        m_context = make_shared<RenderContext>(
+            make_shared<RenderService>(),
+            make_shared<RenderContainer>(),
+            make_shared<RenderWindowWidget>()
+        );
         setup(_width, _height);
-        // service 中维护了 shader，需要在renderer setup之后初始化
-        m_service = std::make_shared<RenderService>();
-        m_win_widget->init(_width, _height, m_service);
-        m_service->update_win(m_win_widget);
+        m_context->window()->init(_width, _height, m_context->service());
+        m_context->service()->update_win(m_context->window());
 
-        m_container = std::make_shared<RenderContainer>();
+        // m_win_widget = std::make_shared<RenderWindowWidget>();
+        // setup(_width, _height);
+        // // service 中维护了 shader，需要在renderer setup之后初始化
+        // m_service = std::make_shared<RenderService>();
+        // m_win_widget->init(_width, _height, m_service);
+        // m_service->update_win(m_win_widget);
+
+        // m_container = std::make_shared<RenderContainer>();
     }
 
     void Renderer::setup(unsigned int w, unsigned int h) {
@@ -118,8 +129,7 @@ namespace RenderSpace {
 
     Renderer::~Renderer() {
         glfwTerminate();
-        m_win_widget.reset();
-        m_service.reset();
+        m_context.reset();
     }
 
     int Renderer::exec() {
@@ -136,7 +146,7 @@ namespace RenderSpace {
 
             // input
             if (!ImGui::GetIO().WantCaptureKeyboard) {
-                m_win_widget->processInput(m_window);
+                m_context->window()->processInput(m_window);
             }
 
             update_transform();
@@ -158,18 +168,17 @@ namespace RenderSpace {
     }
 
     void Renderer::draw() {
-        m_service->imGui_render();
-        m_service->update();
-        m_service->draw_all();
+        m_context->service()->imGui_render();
 
-        m_container->update_all();
-        m_container->draw_all();
+        m_context->container()->update_all();
+        m_context->container()->draw_all();
     }
 
     void Renderer::update_transform() {
-        auto& shaders = m_container->shaders();
+        auto& shaders = m_context->container()->shaders();
         // auto& shaders = m_service->get_shaders();
         // --------------------
+        auto m_win_widget = m_context->window();
         auto currentFrame = static_cast<float>(glfwGetTime());
         m_win_widget->deltaTime = currentFrame - m_win_widget->lastFrame;
         m_win_widget->lastFrame = currentFrame;
@@ -201,6 +210,6 @@ namespace RenderSpace {
     }
 
     shared_ptr<RenderService> Renderer::get_service() {
-        return m_service;
+        return m_context->service();
     }
 }

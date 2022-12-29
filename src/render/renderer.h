@@ -6,9 +6,7 @@
 
 namespace RenderSpace {
     class RenderEngine;
-    class RenderService;
-    class RenderContainer;
-    class RenderWindowWidget;
+    class RenderContext;
 
     class Renderer {
     public:
@@ -30,9 +28,7 @@ namespace RenderSpace {
     private:
         RenderEngine& m_engine;
 
-        std::shared_ptr<RenderWindowWidget> m_win_widget;
-        std::shared_ptr<RenderService> m_service;
-        std::shared_ptr<RenderContainer> m_container;
+        std::shared_ptr<RenderContext> m_context;
     };
 }
 

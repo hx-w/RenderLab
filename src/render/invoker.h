@@ -61,6 +61,14 @@ namespace RenderSpace {
         static std::shared_ptr<CommandQueue> m_instance;
         static std::once_flag m_inited;
     };
+
+
+    // static class method [Executor]
+    class Executor {
+    public:
+        Executor() = delete;
+        ~Executor() = delete;
+    };
 }
 
 

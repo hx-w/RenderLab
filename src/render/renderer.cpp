@@ -12,6 +12,11 @@
 #include "container.h"
 #include "xwindow.h"
 
+#include "imgui_ext/logger.h"
+// #include "imgui_ext/mesh_viewer.h"
+#include "imgui_ext/controller.h"
+#include "imgui_ext/browser.h"
+
 using namespace std;
 using namespace fundamental;
 
@@ -164,7 +169,24 @@ namespace RenderSpace {
     }
 
     void Renderer::draw() {
-        m_context->service()->imGui_render();
+        {
+            // Start the Dear ImGui frame
+            ImGui_ImplOpenGL3_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
+
+            if (!m_context->window()->show_gui) {
+                ImGui::Render();
+                return;
+            }
+
+            imgui_ext::Controller::render(m_context.get());
+            // imgui_ext::MeshViewer::render(this, m_meshes_map);
+            imgui_ext::Logger::render();
+
+            // Rendering
+            ImGui::Render();
+        }
 
         m_context->container()->update_all();
         m_context->container()->draw_all();

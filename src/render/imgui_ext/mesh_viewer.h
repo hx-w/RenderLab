@@ -5,7 +5,7 @@
 
 namespace RenderSpace {
     class MeshDrawable;
-    class RenderService;
+    class RenderContext;
 };
 
 namespace imgui_ext {
@@ -20,13 +20,13 @@ namespace imgui_ext {
         ~MeshViewer() = default;
 
         static void render(
-            RenderSpace::RenderService* service,
+            RenderSpace::RenderContext* ctx,
             MeshMapType& meshes
         );
     
     private:
         static void render_mesh(
-            RenderSpace::RenderService* service,
+            RenderSpace::RenderContext* ctx,
             std::shared_ptr<RenderSpace::MeshDrawable> mesh,
             int mesh_id
         );

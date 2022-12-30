@@ -37,8 +37,6 @@ namespace RenderSpace {
 
         void update();
 
-        void imGui_render();
-
         void viewfit_mesh(const std::shared_ptr<Drawable> mesh);
 
         void ray_pick(const glm::vec3& origin, const glm::vec3& direction);

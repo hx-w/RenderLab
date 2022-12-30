@@ -1,7 +1,7 @@
 #pragma once
 
 namespace RenderSpace {
-    class RenderService;
+    class RenderContext;
 };
 
 namespace imgui_ext {
@@ -10,6 +10,6 @@ namespace imgui_ext {
         Controller() = default;
         ~Controller() = default;
 
-        static void render(RenderSpace::RenderService*);
+        static void render(RenderSpace::RenderContext*);
     };
 }

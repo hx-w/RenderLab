@@ -90,30 +90,12 @@ namespace RenderSpace {
         std::lock_guard<std::mutex> lock(m_mutex);
         m_wait_deleted.push(mesh_id);
     }
+
     void RenderService::start_thread(string tname, function<void()>&& func) {
         std::thread thrd = std::thread(func);
         m_thread_map[tname] = thrd.native_handle();
         thrd.detach();
         std::cout << "[INFO] thread " << tname << " created" << std::endl;
-    }
-
-    void RenderService::imGui_render() {
-        // Start the Dear ImGui frame
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-
-        if (!m_win_widget->show_gui) {
-            ImGui::Render();
-            return;
-        }
-
-        imgui_ext::Controller::render(this);
-        imgui_ext::MeshViewer::render(this, m_meshes_map);
-        imgui_ext::Logger::render();
-
-        // Rendering
-        ImGui::Render();
     }
 
     void RenderService::viewfit_mesh(const shared_ptr<Drawable> mesh) {

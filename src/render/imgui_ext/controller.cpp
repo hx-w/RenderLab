@@ -1,6 +1,8 @@
 #include "controller.h"
 #include "browser.h"
-#include "../service.h"
+// #include "../service.h"
+#include "../context.h"
+#include "../xwindow.h"
 #include <imgui.h>
 #include <iostream>
 
@@ -8,8 +10,8 @@ using namespace imgui_ext;
 using namespace RenderSpace;
 using namespace std;
 
-void Controller::render(RenderService* service) {
-    auto win = service->get_win();
+void Controller::render(RenderContext* ctx) {
+    auto win = ctx->window();
     static bool show_import_modal = false;
     static imgui_ext::file_browser_modal fileBrowser("Import");
     std::string path;
@@ -42,7 +44,7 @@ void Controller::render(RenderService* service) {
                 if (iter != string::npos) {
                     name = name.substr(iter + 1);
                 }
-                service->load_mesh(name, path);
+                // service->load_mesh(name, path);
             }
         }
     }

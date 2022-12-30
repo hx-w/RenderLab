@@ -1,5 +1,6 @@
 #include "mesh_viewer.h"
 #include "logger.h"
+#include "../context.h"
 #include "../service.h"
 #include "../mesh/elements.h"
 #include <filesystem>
@@ -35,7 +36,7 @@ static inline const string IMGUI_NAME(const char* name, const string& meshname) 
     return string(buff);
 }
 
-void MeshViewer::render(RenderService* service, MeshMapType& meshes) {
+void MeshViewer::render(RenderContext* ctx, MeshMapType& meshes) {
     ImGui::Begin("MeshViewer");
     ImGui::Text("All meshes created:");
 
@@ -64,17 +65,18 @@ void MeshViewer::render(RenderService* service, MeshMapType& meshes) {
         }
         ImGui::SameLine();
         // mesh widget
-        render_mesh(service, _mesh, _id);
+        render_mesh(ctx, _mesh, _id);
     }
 
     ImGui::End();
     // ImGui::ShowDemoWindow();
 }
 
-void MeshViewer::render_mesh(RenderService* service, shared_ptr<RenderSpace::MeshDrawable> mesh, int mesh_id) {
+void MeshViewer::render_mesh(RenderContext* ctx, shared_ptr<RenderSpace::MeshDrawable> mesh, int mesh_id) {
     bool opened = ImGui::CollapsingHeader(mesh->get_name().c_str(), &_mesh_alive[mesh_id]);
     if (!_mesh_alive[mesh_id]) {
-        service->delete_mesh(mesh_id);
+        ctx->service()->delete_mesh(mesh_id);
+        // service->delete_mesh(mesh_id);
         _mesh_alive.erase(mesh_id);
         _mesh_visibility.erase(mesh_id);
         return;
@@ -94,7 +96,7 @@ void MeshViewer::render_mesh(RenderService* service, shared_ptr<RenderSpace::Mes
         default: break;
     }
     if (ImGui::SliderInt(IMGUI_NAME("polygon mode", mesh_name).c_str(), &shade_current, 0, 2, shade_str[shade_current])) {
-        GLenum shade_mode = GL_POINT;
+        uint32_t shade_mode = GL_POINT;
         switch (shade_current) {
             case 0: shade_mode = GL_POINT; break;
             case 1: shade_mode = GL_LINE; break;
@@ -143,7 +145,7 @@ void MeshViewer::render_mesh(RenderService* service, shared_ptr<RenderSpace::Mes
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0.25f, 0.7f, 0.7f));
     ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0.25f, 0.8f, 0.8f));
     if (ImGui::Button(IMGUI_NAME("view fit", mesh_name).c_str())) {
-        service->viewfit_mesh(mesh);
+        ctx->service()->viewfit_mesh(mesh);
     }
     ImGui::PopStyleColor(3);
     ImGui::PopID();

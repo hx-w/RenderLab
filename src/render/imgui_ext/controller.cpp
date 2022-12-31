@@ -1,10 +1,9 @@
+#include <iostream>
+#include <imgui.h>
 #include "controller.h"
 #include "browser.h"
-// #include "../service.h"
 #include "../context.h"
 #include "../xwindow.h"
-#include <imgui.h>
-#include <iostream>
 
 using namespace imgui_ext;
 using namespace RenderSpace;
@@ -44,7 +43,7 @@ void Controller::render(RenderContext* ctx) {
                 if (iter != string::npos) {
                     name = name.substr(iter + 1);
                 }
-                // service->load_mesh(name, path);
+                ctx->ctx_load_drawable(path);
             }
         }
     }

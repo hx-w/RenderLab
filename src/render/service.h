@@ -38,9 +38,6 @@ namespace RenderSpace {
         void notify_clear_picking(); // refresh all picking ray
         void notify_window_resize(uint32_t width, uint32_t height);
 
-        // return -1 if failed, *.obj supported
-        int load_mesh(const std::string& name, const std::string& path);
-
     private:
         void start_thread(std::string tname, std::function<void()>&& func);
 

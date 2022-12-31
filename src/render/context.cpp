@@ -35,20 +35,20 @@ namespace RenderSpace {
         bool status = false;
         auto geom_mesh = Mesh::load_obj(filename, status);
         if (!status) {
-            Logger::log("Error: cannot load mesh from file " + filename, LOG_ERROR);
+            Logger::log("Cannot load mesh from file " + filename, LOG_ERROR);
             return -1;
         }
-        auto drawable_mesh = make_shared<NewMeshDrawable>(geom_mesh, Vector3f(0.2));
-        auto drawable_id = m_container->add_drawable(drawable_mesh);
-        Logger::log("Load mesh from file " + filename + " success", LOG_INFO);
-        return drawable_id;
+        return ctx_add_drawable(make_shared<Mesh>(geom_mesh));
     }
 
     DrawableID RenderContext::ctx_add_drawable(shared_ptr<GeometryBase> geom) {
         // if is mesh
         auto geom_mesh = dynamic_pointer_cast<Mesh>(geom);
-        auto drawable_mesh = make_shared<NewMeshDrawable>(*geom_mesh, Vector3f(0.2));
+        auto drawable_mesh = make_shared<NewMeshDrawable>(*geom_mesh, Vector3f(0.8));
+        drawable_mesh->_shader() = m_container->shaders()["default"];
+        drawable_mesh->get_ready();
         auto drawable_id = m_container->add_drawable(drawable_mesh);
+        Logger::log("Add drawable object with id " + to_string(drawable_id), LOG_INFO);
         return drawable_id;
     }
 

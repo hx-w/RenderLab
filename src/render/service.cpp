@@ -69,8 +69,4 @@ namespace RenderSpace {
         mesh->compute_BBOX();
         m_win_widget->viewfit_BBOX(mesh->get_BBOX());
     }
-
-    int RenderService::load_mesh(const string& name, const string& path) {
-        return false;
-    }
 }

@@ -57,40 +57,6 @@ namespace RenderSpace {
     void RenderService::notify_window_resize(uint32_t width, uint32_t height) {
     }
 
-    void RenderService::draw_all() {
-        for (auto& [id, ptr]: m_meshes_map) {
-            ptr->draw();
-        }
-    }
-
-    void RenderService::update() {
-        // delete stack
-        std::lock_guard<std::mutex> lock(m_mutex);
-        while (!m_wait_deleted.empty()) {
-            int id = m_wait_deleted.top(); m_wait_deleted.pop();
-            m_meshes_map.erase(id);
-        }
-        for (auto& [id, ptr]: m_meshes_map) {
-            ptr->sync();
-        }
-    }
-
-    void RenderService::refresh(int mesh_id) {
-        if (m_meshes_map.find(mesh_id) == m_meshes_map.end()) {
-            return;
-        }
-        Logger::log("refresh mesh: " + m_meshes_map[mesh_id]->get_name() + "(" + to_string(mesh_id) + ")");
-        m_meshes_map[mesh_id]->ready_to_update();
-    }
-
-    void RenderService::delete_mesh(int mesh_id) {
-        if (m_meshes_map.find(mesh_id) == m_meshes_map.end()) {
-            return;
-        }
-        std::lock_guard<std::mutex> lock(m_mutex);
-        m_wait_deleted.push(mesh_id);
-    }
-
     void RenderService::start_thread(string tname, function<void()>&& func) {
         std::thread thrd = std::thread(func);
         m_thread_map[tname] = thrd.native_handle();

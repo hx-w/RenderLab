@@ -9,7 +9,7 @@
 #include "geom_types.h"
 
 namespace geometry {
-    class Mesh {
+    class Mesh: public GeometryBase {
     public:
         Mesh() = default;
         Mesh(const std::vector<Point3f>& vertices, const std::vector<Vector3u>& faces)

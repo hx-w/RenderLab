@@ -75,8 +75,7 @@ void MeshViewer::render(RenderContext* ctx, MeshMapType& meshes) {
 void MeshViewer::render_mesh(RenderContext* ctx, shared_ptr<RenderSpace::MeshDrawable> mesh, int mesh_id) {
     bool opened = ImGui::CollapsingHeader(mesh->get_name().c_str(), &_mesh_alive[mesh_id]);
     if (!_mesh_alive[mesh_id]) {
-        ctx->service()->delete_mesh(mesh_id);
-        // service->delete_mesh(mesh_id);
+        // ctx->service()->delete_mesh(mesh_id);
         _mesh_alive.erase(mesh_id);
         _mesh_visibility.erase(mesh_id);
         return;

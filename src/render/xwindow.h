@@ -15,12 +15,12 @@ namespace RenderSpace {
     class RenderWindowWidget {
     public:
         RenderWindowWidget() = default;
-        RenderWindowWidget(unsigned int width, unsigned int height, std::shared_ptr<RenderService> service);
+        RenderWindowWidget(std::shared_ptr<RenderService> service);
         ~RenderWindowWidget();
         RenderWindowWidget(const RenderWindowWidget&) = delete;
 
-        void init_context(uint32_t width, uint32_t height, std::shared_ptr<RenderContext> ctx);
-        void init(unsigned int width, unsigned int height, std::shared_ptr<RenderService> service);
+        void init_context(std::shared_ptr<RenderContext> ctx);
+        void init(std::shared_ptr<RenderService> service);
 
     public:
         void framebuffer_size_callback(GLFWwindow* window, int width, int height);

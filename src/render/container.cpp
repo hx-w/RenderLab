@@ -5,6 +5,7 @@
 //#include <omp.h>
 
 #include <mesh.h>
+#include "shader.h"
 
 using namespace std;
 using namespace geometry;
@@ -62,6 +63,7 @@ namespace RenderSpace {
     }
 
     DrawableID RenderContainer::add_drawable(std::shared_ptr<DrawableBase> drawable) {
+        lock_guard<mutex> lock(m_mutex);
         auto now = chrono::system_clock::now();
         auto timestamp = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count();
         for (auto i : {13, 11, 7, 5, 3, 2}) {
@@ -73,5 +75,40 @@ namespace RenderSpace {
             }
         }
         return static_cast<DrawableID>(timestamp * -1);
+    }
+
+    bool RenderContainer::remove_drawable(DrawableID id) {
+        lock_guard<mutex> lock(m_mutex);
+        if (m_drawables.find(id) != m_drawables.end()) {
+            m_drawables.erase(id);
+            return true;
+        }
+        return false;
+    }
+
+    bool RenderContainer::set_drawable_property(DrawableID id, const string& property, const any& value) {
+        lock_guard<mutex> lock(m_mutex);
+        if (m_drawables.find(id) != m_drawables.end()) {
+            if (property == "visible") {
+                // m_drawables[id]->_visible() = any_cast<bool>(value);
+                return true;
+            }
+            else if (property == "shader") {
+                m_drawables[id]->_shader() = any_cast<Shader>(value);
+                return true;
+            }
+            else if (property == "offset") {
+                m_drawables[id]->_offset() = any_cast<Vector3f>(value);
+                return true;
+            }
+            else if (property == "shade_mode") {
+                m_drawables[id]->_shade_mode() = any_cast<uint32_t>(value);
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        return false;
     }
 }

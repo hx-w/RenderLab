@@ -6,7 +6,7 @@
 #include "geom_types.h"
 
 namespace geometry {
-    class Line {
+    class Line: public GeometryBase {
     public:
         Line() = default;
         Line(const Point3f& p1, const Point3f& p2) : m_p1(p1), m_p2(p2) {}
@@ -37,7 +37,7 @@ namespace geometry {
         Point3f m_p2;
     };
 
-    class Ray {
+    class Ray: public GeometryBase {
     public:
         Ray() = default;
         Ray(const Point3f& origin, const Vector3f& direction)

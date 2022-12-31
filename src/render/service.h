@@ -31,11 +31,6 @@ namespace RenderSpace {
         void register_methods();
 
         void update_win(std::shared_ptr<RenderWindowWidget> win);
-        std::shared_ptr<RenderWindowWidget> get_win() { return m_win_widget; }
-
-        void draw_all();
-
-        void update();
 
         void viewfit_mesh(const std::shared_ptr<Drawable> mesh);
 
@@ -46,12 +41,7 @@ namespace RenderSpace {
         // return -1 if failed, *.obj supported
         int load_mesh(const std::string& name, const std::string& path);
 
-        void delete_mesh(int mesh_id);
-        void refresh(int mesh_id);
-
     private:
-        int gen_id();
-
         void start_thread(std::string tname, std::function<void()>&& func);
 
     private:

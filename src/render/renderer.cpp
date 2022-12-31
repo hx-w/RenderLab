@@ -188,8 +188,7 @@ namespace RenderSpace {
             ImGui::Render();
         }
 
-        m_context->container()->update_all();
-        m_context->container()->draw_all();
+        m_context->ctx_update_and_draw();
     }
 
     void Renderer::update_transform() {

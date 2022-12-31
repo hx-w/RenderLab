@@ -6,23 +6,17 @@
 using namespace std;
 
 namespace RenderSpace {
-    RenderWindowWidget::RenderWindowWidget(unsigned int width, unsigned int height, shared_ptr<RenderService> service) {
-        init(width, height, service);
+    RenderWindowWidget::RenderWindowWidget( shared_ptr<RenderService> service) {
+        init(service);
     }
 
-    void RenderWindowWidget::init_context(uint32_t width, uint32_t height, std::shared_ptr <RenderContext> ctx) {
+    void RenderWindowWidget::init_context(std::shared_ptr <RenderContext> ctx) {
         m_context = ctx;
-        init(width, height, m_context->service());
+        init(m_context->service());
     }
 
-    void RenderWindowWidget::init(unsigned int width, unsigned int height, shared_ptr<RenderService> service) {
-        m_scr_width = width;
-        m_scr_height = height;
+    void RenderWindowWidget::init(shared_ptr<RenderService> service) {
         m_service = service;
-        lastX = width * 1.0 / 2;
-        lastY = height * 1.0 / 2;
-
-        m_service->notify_window_resize(width, height);
     }
 
     RenderWindowWidget::~RenderWindowWidget() {

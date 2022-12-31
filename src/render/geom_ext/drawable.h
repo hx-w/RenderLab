@@ -47,6 +47,10 @@ namespace RenderSpace {
 
         GeomType _type() { return m_type; }
 
+        geometry::Vector3f& _offset() { return m_offset; }
+
+        uint32_t& _shade_mode() { return m_shade_mode; }
+
     protected:
         void _init_buffer();
         virtual void _draw() = 0;

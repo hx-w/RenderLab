@@ -169,6 +169,8 @@ namespace RenderSpace {
     }
 
     void Renderer::draw() {
+        /// [Notify] render/pre-redraw
+        m_context->ctx_notify<void()>("/pre-redraw");
         {
             // Start the Dear ImGui frame
             ImGui_ImplOpenGL3_NewFrame();

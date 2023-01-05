@@ -11,6 +11,7 @@
 #include "shader.h"
 #include "mesh/elements.h"
 #include <communication/AutoBus.hpp>
+#include <communication/ContextHub.h>
 
 namespace RenderSpace {
     class RenderWindowWidget;
@@ -37,6 +38,13 @@ namespace RenderSpace {
         void ray_pick(const glm::vec3& origin, const glm::vec3& direction);
         void notify_clear_picking(); // refresh all picking ray
         void notify_window_resize(uint32_t width, uint32_t height);
+
+
+        template <class Func, class ...Args>
+        void notify(const std::string& addr, Args&& ...args) {
+            auto _event = fundamental::ContextHub::getInstance()->getEventTable<Func>();
+            _event->notify(m_symbol + addr, std::forward<Args>(args)...);
+        }
 
     private:
         void start_thread(std::string tname, std::function<void()>&& func);

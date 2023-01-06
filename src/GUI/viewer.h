@@ -1,13 +1,18 @@
 #ifndef GUI_VIEWER_H
 #define GUI_VIEWER_H
 
-#include <iostream>
+#include <memory>
+
+namespace RenderSpace {
+    class RenderWindowWidget;
+}
 
 namespace GUISpace {
 
-void test() {
-    std::cout << "test" << std::endl;
-}
+class IMGUIViewer {
+public:
+    static void update(std::shared_ptr<RenderSpace::RenderWindowWidget>);
+};
 
 }
 

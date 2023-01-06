@@ -2,11 +2,18 @@
 #include "engine.h"
 #include "viewer.h"
 
+#include <memory>
 #include <functional>
 #include <communication/ContextHub.h>
 
+namespace RenderSpace {
+    class RenderWindowWidget;
+}
+
 using namespace std;
 using namespace fundamental;
+using namespace RenderSpace;
+
 
 namespace GUISpace {
     GUIService::GUIService(GUIEngine& engine) noexcept:
@@ -19,7 +26,13 @@ namespace GUISpace {
     }
 
     void GUIService::_subscribe_all() {
-        m_autobus->subscribe<void()>(SignalPolicy::Sync, "render/pre-redraw",
-            bind(&GUISpace::test));
+        m_autobus->subscribe<void(shared_ptr<RenderWindowWidget>)>(SignalPolicy::Sync, "render/pre-redraw",
+            bind(&GUISpace::IMGUIViewer::update, placeholders::_1));
+    }
+
+    /// [sync invoke] -> render/load_mesh
+    void GUIService::slot_load_mesh(const string& file_path) {
+        auto _service = ContextHub::getInstance()->getServiceTable<uint32_t(const string&)>();
+        _service->sync_invoke("render/load_mesh", file_path);
     }
 }

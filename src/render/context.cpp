@@ -4,14 +4,16 @@
 #include "service.h"
 #include "container.h"
 #include "xwindow.h"
-#include "imgui_ext/logger.h"
 #include "geom_ext/drawable.h"
 
 #include <mesh.h>
+#include <components/logger.h>
+
+#include <iostream>
 
 using namespace std;
 using namespace geometry;
-using namespace imgui_ext;
+using namespace GUISpace;
 
 namespace RenderSpace {
 

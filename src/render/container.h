@@ -35,7 +35,6 @@ namespace RenderSpace {
 
         ShaderHub& shaders() { return m_shaders; }
 
-
         // methods
         DrawableID add_drawable(std::shared_ptr<DrawableBase>);
         bool remove_drawable(DrawableID);

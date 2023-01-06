@@ -7,12 +7,12 @@
 #include <unordered_map>
 #include <functional>
 #include <stack>
-#include "xwindow.h"
-#include "shader.h"
-#include "mesh/elements.h"
 #include <communication/AutoBus.hpp>
 #include <communication/ContextHub.h>
 
+#include "xwindow.h"
+#include "shader.h"
+#include "mesh/elements.h"
 namespace RenderSpace {
     class RenderWindowWidget;
     class RenderContext;
@@ -31,14 +31,9 @@ namespace RenderSpace {
 
         void register_methods();
 
-        void update_win(std::shared_ptr<RenderWindowWidget> win);
-
-        void viewfit_mesh(const std::shared_ptr<Drawable> mesh);
-
         void ray_pick(const glm::vec3& origin, const glm::vec3& direction);
         void notify_clear_picking(); // refresh all picking ray
         void notify_window_resize(uint32_t width, uint32_t height);
-
 
         template <class Func, class ...Args>
         void notify(const std::string& addr, Args&& ...args) {
@@ -52,9 +47,6 @@ namespace RenderSpace {
     private:
         // 网格列表
         std::unordered_map<int, std::shared_ptr<MeshDrawable>> m_meshes_map;
-
-        // 交互
-        std::shared_ptr<RenderWindowWidget> m_win_widget;
 
         // context
         std::shared_ptr<RenderContext> m_context;

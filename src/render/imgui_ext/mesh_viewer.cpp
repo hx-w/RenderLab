@@ -1,5 +1,4 @@
 #include "mesh_viewer.h"
-#include "logger.h"
 #include "../context.h"
 #include "../service.h"
 #include "../mesh/elements.h"
@@ -103,7 +102,7 @@ void MeshViewer::render_mesh(RenderContext* ctx, shared_ptr<RenderSpace::MeshDra
             default: break;
         }
         mesh->set_shade_mode(shade_mode);
-        Logger::log("polygon mode changed: " + mesh->get_name() + " => " + shade_str[shade_current]);
+        // Logger::log("polygon mode changed: " + mesh->get_name() + " => " + shade_str[shade_current]);
     }
     ImGui::SameLine(); HelpMarker("Different shading modes without changing topology.");
 
@@ -112,7 +111,7 @@ void MeshViewer::render_mesh(RenderContext* ctx, shared_ptr<RenderSpace::MeshDra
     auto clr_mode = static_cast<int>(mesh->get_color_mode());
     if (ImGui::Combo(IMGUI_NAME("color mode", mesh_name).c_str(), &clr_mode, colortypes, IM_ARRAYSIZE(colortypes))) {
         mesh->set_color_mode(static_cast<ColorMode>(clr_mode));
-        Logger::log("color mode changed: " + mesh->get_name() + " => " + colortypes[clr_mode]);
+        // Logger::log("color mode changed: " + mesh->get_name() + " => " + colortypes[clr_mode]);
     }
     ImGui::SameLine(); HelpMarker("Colormap depends on the curvature of the mesh, and it will be computed in realtime by now.");
     ColorMode clrmd = static_cast<ColorMode>(clr_mode);
@@ -144,7 +143,7 @@ void MeshViewer::render_mesh(RenderContext* ctx, shared_ptr<RenderSpace::MeshDra
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0.25f, 0.7f, 0.7f));
     ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0.25f, 0.8f, 0.8f));
     if (ImGui::Button(IMGUI_NAME("view fit", mesh_name).c_str())) {
-        ctx->service()->viewfit_mesh(mesh);
+        // ctx->service()->viewfit_mesh(mesh);
     }
     ImGui::PopStyleColor(3);
     ImGui::PopID();
@@ -161,11 +160,11 @@ void MeshViewer::render_mesh(RenderContext* ctx, shared_ptr<RenderSpace::MeshDra
         string path = string(savepath);
         if (path.size() > 0 && path.substr(path.size() - 4, 4) == ".obj") {
             if (mesh->save_OBJ(path)) {
-                Logger::log("file save to `" + path + "`");
+                // Logger::log("file save to `" + path + "`");
             }
         }
         else {
-            Logger::log("only OBJ format supported", LOG_ERROR);
+            // Logger::log("only OBJ format supported", LOG_ERROR);
         }
     }
     ImGui::PopStyleColor(3);

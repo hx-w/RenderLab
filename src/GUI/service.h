@@ -1,6 +1,7 @@
 #ifndef GUI_SERVICE_H
 #define GUI_SERVICE_H
 
+#include <string>
 #include <memory>
 #include <communication/AutoBus.hpp>
 
@@ -14,6 +15,10 @@ namespace GUISpace {
 
         ~GUIService();
     
+    public:
+        /// [Slots]
+        void slot_load_mesh(const std::string&);
+
     private:
         void _subscribe_all();
 

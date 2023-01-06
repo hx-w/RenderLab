@@ -42,6 +42,11 @@ namespace GUISpace {
         }
     }
 
+    GUIService* GUIEngine::get_service(int index) {
+        if (m_services.size() <= index) return nullptr;
+        return *m_services.begin();
+    }
+
     GUIService* make_service() {
         return GUIEngine::get_instance()->create_service();
     }

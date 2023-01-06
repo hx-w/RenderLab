@@ -1,8 +1,9 @@
 #include "logger.h"
 #include <imgui.h>
 
-using namespace imgui_ext;
 using namespace std;
+using namespace GUISpace;
+using namespace RenderSpace;
 
 LogMessage::LogMessage(const string& raw_msg, const LOG_LEVEL lvl) :
     level(lvl),
@@ -33,6 +34,7 @@ bool LogMessage::operator < (const LogMessage& other) const {
 
 void Logger::log(const string& raw_msg, const LOG_LEVEL lvl) {
     if (lvl < st_logger_level) return;
+    lock_guard<mutex> lk(st_logger_mutex);
     st_logger_messages.emplace_back(LogMessage(raw_msg, lvl));
     if (st_logger_messages.size() > st_logger_maxsize) {
         st_logger_messages.erase(st_logger_messages.begin());
@@ -40,6 +42,7 @@ void Logger::log(const string& raw_msg, const LOG_LEVEL lvl) {
 }
 
 void Logger::flush() {
+    lock_guard<mutex> lk(st_logger_mutex);
     st_logger_messages.clear();
 }
 
@@ -47,7 +50,9 @@ void Logger::set_level(LOG_LEVEL lvl) {
     st_logger_level = lvl;
 }
 
-void Logger::render() {
+void Logger::render(shared_ptr<RenderWindowWidget> win) {
+    // no use for win
+    // lock_guard<mutex> lk(st_logger_mutex);
     ImGui::Begin("Logger");
     for (auto& msg : st_logger_messages) {
         ImVec4 clr = ImVec4(0.7, 0.7, 0.7, 1.);

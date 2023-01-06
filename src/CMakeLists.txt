@@ -17,9 +17,9 @@ add_executable(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 GroupSourcesByFolder(${PROJECT_NAME})
 
 # link deps to libs
-target_link_libraries(XRENDER PRIVATE ${DEPS} INFRASTRUCTURE GEOMETRY)
+target_link_libraries(XRENDER PRIVATE ${DEPS} INFRASTRUCTURE GEOMETRY XGUI)
 target_link_libraries(XTOOTH PRIVATE glm INFRASTRUCTURE GEOMETRY)
-target_link_libraries(XGUI PRIVATE ${DEPS} INFRASTRUCTURE GEOMETRY)
+target_link_libraries(XGUI PRIVATE ${DEPS} INFRASTRUCTURE GEOMETRY XRENDER)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE ${DEPS} ${LIBS} pybind11::embed)
 include_directories(${imgui_SOURCE_DIR} ${imgui_SOURCE_DIR}/backends)

@@ -19,6 +19,7 @@ namespace GUISpace {
 
         GUIService* create_service();
         void destroy_service(GUIService*);
+        GUIService* get_service(int = 0);
 
     private:
         GUIEngine() = default;

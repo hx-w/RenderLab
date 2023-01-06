@@ -1,16 +1,20 @@
 #include <iostream>
 #include <imgui.h>
 #include "controller.h"
-#include "browser.h"
-#include "../context.h"
-#include "../xwindow.h"
+#include "file_browser.h"
 
-using namespace imgui_ext;
+#include "../engine.h"
+#include "../service.h"
+
+#include <xwindow.h>
+
+using namespace GUISpace;
 using namespace RenderSpace;
 using namespace std;
 
-void Controller::render(RenderContext* ctx) {
-    auto win = ctx->window();
+#define SERVICE_INST GUIEngine::get_instance()->get_service()
+
+void Controller::render(shared_ptr<RenderWindowWidget> win) {
     static bool show_import_modal = false;
     static imgui_ext::file_browser_modal fileBrowser("Import");
     std::string path;
@@ -43,7 +47,7 @@ void Controller::render(RenderContext* ctx) {
                 if (iter != string::npos) {
                     name = name.substr(iter + 1);
                 }
-                ctx->ctx_load_drawable(path);
+                SERVICE_INST->slot_load_mesh(path);
             }
         }
     }

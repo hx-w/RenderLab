@@ -10,7 +10,9 @@
 #include <ctime>
 #include <mutex>
 
-namespace imgui_ext {
+#include "base.h"
+
+namespace GUISpace {
     enum LOG_LEVEL {
         LOG_DEBUG,
         LOG_INFO,
@@ -30,7 +32,7 @@ namespace imgui_ext {
         bool operator < (const LogMessage& other) const;
     };
 
-    class Logger {
+    class Logger: public GUIComponentBase {
     public:
         ~Logger() = default;
         Logger(const Logger&) = delete;
@@ -41,7 +43,7 @@ namespace imgui_ext {
         static void resize(uint32_t maxsize);
         static void set_level(LOG_LEVEL lvl);
 
-        static void render();
+        static void render(std::shared_ptr<RenderSpace::RenderWindowWidget>);
 
     private:
         Logger() = default;
@@ -51,4 +53,5 @@ namespace imgui_ext {
     static uint32_t st_logger_maxsize = 8;
     static LOG_LEVEL st_logger_level = LOG_INFO;
     static std::vector<LogMessage> st_logger_messages;
+    static std::mutex st_logger_mutex;
 }

@@ -7,6 +7,8 @@
 
 #include <communication/ContextHub.h>
 
+#include "service.h"
+
 namespace geometry {
     class GeometryBase;
 }
@@ -14,7 +16,6 @@ namespace geometry {
 namespace RenderSpace {
     using DrawableID = uint32_t;
 
-    class RenderService;
     class RenderContainer;
     class RenderWindowWidget;
 

@@ -1,7 +1,6 @@
 // impl
 #include "context.h"
 
-#include "service.h"
 #include "container.h"
 #include "xwindow.h"
 #include "geom_ext/drawable.h"

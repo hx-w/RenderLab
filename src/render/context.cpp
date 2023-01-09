@@ -33,12 +33,18 @@ namespace RenderSpace {
 
     DrawableID RenderContext::ctx_load_drawable(const string& filename) {
         // only mesh
-        bool status = false;
+        int status = 0;
         auto geom_mesh = Mesh::load_obj(filename, status);
-        if (!status) {
+        switch (status) {
+        case 0:
             Logger::log("Cannot load mesh from file " + filename, LOG_ERROR);
             return -1;
-        }
+        case 1:
+            Logger::log("Load mesh from file " + filename + " by TRIMESH");
+            break;
+        case 2:
+            Logger::log("Load mesh from file " + filename);
+        }                                      
         return ctx_add_drawable(make_shared<Mesh>(geom_mesh));
     }
 

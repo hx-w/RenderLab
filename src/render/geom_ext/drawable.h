@@ -61,8 +61,8 @@ namespace RenderSpace {
         uint32_t m_vbo;
         uint32_t m_ebo;
 
-        uint32_t m_shade_mode;  // wireframe or solid
-        geometry::Vector3f m_offset;
+        uint32_t m_shade_mode = 0;  // wireframe or solid
+        geometry::Vector3f m_offset = geometry::Vector3f(0.0);
 
         Shader m_shader;
         GeomType m_type;

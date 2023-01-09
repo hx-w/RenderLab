@@ -17,7 +17,7 @@ def convert(inp: str, otp: str, pivots: list):
     param_msh.export(otp.replace('remesh', 'param'))
 
 
-def remesh_mesh(uns_msh: trimesh.Trimesh, pivots: list) -> trimesh.Trimesh: 
+def remesh_mesh(uns_msh: trimesh.Trimesh, pivots: list) -> trimesh.Trimesh:
     inn_verts, bnd_verts = split_bnd_inn(uns_msh)
     # check pivots all in bnd_verts
     if not all([p in bnd_verts for p in pivots]):

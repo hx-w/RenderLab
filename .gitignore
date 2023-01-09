@@ -1,3 +1,5 @@
+*.exp
+*.lib
 Debug/
 Release/
 *egg-info/

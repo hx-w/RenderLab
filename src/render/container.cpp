@@ -68,10 +68,11 @@ namespace RenderSpace {
         auto timestamp = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count();
         for (auto i : {13, 11, 7, 5, 3, 2}) {
             // hash timestamp and drawable
-            auto hash_value = hash<uint64_t>()(timestamp) * hash<DrawableBase*>()(drawable.get()) >> i;
-            if (m_drawables.find(hash_value) == m_drawables.end()) {
-                m_drawables[hash_value] = drawable;
-                return static_cast<DrawableID>(hash_value);
+            auto _h = 0xdeadbeef ^ hash<uint64_t>()(timestamp);
+            _h = _h ^ (hash<DrawableBase*>()(drawable.get()) >> i);
+            if (m_drawables.find(_h) == m_drawables.end()) {
+                m_drawables[_h] = drawable;
+                return static_cast<DrawableID>(_h);
             }
         }
         return static_cast<DrawableID>(timestamp * -1);

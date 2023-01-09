@@ -9,9 +9,13 @@ namespace RenderSpace {
 
 namespace GUISpace {
 
-class IMGUIViewer {
+class ImGuiViewer {
 public:
+    static void setup();
+
     static void update(std::shared_ptr<RenderSpace::RenderWindowWidget>);
+
+    static void destroy();
 };
 
 }

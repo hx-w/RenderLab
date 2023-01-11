@@ -131,6 +131,9 @@ namespace RenderSpace {
 		m_context->ctx_notify<void()>("/render_destroy");
 		m_context.reset();
 		glfwTerminate();
+		if (m_window != nullptr) {
+			delete m_window;
+		}
 	}
 
 	int Renderer::exec() {

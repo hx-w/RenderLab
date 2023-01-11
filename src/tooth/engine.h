@@ -17,6 +17,7 @@ namespace ToothSpace {
         ~ToothEngine() { terminate(); };
 
         ToothService* create_service();
+        ToothService* get_service(int = 0);
         void destroy_service(ToothService*);
 
     private:

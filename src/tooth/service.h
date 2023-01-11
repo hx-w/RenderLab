@@ -7,6 +7,7 @@
 
 namespace ToothSpace {
     class ToothEngine;
+    class Workspace;
 
     class ToothService {
     public:
@@ -14,6 +15,10 @@ namespace ToothSpace {
         explicit ToothService(ToothEngine& engine) noexcept;
 
         ~ToothService();
+
+    public:
+        void slot_add_log(std::string&&, const std::string&);
+
     private:
         void _subscribe();
 
@@ -21,6 +26,7 @@ namespace ToothSpace {
         std::string m_name = "tooth"; // 名称
         ToothEngine& m_engine;
 
+        std::unique_ptr<Workspace> m_workspace;
         std::unique_ptr<fundamental::AutoBus> m_autobus;
     };
 }

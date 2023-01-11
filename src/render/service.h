@@ -29,24 +29,21 @@ namespace RenderSpace {
 
         void init_context(std::shared_ptr<RenderContext>);
 
-        void register_methods();
-
-        void ray_pick(const glm::vec3& origin, const glm::vec3& direction);
-        void notify_clear_picking(); // refresh all picking ray
-        void notify_window_resize(uint32_t width, uint32_t height);
-
         template <class Func, class ...Args>
         void notify(const std::string& addr, Args&& ...args) {
             auto _event = fundamental::ContextHub::getInstance()->getEventTable<Func>();
             _event->notify(m_symbol + addr, std::forward<Args>(args)...);
         }
 
-    private:
-        void start_thread(std::string tname, std::function<void()>&& func);
+    public:
+        /// [Slots]
+        void slot_add_log(std::string&&, const std::string&);
 
     private:
-        // 网格列表
-        std::unordered_map<int, std::shared_ptr<MeshDrawable>> m_meshes_map;
+        void start_thread(std::string tname, std::function<void()>&& func);
+        void _register_all();
+
+    private:
 
         // context
         std::shared_ptr<RenderContext> m_context;
@@ -54,10 +51,7 @@ namespace RenderSpace {
         std::string m_symbol = "render";
         std::unique_ptr<fundamental::AutoBus> m_autobus;
 
-        int m_id_gen = 0;
         std::mutex m_mutex;
-
-        std::stack<int> m_wait_deleted;
 
         // thread manage
         ThreadMap m_thread_map;

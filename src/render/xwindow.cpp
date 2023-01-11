@@ -65,7 +65,7 @@ namespace RenderSpace {
             if (!R_down) {
                 R_down = !R_down;
                 if (CTRL_down) {
-                    m_service->notify_clear_picking();
+                    /// [TODO] clear picking
                 }
             }
         }
@@ -87,7 +87,7 @@ namespace RenderSpace {
         // height will be significantly larger than specified on retina displays.
         m_scr_width = width;
         m_scr_height = height;
-        m_service->notify_window_resize(m_scr_width, m_scr_height);
+        /// [TODO] window resize notify
     }
 
     // glfw: whenever the mouse moves, this callback is called
@@ -163,7 +163,7 @@ namespace RenderSpace {
                 if (CTRL_down) {
                     glm::vec3 direction(0.0);
                     pickingRay(glm::vec2(realX, realY), direction);
-                    m_service->ray_pick(cameraPos, direction);
+                    /// [TODO] picking ray notify
                 }
 				break;
 			case GLFW_MOUSE_BUTTON_MIDDLE:

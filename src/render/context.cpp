@@ -6,13 +6,11 @@
 #include "geom_ext/drawable.h"
 
 #include <mesh.h>
-#include <components/logger.h>
 
 #include <iostream>
 
 using namespace std;
 using namespace geometry;
-using namespace GUISpace;
 
 namespace RenderSpace {
 
@@ -37,13 +35,13 @@ namespace RenderSpace {
         auto geom_mesh = Mesh::load_obj(filename, status);
         switch (status) {
         case 0:
-            Logger::log("Cannot load mesh from file " + filename, LOG_ERROR);
+            m_service->slot_add_log("error", "Cannot load mesh from file " + filename);
             return -1;
         case 1:
-            Logger::log("Load mesh from file " + filename + " by TRIMESH");
+            m_service->slot_add_log("info", "Load mesh from file " + filename + " (trimesh)");
             break;
         case 2:
-            Logger::log("Load mesh from file " + filename);
+            m_service->slot_add_log("info", "Load mesh from file " + filename);
         }                                      
         return ctx_add_drawable(make_shared<Mesh>(geom_mesh));
     }
@@ -55,7 +53,7 @@ namespace RenderSpace {
         drawable_mesh->_shader() = m_container->shaders()["default"];
         drawable_mesh->get_ready();
         auto drawable_id = m_container->add_drawable(drawable_mesh);
-        Logger::log("Add drawable object with id " + to_string(drawable_id), LOG_INFO);
+        m_service->slot_add_log("info", "Add drawable object with id " + to_string(drawable_id));
         return drawable_id;
     }
 

@@ -28,6 +28,7 @@ namespace GUISpace {
 
     private:
         void _subscribe_all();
+        void _register_all();
 
     private:
         std::string m_symbol = "GUI";

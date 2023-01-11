@@ -42,6 +42,11 @@ namespace ToothSpace {
         }
     }
 
+    ToothService* ToothEngine::get_service(int index) {
+        if (m_services.size() <= index) return nullptr;
+        return *m_services.begin();
+    }
+
     ToothService* make_service() {
         return ToothEngine::get_instance()->create_service();
     }

@@ -1,4 +1,5 @@
 ﻿#include "engine.h"
+#include "service.h"
 
 using namespace std;
 
@@ -27,8 +28,8 @@ namespace ToothSpace {
         m_services.clear();
     }
 
-    ToothService* ToothEngine::create_service(const string& dir, int scale) {
-        auto service = new ToothService(*this, dir, scale);
+    ToothService* ToothEngine::create_service() {
+        auto service = new ToothService(*this);
         m_services.emplace(service);
         return service;
     }
@@ -41,7 +42,7 @@ namespace ToothSpace {
         }
     }
 
-    ToothService* make_service(const string& dir, int scale) {
-        return ToothEngine::get_instance()->create_service(dir, scale);
+    ToothService* make_service() {
+        return ToothEngine::get_instance()->create_service();
     }
 }

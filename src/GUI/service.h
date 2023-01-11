@@ -18,6 +18,13 @@ namespace GUISpace {
     public:
         /// [Slots]
         void slot_load_mesh(const std::string&);
+       
+        /// generic notify
+        template <class Func, class ...Args>
+        void notify(const std::string& addr, Args&& ...args) {
+            auto _event = fundamental::ContextHub::getInstance()->getEventTable<Func>();
+            _event->notify(m_symbol + addr, std::forward<Args>(args)...);
+        }
 
     private:
         void _subscribe_all();

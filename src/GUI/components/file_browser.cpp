@@ -97,7 +97,12 @@ const bool file_browser_modal::render(const bool isVisible, std::string& outPath
             ImGui::PushStyleColor(ImGuiCol_ButtonActive, disabledColor);
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, disabledColor);
 
-            ImGui::Button("Select");
+            if (ImGui::Button("Select")) {
+                ImGui::CloseCurrentPopup();
+                outPath = m_currentPath.string();
+                result = true;
+                m_oldVisibility = false;
+            }
 
             ImGui::PopStyleColor();
             ImGui::PopStyleColor();

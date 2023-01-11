@@ -10,7 +10,6 @@
 
 #if defined(_WIN32)
 #include <windows.h>
-
 #endif
 
 using namespace GUISpace;
@@ -33,27 +32,18 @@ void Controller::render(shared_ptr<RenderWindowWidget> win) {
     ImGui::DragFloat3("camera pos", (float*)&win->cameraPos);
 
     ImGui::Spacing();
-    if (ImGui::Button("Import OBJ")) {
+    if (ImGui::Button("Select Project")) {
         show_import_modal = !show_import_modal;
     }
     ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
     ImGui::End();
 
     if (show_import_modal) {
-        show_import_modal = false;
-    /**
-     * Windows load lib.
-     */
-#if !defined(_WIN32)
+#if TRUE
         if (fileBrowser.render(true, path)) {
-            if (path.size() > 0 && path.substr(path.size() - 4, 4) == ".obj") {
-                string name = path.substr(0, path.size() - 4);
-                auto iter = name.find_last_of('/');
-                if (iter != string::npos) {
-                    name = name.substr(iter + 1);
-                }
-                SERVICE_INST->slot_load_mesh(path);
-            }
+            show_import_modal = false;
+            /// [Notify] GUI/filepath_selected
+            SERVICE_INST->notify<void(const string&)>("/filepath_selected", path);
         }
 #else
     /// [TODO] implement windows pretty file dialogs

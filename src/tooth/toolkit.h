@@ -14,7 +14,8 @@
 
 namespace ToothSpace {
 
-#define PY_INITENV_SCRIPT "./scripts/py_env_checker.py"
+#define PY_INITENV_MODULE  "scripts.py_env_checker"
+#define PY_LOADPROJ_MODULE "scripts.py_load_project"
 
 	/// call py scripts: 'scripts/py_env_checker.py'
 	bool init_workenv(std::string&);

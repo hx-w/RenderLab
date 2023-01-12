@@ -26,9 +26,11 @@ namespace ToothSpace {
             bind(&Workspace::slot_fetch_filepath, m_workspace.get(), ::placeholders::_1, false));
         m_autobus->subscribe<void(const string&, int)>(SignalPolicy::Sync, "GUI/modal_confirm_feedback",
             [this](const string& name, int res) {
-                if (name == "force_replace_config?") { // filter just asked
-                    cout << "clicked: " << res << endl;
-                    //m_workspace->slot_fetch_filepath()
+                const string prefix = "Force to load the project?##";
+                if (name._Starts_with(prefix)) { // filter just asked
+                    // substr the backword
+                    auto filepath = name.substr(prefix.length());
+                    m_workspace->slot_fetch_filepath(filepath, true);
                 }
             });
     }

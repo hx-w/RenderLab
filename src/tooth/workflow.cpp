@@ -30,8 +30,10 @@ namespace ToothSpace {
 		TOOLKIT_EXEC(preprocess_tooth_path, "project load", filepath, force,)
 		if (_code == 2) {
 			SERVICE_INST->slot_add_notice(
-				"force_replace_config?",
-				"All those beautiful files will be deleted.\nThis operation cannot be undone!\n\n"
+				"Force to load the project?##" + filepath,
+				"Files changed since the project builded\n\n"
+				"Cache and config will be replaced if confirmed\n\n"
+				"This cannot be undone!\n\n\n"
 			);
 		}
 	}

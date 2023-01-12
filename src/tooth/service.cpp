@@ -30,7 +30,12 @@ namespace ToothSpace {
                 if (name._Starts_with(prefix)) { // filter just asked
                     // substr the backword
                     auto filepath = name.substr(prefix.length());
-                    m_workspace->slot_fetch_filepath(filepath, true);
+                    if (res) {
+                        m_workspace->slot_fetch_filepath(filepath, true);
+                    }
+                    else {
+                        slot_add_log("error", "project load failed");
+                    }
                 }
             });
     }

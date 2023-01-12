@@ -9,6 +9,7 @@
 
 #include "components/controller.h"
 #include "components/logger.h"
+#include "components/modal_confirm.h"
 
 
 namespace GUISpace {
@@ -33,6 +34,7 @@ namespace GUISpace {
         Controller::render(win);
         // imgui_ext::MeshViewer::render(this, m_meshes_map);
         Logger::render(win);
+        ModalConfirm::render(win);
 
         // Rendering
         ImGui::Render();

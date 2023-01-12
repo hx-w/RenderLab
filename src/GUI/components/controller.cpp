@@ -8,9 +8,6 @@
 
 #include <xwindow.h>
 
-#if defined(_WIN32)
-#include <windows.h>
-#endif
 
 using namespace GUISpace;
 using namespace RenderSpace;
@@ -39,7 +36,7 @@ void Controller::render(shared_ptr<RenderWindowWidget> win) {
     ImGui::End();
 
     if (show_import_modal) {
-#if TRUE
+#if 1
         if (fileBrowser.render(true, path)) {
             show_import_modal = false;
             /// [Notify] GUI/filepath_selected

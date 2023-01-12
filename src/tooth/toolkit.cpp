@@ -27,13 +27,13 @@ namespace ToothSpace {
 		}
 	}
 
-	bool preprocess_tooth_path(const string& path, string& status) {
+	int preprocess_tooth_path(const string& path, bool force, string& status) {
 		py::scoped_interpreter guard{};
 		// check path is folder, and folder's elements valid
 		auto _py_os = py::module_::import("os");
 		if (!_py_os.attr("path").attr("isdir")(path).cast<bool>()) {
 			status = "project target must be a directory";
-			return false;
+			return 0;
 		}
 
 		// work with py script
@@ -41,19 +41,15 @@ namespace ToothSpace {
 		auto target_files = _py_pkg.attr("get_project_files")(path);
 		if (target_files.cast<py::list>().empty()) {
 			status = "not a valid project";
-			return false;
+			return 0;
 		}
-		if (!_py_pkg.attr("update_config")(path, target_files, false).cast<bool>()) {
-			/// [TODO]
-			cout << "need notify" << endl;
-
-			/// 
-			_py_pkg.attr("update_config")(path, target_files, true);
-			status = "config replaced";
+		if (!_py_pkg.attr("update_config")(path, target_files, force).cast<bool>()) {
+			status = "project source file changed";
+			return 2;
 		}
 		else {
 			status = "config updated";
+			return 1;
 		}
-		return true;
 	}
 }

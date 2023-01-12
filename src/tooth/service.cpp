@@ -23,11 +23,23 @@ namespace ToothSpace {
 
     void ToothService::_subscribe() {
         m_autobus->subscribe<void(const string&)>(SignalPolicy::Sync, "GUI/filepath_selected",
-            bind(&Workspace::slot_fetch_filepath, m_workspace.get(), ::placeholders::_1));
+            bind(&Workspace::slot_fetch_filepath, m_workspace.get(), ::placeholders::_1, false));
+        m_autobus->subscribe<void(const string&, int)>(SignalPolicy::Sync, "GUI/modal_confirm_feedback",
+            [this](const string& name, int res) {
+                if (name == "force_replace_config?") { // filter just asked
+                    cout << "clicked: " << res << endl;
+                    //m_workspace->slot_fetch_filepath()
+                }
+            });
     }
 
     void ToothService::slot_add_log(string&& type, const string& msg) {
         auto _service = ContextHub::getInstance()->getServiceTable<void(string&&, const string&)>();
         _service->sync_invoke("GUI/add_log", forward<string&&>(type), msg);
+    }
+
+    void ToothService::slot_add_notice(const string& name, const string& notice) {
+        auto _service = ContextHub::getInstance()->getServiceTable<void(const string&, const string&)>();
+        _service->sync_invoke("GUI/add_notice", name, notice);
     }
 }

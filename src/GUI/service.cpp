@@ -2,6 +2,7 @@
 #include "engine.h"
 #include "viewer.h"
 #include "components/logger.h"
+#include "components/modal_confirm.h"
 
 #include <memory>
 #include <functional>
@@ -44,9 +45,14 @@ namespace GUISpace {
 				if (type == "info") log_type = LOG_INFO;
 				else if (type == "error") log_type = LOG_ERROR;
 				else if (type == "fatal") log_type = LOG_FATAL;
-				else log_type = LOG_DEBUG;
+				else log_type = LOG_WARN;
 				Logger::log(msg, log_type);
 			}
+		);
+
+		m_autobus->registerMethod<void(const string&, const string&)>(
+			m_symbol + "/add_notice",
+			bind(&GUISpace::ModalConfirm::add_notice, ::placeholders::_1, ::placeholders::_2)
 		);
 	}
 

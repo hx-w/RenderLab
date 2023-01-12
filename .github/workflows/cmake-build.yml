@@ -35,3 +35,4 @@ jobs:
             main.exe
             resource
             scripts
+            imgui.ini

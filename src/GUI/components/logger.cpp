@@ -9,7 +9,6 @@ LogMessage::LogMessage(const string& raw_msg, const LOG_LEVEL lvl) :
     level(lvl),
     timestamp(std::time(nullptr)) {
     static const string levels[] = {
-        "DEBUG",
         "INFO",
         "WARN",
         "ERROR",

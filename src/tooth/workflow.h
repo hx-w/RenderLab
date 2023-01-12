@@ -11,7 +11,7 @@ namespace ToothSpace {
 	
 	public:
 		/// [Slots] GUI/filepath_selected
-		void slot_fetch_filepath(const std::string&);
+		void slot_fetch_filepath(const std::string& /* filepath */, bool = false);
 
 	};
 }

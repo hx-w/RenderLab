@@ -18,6 +18,7 @@ namespace ToothSpace {
 
     public:
         void slot_add_log(std::string&&, const std::string&);
+        void slot_add_notice(const std::string&, const std::string&);
 
     private:
         void _subscribe();

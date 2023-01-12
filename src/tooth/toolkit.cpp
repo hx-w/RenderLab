@@ -11,6 +11,8 @@ namespace py = pybind11;
 namespace ToothSpace {
 	bool init_workenv(string& status) {
 		try {
+			// init interpreter for current thread
+			py::scoped_interpreter guard{};
 			auto _py_pkg = py::module_::import(PY_INITENV_MODULE);
 			auto reqs = py::make_tuple("trimesh", "toml");
 			_py_pkg.attr("make_requirements_installed")(
@@ -26,6 +28,7 @@ namespace ToothSpace {
 	}
 
 	bool preprocess_tooth_path(const string& path, string& status) {
+		py::scoped_interpreter guard{};
 		// check path is folder, and folder's elements valid
 		auto _py_os = py::module_::import("os");
 		if (!_py_os.attr("path").attr("isdir")(path).cast<bool>()) {

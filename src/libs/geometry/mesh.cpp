@@ -23,6 +23,7 @@ namespace geometry {
 
         status = 0;
         try {
+            py::scoped_interpreter guard{};
             // load by py module [trimesh]
             auto py_trimesh = py::module_::import("trimesh");
             auto _mesh = py_trimesh.attr("load")(filename.c_str());

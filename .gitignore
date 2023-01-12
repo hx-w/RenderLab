@@ -13,7 +13,7 @@ test*
 freetype/
 freetype_back/
 cmake-build-debug/
-imgui.ini
+# imgui.ini
 *.pdf
 models/
 *.pkl

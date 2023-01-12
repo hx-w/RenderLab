@@ -9,17 +9,24 @@
 using namespace std;
 
 #define SERVICE_INST ToothEngine::get_instance()->get_service()
+#define TOOLKIT_EXEC(func, prefix, ...) \
+			string log_msg = ""; \
+			if (!func(__VA_ARGS__ log_msg)) {	\
+				SERVICE_INST->slot_add_log("error", prefix##" error, " + log_msg); \
+			} else { \
+				SERVICE_INST->slot_add_log("info", prefix##" successfully, " + log_msg); \
+			}
+
 
 namespace ToothSpace {
+	Workspace::Workspace() {
+		TOOLKIT_EXEC(init_workenv, "init workspace", )
+	}
+
 	void Workspace::slot_fetch_filepath(const string& filepath) {
 		cout << filepath.c_str() << endl;
-		string log_msg = "";
-		if (!preprocess_tooth_path(filepath, log_msg)) {
-			SERVICE_INST->slot_add_log("error", "project load error, " + log_msg);
-			return;
-		}
+		TOOLKIT_EXEC(preprocess_tooth_path, "project load", filepath,)
 
-
-		SERVICE_INST->slot_add_log("info", "project load successfully, " + filepath);
 	}
+
 }

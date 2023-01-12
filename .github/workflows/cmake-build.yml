@@ -34,3 +34,4 @@ jobs:
           path: |
             main.exe
             resource
+            scripts

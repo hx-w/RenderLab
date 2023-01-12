@@ -7,11 +7,12 @@
 namespace ToothSpace {
 	class Workspace {
 	public:
-		Workspace() = default;
-
+		Workspace();
+	
 	public:
 		/// [Slots] GUI/filepath_selected
 		void slot_fetch_filepath(const std::string&);
+
 	};
 }
 

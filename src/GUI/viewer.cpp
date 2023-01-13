@@ -22,7 +22,6 @@ namespace GUISpace {
         // init [3rd-party]
         ImNodes::CreateContext();
         ImNodes::StyleColorsDark();
-        ImNodes::SetNodeGridSpacePos(1, ImVec2(200.0f, 200.0f));
     }
 
     void ImGuiViewer::update(shared_ptr<RenderWindowWidget> win) {

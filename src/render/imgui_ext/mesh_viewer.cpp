@@ -6,6 +6,7 @@
 #include <cstring>
 #include <iostream>
 #include <imgui.h>
+#include <GLFW/glfw3.h>
 
 using namespace imgui_ext;
 using namespace RenderSpace;

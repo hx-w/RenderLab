@@ -3,6 +3,7 @@
 #include "viewer.h"
 #include "components/logger.h"
 #include "components/modal_confirm.h"
+#include "components/node_flow.h"
 
 #include <memory>
 #include <functional>
@@ -35,6 +36,13 @@ namespace GUISpace {
 			bind(&GUISpace::ImGuiViewer::update, placeholders::_1));
 		m_autobus->subscribe<void()>(SignalPolicy::Sync, "render/render_destroy",
 			bind(&GUISpace::ImGuiViewer::destroy));
+		m_autobus->subscribe<void(int)>(SignalPolicy::Sync, "render/keyboard_clicked",
+			[this](int key) {
+				if (key == 72  /* GLFW_KEY_H */) GUISpace::ImGuiViewer::change_visibility();
+				if (key == 261 /* GLFW_KEY_DELETE */ || 
+					key == 259 /* GLFW_KEY_BACKSPACE */)
+					GUISpace::NodeFlow::delete_selected_links();
+			});
 	}
 
 	void GUIService::_register_all() {

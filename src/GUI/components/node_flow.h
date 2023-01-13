@@ -12,6 +12,12 @@
 namespace GUISpace {
     class NodeFlow : public GUIComponentBase {
     public:
+        /// init nodes positions
+        static void init();
+
+        /// action delete link
+        static void delete_selected_links();
+
         static void render();
     };
 }

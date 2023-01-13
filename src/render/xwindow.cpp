@@ -1,13 +1,16 @@
 ﻿#include "xwindow.h"
 #include "service.h"
 #include "context.h"
+#include <GLFW/glfw3.h>
 #include <iostream>
+#include <chrono>
 
 using namespace std;
 
 namespace RenderSpace {
-    RenderWindowWidget::RenderWindowWidget( shared_ptr<RenderService> service) {
-        init(service);
+    time_t get_timestamp() {
+        auto tp = chrono::time_point_cast<chrono::milliseconds>(chrono::system_clock::now());
+        return tp.time_since_epoch().count();
     }
 
     void RenderWindowWidget::init_context(std::shared_ptr <RenderContext> ctx) {
@@ -17,6 +20,15 @@ namespace RenderSpace {
 
     void RenderWindowWidget::init(shared_ptr<RenderService> service) {
         m_service = service;
+
+        auto _keys = {
+            GLFW_KEY_H, GLFW_KEY_T, GLFW_KEY_LEFT_CONTROL, GLFW_KEY_R,
+            GLFW_KEY_DELETE, GLFW_KEY_BACKSPACE
+        };
+
+        for (auto _k : _keys) {
+            m_key_last_active[_k] = 0;
+        }
     }
 
     RenderWindowWidget::~RenderWindowWidget() {
@@ -26,6 +38,20 @@ namespace RenderSpace {
     // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
     // ---------------------------------------------------------------------------------------------------------
     void RenderWindowWidget::processInput(GLFWwindow* window) {
+        for (auto& [_k, _tp] : m_key_last_active) {
+            if (glfwGetKey(window, _k) == GLFW_PRESS) {
+                _tp = get_timestamp();
+            }
+            if (glfwGetKey(window, _k) == GLFW_RELEASE) {
+                // check press duration time [ <= 700ms ]
+                if (get_timestamp() - _tp <= 700) {
+                    /// [Notify]
+                    m_service->notify<void(int)>("/keyboard_clicked", _k);
+                    _tp = 0;
+                }
+            }
+        }
+
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
         float cameraMove = cameraSpeed * deltaTime;
@@ -37,41 +63,6 @@ namespace RenderSpace {
             cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraMove;
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
             cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraMove;
-        if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS) {
-            if (!H_down) {
-                H_down = !H_down;
-                show_gui = !show_gui;
-            } 
-        }
-        if (glfwGetKey(window, GLFW_KEY_H) == GLFW_RELEASE) {
-            H_down = false;
-        }
-        if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) {
-            if (!T_down) {
-                T_down = !T_down;
-                T_EventHandler();
-            } 
-        }
-        if (glfwGetKey(window, GLFW_KEY_T) == GLFW_RELEASE) {
-            T_down = false;
-        }
-        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-            CTRL_down = true;
-        }
-        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_RELEASE) {
-            CTRL_down = false;
-        }
-        if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
-            if (!R_down) {
-                R_down = !R_down;
-                if (CTRL_down) {
-                    /// [TODO] clear picking
-                }
-            }
-        }
-        if (glfwGetKey(window, GLFW_KEY_R) == GLFW_RELEASE) {
-            R_down = false;
-        }
         if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
             cameraPos -= cameraMove * glm::vec3(0.0f, 1.0f, 0.0f);
         }
@@ -142,6 +133,9 @@ namespace RenderSpace {
     }
 
     void RenderWindowWidget::mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+        /// [Notify] render/mouse_event
+        m_service->notify<void(int, int)>("/mouse_event", button, action);
+
 	    if (action == GLFW_PRESS) {
             switch(button) {
 			case GLFW_MOUSE_BUTTON_LEFT:
@@ -160,11 +154,11 @@ namespace RenderSpace {
             switch(button) {
 			case GLFW_MOUSE_BUTTON_LEFT:
                 leftMousePressed = false;
-                if (CTRL_down) {
-                    glm::vec3 direction(0.0);
-                    pickingRay(glm::vec2(realX, realY), direction);
-                    /// [TODO] picking ray notify
-                }
+                //if (CTRL_down) {
+                //    glm::vec3 direction(0.0);
+                //    pickingRay(glm::vec2(realX, realY), direction);
+                //    /// [TODO] picking ray notify
+                //}
 				break;
 			case GLFW_MOUSE_BUTTON_MIDDLE:
 				break;
@@ -174,10 +168,6 @@ namespace RenderSpace {
 				return;
 			}
         }
-    }
-
-    void RenderWindowWidget::T_EventHandler() {
-        // TODO
     }
 
     void RenderWindowWidget::pickingRay(glm::vec2 screen_pos, glm::vec3& direction) {

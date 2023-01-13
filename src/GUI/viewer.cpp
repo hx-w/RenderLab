@@ -18,10 +18,14 @@ namespace GUISpace {
     using namespace std;
     using namespace RenderSpace;
 
+    static bool st_gui_visible = true;
+
     void ImGuiViewer::setup() {
-        // init [3rd-party]
+        // init ImNodes config
         ImNodes::CreateContext();
         ImNodes::StyleColorsDark();
+        // nodes initial positions
+        NodeFlow::init();
     }
 
     void ImGuiViewer::update(shared_ptr<RenderWindowWidget> win) {
@@ -30,7 +34,7 @@ namespace GUISpace {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        if (!win->show_gui) {
+        if (!st_gui_visible) {
             ImGui::Render();
             return;
         }
@@ -47,5 +51,9 @@ namespace GUISpace {
 
     void ImGuiViewer::destroy() {
         ImNodes::DestroyContext();
+    }
+
+    void ImGuiViewer::change_visibility() {
+        st_gui_visible = !st_gui_visible;
     }
 }

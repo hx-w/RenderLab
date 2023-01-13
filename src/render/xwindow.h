@@ -2,11 +2,13 @@
 #define RENDER_WINDOW_H
 
 #include <memory>
+#include <map>
+#include <time.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <GLFW/glfw3.h>
 
+struct GLFWwindow;
 namespace RenderSpace {
     typedef std::pair<glm::vec3, glm::vec3> AABB; // min, max
 
@@ -15,7 +17,6 @@ namespace RenderSpace {
     class RenderWindowWidget {
     public:
         RenderWindowWidget() = default;
-        RenderWindowWidget(std::shared_ptr<RenderService> service);
         ~RenderWindowWidget();
         RenderWindowWidget(const RenderWindowWidget&) = delete;
 
@@ -66,19 +67,10 @@ namespace RenderSpace {
         // light
         glm::vec3 lightPos = glm::vec3(0.0f, 0.0f, 0.0f);
         glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
-        
-        // gui
-        bool show_gui = true;
+   
 
     private:
-        bool T_down = false;
-        bool R_down = false;
-        bool H_down = false;
-        bool CTRL_down = false;
-    
-    private:
-        void T_EventHandler();
-
+        std::map<int, time_t> m_key_last_active; // for click, only record GLFW_PRESS
 
     private:
         std::shared_ptr<RenderContext> m_context;

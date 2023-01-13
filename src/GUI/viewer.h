@@ -16,6 +16,9 @@ public:
     static void update(std::shared_ptr<RenderSpace::RenderWindowWidget>);
 
     static void destroy();
+
+    /// hide or show gui
+    static void change_visibility();
 };
 
 }

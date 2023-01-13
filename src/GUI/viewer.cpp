@@ -1,6 +1,7 @@
 #include "viewer.h"
 
 #include <glad/glad.h>
+#include <imnodes.h>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -10,6 +11,7 @@
 #include "components/controller.h"
 #include "components/logger.h"
 #include "components/modal_confirm.h"
+#include "components/node_flow.h"
 
 
 namespace GUISpace {
@@ -17,7 +19,10 @@ namespace GUISpace {
     using namespace RenderSpace;
 
     void ImGuiViewer::setup() {
-       // init file dialog [3rd-party]
+        // init [3rd-party]
+        ImNodes::CreateContext();
+        ImNodes::StyleColorsDark();
+        ImNodes::SetNodeGridSpacePos(1, ImVec2(200.0f, 200.0f));
     }
 
     void ImGuiViewer::update(shared_ptr<RenderWindowWidget> win) {
@@ -32,15 +37,16 @@ namespace GUISpace {
         }
 
         Controller::render(win);
-        // imgui_ext::MeshViewer::render(this, m_meshes_map);
-        Logger::render(win);
-        ModalConfirm::render(win);
 
-        // Rendering
+        Logger::render();
+        ModalConfirm::render();
+        
+        NodeFlow::render();
+
         ImGui::Render();
     }
 
     void ImGuiViewer::destroy() {
-
+        ImNodes::DestroyContext();
     }
 }

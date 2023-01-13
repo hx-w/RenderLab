@@ -12,9 +12,6 @@ namespace GUISpace {
         GUIComponentBase() = default;
         ~GUIComponentBase() = default;
 
-        // virtual
-        static void render(
-            std::shared_ptr<RenderSpace::RenderWindowWidget>
-        );
+        static void render();
     };
 }

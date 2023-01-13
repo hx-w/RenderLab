@@ -3,7 +3,6 @@
 
 using namespace std;
 using namespace GUISpace;
-using namespace RenderSpace;
 
 LogMessage::LogMessage(const string& raw_msg, const LOG_LEVEL lvl) :
     level(lvl),
@@ -49,7 +48,7 @@ void Logger::set_level(LOG_LEVEL lvl) {
     st_logger_level = lvl;
 }
 
-void Logger::render(shared_ptr<RenderWindowWidget> win) {
+void Logger::render() {
     // no use for win
     // lock_guard<mutex> lk(st_logger_mutex);
     ImGui::Begin("Logger");

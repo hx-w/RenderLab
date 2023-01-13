@@ -53,6 +53,13 @@ CPMAddPackage(
   VERSION 1.0
 )
 
+# get imnodes and build
+CPMAddPackage(
+  NAME imnodes
+  GITHUB_REPOSITORY Nelarius/imnodes
+  VERSION 0.5
+)
+
 #-----------------------------------------------------------------------------#
 # define the asset path in c++
 set(ASSETS_DIR ${PROJECT_SOURCE_DIR}/resource)
@@ -81,7 +88,5 @@ target_include_directories(imgui INTERFACE ${imgui_SOURCE_DIR} ${imgui_SOURCE_DI
 target_compile_definitions(imgui PUBLIC -DIMGUI_DISABLE_OBSOLETE_FUNCTIONS) # optional imgui setting
 set_target_properties(imgui PROPERTIES CXX_STANDARD 17) # use c++17
 
-# set pybind11 include path
-if (APPLE)
-  set(PYTHON_INCLUDE_DIRS "~/opt/anaconda3/include/python3.9")
-endif()
+add_library(imnodes STATIC ${imnodes_SOURCE_DIR}/imnodes.cpp)
+target_link_libraries(imnodes PUBLIC imgui glfw)

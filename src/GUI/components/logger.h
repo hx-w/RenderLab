@@ -42,7 +42,7 @@ namespace GUISpace {
         static void resize(uint32_t maxsize);
         static void set_level(LOG_LEVEL lvl);
 
-        static void render(std::shared_ptr<RenderSpace::RenderWindowWidget>);
+        static void render();
 
     private:
         Logger() = default;

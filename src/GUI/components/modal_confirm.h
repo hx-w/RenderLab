@@ -9,9 +9,7 @@
 namespace GUISpace {
     class ModalConfirm : public GUIComponentBase {
     public:
-        static void render(
-            std::shared_ptr<RenderSpace::RenderWindowWidget>
-        );
+        static void render();
     
         static void add_notice(const std::string&, const std::string&);
     };

@@ -11,12 +11,9 @@ using namespace std;
 int main() {
 	cout << "main thread ID: " << this_thread::get_id() << endl;
 
-	auto renderer = RenderSpace::make_renderer(1200, 800);
+	GUISpace::make_service();
 
-	auto __GUI_sev = GUISpace::make_service();
+	thread(ToothSpace::make_service).detach();
 
-	auto __tooth_thd = thread(ToothSpace::make_service);
-	__tooth_thd.detach();
-
-	return renderer->exec();
+	return RenderSpace::make_renderer(1200, 800)->exec();
 }

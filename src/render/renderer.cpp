@@ -103,9 +103,15 @@ namespace RenderSpace {
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-		io.Fonts->AddFontFromFileTTF("resource/fonts/CascadiaCodePL.ttf", 14.0f);
+		io.Fonts->AddFontFromFileTTF(
+			"resource/fonts/CascadiaCodePL.ttf", 14.0f, NULL, 
+			io.Fonts->GetGlyphRangesChineseSimplifiedCommon()
+		);
 
+		ImGuiStyle& style = ImGui::GetStyle();
+		style.FrameRounding = 5;
+		style.WindowRounding = 5;
+	
 		// Setup Dear ImGui style
 		 ImGui::StyleColorsDark();
 		//ImGui::StyleColorsClassic();

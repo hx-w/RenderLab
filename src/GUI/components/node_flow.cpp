@@ -1,6 +1,7 @@
 #include <iostream>
 #include <map>
 #include <functional>
+#include <iostream>
 #include <imgui.h>
 #include <imnodes.h>
 
@@ -148,6 +149,8 @@ void NodeFlow::render() {
 
     ImNodes::BeginNodeEditor();
 
+    /// set this false, or keyboard event will be disabled in editor
+    ImGui::GetIO().WantCaptureKeyboard = false;
     Node_Preprocess(1 << 1);
     Node_Pmtr_Nurbs(1 << 2);
     Node_Pmtr_Remesh(1 << 3);

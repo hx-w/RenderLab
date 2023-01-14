@@ -98,6 +98,12 @@ namespace RenderSpace {
 			static_cast<RenderWindowWidget*>(glfwGetWindowUserPointer(w))->mouse_button_callback(w, button, action, modes);
 		});
 
+		// drop files
+		glfwSetDropCallback(m_window, [](GLFWwindow* w, int count, const char** paths) {
+			if (!ImGui::GetIO().WantCaptureMouse)
+			static_cast<RenderWindowWidget*>(glfwGetWindowUserPointer(w))->dropfile_callback(w, count, paths);
+		});
+
 		// Setup Dear ImGui context
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();

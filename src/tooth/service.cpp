@@ -24,6 +24,8 @@ namespace ToothSpace {
     void ToothService::_subscribe() {
         m_autobus->subscribe<void(const string&)>(SignalPolicy::Sync, "GUI/filepath_selected",
             bind(&Workspace::slot_fetch_filepath, m_workspace.get(), ::placeholders::_1, false));
+        m_autobus->subscribe<void(const string&)>(SignalPolicy::Sync, "render/filepath_dropin",
+            bind(&Workspace::slot_fetch_filepath, m_workspace.get(), ::placeholders::_1, false));
         m_autobus->subscribe<void(const string&, int)>(SignalPolicy::Sync, "GUI/modal_confirm_feedback",
             [this](const string& name, int res) {
                 const string prefix = "Force to load the project?##";

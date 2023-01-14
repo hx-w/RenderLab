@@ -170,6 +170,14 @@ namespace RenderSpace {
         }
     }
 
+    void RenderWindowWidget::dropfile_callback(GLFWwindow* window, int count, const char** paths) {
+        for (int i = 0; i < count; ++i) {
+            // recive files dropin
+            auto path = string(paths[i]);
+            m_service->notify<void(const string&)>("/filepath_dropin", path);
+        }
+    }
+
     void RenderWindowWidget::pickingRay(glm::vec2 screen_pos, glm::vec3& direction) {
         // implement screen to world transform and picking ray generation
         glm::vec3 origin(0.0);

@@ -28,6 +28,7 @@ namespace RenderSpace {
         void mouse_callback(GLFWwindow* window, double xpos, double ypos);
         void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
         void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+        void dropfile_callback(GLFWwindow* window, int count, const char** paths);
         void processInput(GLFWwindow* window);
 
         void pickingRay(glm::vec2 screen_pos, glm::vec3& direction);

@@ -120,11 +120,30 @@ void Node_Postprocess(int node_id) {
 }
 
 void NodeFlowHeaders() {
-	ImGui::Button("Active");
+    {
+		ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(3 / 7.0f, 0.6f, 0.6f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(3 / 7.0f, 0.7f, 0.7f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(3 / 7.0f, 0.8f, 0.8f));
+		ImGui::Button("Active");
+		ImGui::PopStyleColor(3);
+    }
 	ImGui::SameLine();
-	ImGui::Button("Clear");
+    {
+		ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0 / 7.0f, 0.6f, 0.6f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0 / 7.0f, 0.7f, 0.7f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0 / 7.0f, 0.8f, 0.8f));
+		ImGui::Button("Clear");
+		ImGui::PopStyleColor(3);
+
+    }
 	ImGui::SameLine();
-	ImGui::Button("Check");
+    {
+		ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(5 / 7.0f, 0.6f, 0.6f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(5 / 7.0f, 0.7f, 0.7f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(5 / 7.0f, 0.8f, 0.8f));
+		ImGui::Button("Check");
+		ImGui::PopStyleColor(3);
+    }
 }
 
 void NodeFlow::init() {

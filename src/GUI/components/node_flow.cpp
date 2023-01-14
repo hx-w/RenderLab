@@ -119,6 +119,14 @@ void Node_Postprocess(int node_id) {
     )
 }
 
+void NodeFlowHeaders() {
+	ImGui::Button("Active");
+	ImGui::SameLine();
+	ImGui::Button("Clear");
+	ImGui::SameLine();
+	ImGui::Button("Check");
+}
+
 void NodeFlow::init() {
     ImNodes::SetNodeGridSpacePos(1 << 1, ImVec2(35.0f, 177.0f));
     ImNodes::SetNodeGridSpacePos(1 << 2, ImVec2(202.0f, 278.0f));
@@ -146,11 +154,10 @@ void NodeFlow::delete_selected_links() {
 void NodeFlow::render() {
     /// A testcase
     ImGui::Begin("Tooth Workflow Editor");
+    NodeFlowHeaders();
 
     ImNodes::BeginNodeEditor();
 
-    /// set this false, or keyboard event will be disabled in editor
-    ImGui::GetIO().WantCaptureKeyboard = false;
     Node_Preprocess(1 << 1);
     Node_Pmtr_Nurbs(1 << 2);
     Node_Pmtr_Remesh(1 << 3);
@@ -166,12 +173,23 @@ void NodeFlow::render() {
     ImNodes::MiniMap(0.2, ImNodesMiniMapLocation_TopRight);
     ImNodes::EndNodeEditor();
 
+    /**
+     * ImGui::GetIO().WantCaptureKeyboard == true, use ImGui::IsKeyDown to capture
+     * or set Want... = false, glfw will handle and notify from renderer
+     * both are fine
+     * !!!important
+     */
+    if (ImGui::IsKeyDown(ImGuiKey_Backspace) ||
+        ImGui::IsKeyDown(ImGuiKey_Delete) ||
+        ImGui::IsKeyDown(ImGuiKey_X)
+    ) {
+        delete_selected_links();
+    }
     // add new link, render in next frame
     int start_attr = -1, end_attr = -1;
     if (ImNodes::IsLinkCreated(&start_attr, &end_attr)) {
         auto lp = LinkPair(start_attr, end_attr);
         st_node_links[HASHLINK(lp)] = lp;
     }
-
     ImGui::End();
 }

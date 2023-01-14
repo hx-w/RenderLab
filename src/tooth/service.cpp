@@ -23,9 +23,9 @@ namespace ToothSpace {
 
     void ToothService::_subscribe() {
         m_autobus->subscribe<void(const string&)>(SignalPolicy::Sync, "GUI/filepath_selected",
-            bind(&Workspace::slot_fetch_filepath, m_workspace.get(), ::placeholders::_1, false));
+            bind(&Workspace::fetch_filepath, m_workspace.get(), ::placeholders::_1, false));
         m_autobus->subscribe<void(const string&)>(SignalPolicy::Sync, "render/filepath_dropin",
-            bind(&Workspace::slot_fetch_filepath, m_workspace.get(), ::placeholders::_1, false));
+            bind(&Workspace::fetch_filepath, m_workspace.get(), ::placeholders::_1, false));
         m_autobus->subscribe<void(const string&, int)>(SignalPolicy::Sync, "GUI/modal_confirm_feedback",
             [this](const string& name, int res) {
                 const string prefix = "Force to load the project?##";
@@ -33,7 +33,7 @@ namespace ToothSpace {
                     // substr the backword
                     auto filepath = name.substr(prefix.length());
                     if (res) {
-                        m_workspace->slot_fetch_filepath(filepath, true);
+                        m_workspace->fetch_filepath(filepath, true);
                     }
                     else {
                         slot_add_log("error", "project load failed");
@@ -50,5 +50,10 @@ namespace ToothSpace {
     void ToothService::slot_add_notice(const string& name, const string& notice) {
         auto _service = ContextHub::getInstance()->getServiceTable<void(const string&, const string&)>();
         _service->sync_invoke("GUI/add_notice", name, notice);
+    }
+
+    void ToothService::slot_open_workflow(int flow_id, const string& flow_name, shared_ptr<WorkflowParams> ptr_params) {
+        auto _service = ContextHub::getInstance()->getServiceTable<void(int, const string&, shared_ptr<WorkflowParams>)>();
+        _service->sync_invoke("GUI/open_workflow", flow_id, flow_name, ptr_params);
     }
 }

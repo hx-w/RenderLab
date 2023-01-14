@@ -12,6 +12,8 @@
 
 #include <string>
 
+#include "typedef.h"
+
 namespace ToothSpace {
 
 #define PY_INITENV_MODULE  "scripts.py_env_checker"
@@ -36,6 +38,9 @@ namespace ToothSpace {
 		std::string& /* status */
 	);
 
+
+	/// load workflow params from project path (stored in config)
+	void get_workflow_params(const std::string& /* project_path */, WorkflowParams&);
 }
 
 

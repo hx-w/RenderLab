@@ -52,4 +52,8 @@ namespace ToothSpace {
 			return 1;
 		}
 	}
+
+	void get_workflow_params(const string& path, WorkflowParams& params) {
+		/// [TODO]
+	}
 }

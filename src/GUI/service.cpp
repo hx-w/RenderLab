@@ -41,7 +41,7 @@ namespace GUISpace {
 				if (key == 72  /* GLFW_KEY_H */) GUISpace::ImGuiViewer::change_visibility();
 				if (key == 261 /* GLFW_KEY_DELETE */ || 
 					key == 259 /* GLFW_KEY_BACKSPACE */)
-					GUISpace::NodeFlow::delete_selected_links();
+					GUISpace::NodeFlowManager::delete_links();
 			});
 	}
 
@@ -61,6 +61,11 @@ namespace GUISpace {
 		m_autobus->registerMethod<void(const string&, const string&)>(
 			m_symbol + "/add_notice",
 			bind(&GUISpace::ModalConfirm::add_notice, ::placeholders::_1, ::placeholders::_2)
+		);
+
+		m_autobus->registerMethod<void(int, const string&, shared_ptr<WorkflowParams>)>(
+			m_symbol + "/open_workflow",
+			bind(&GUISpace::NodeFlowManager::open_workflow, ::placeholders::_1, ::placeholders::_2, ::placeholders::_3)
 		);
 	}
 

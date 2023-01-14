@@ -23,9 +23,7 @@ namespace GUISpace {
     void ImGuiViewer::setup() {
         // init ImNodes config
         ImNodes::CreateContext();
-        ImNodes::StyleColorsDark();
-        // nodes initial positions
-        NodeFlow::init();
+        //ImNodes::StyleColorsDark();
     }
 
     void ImGuiViewer::update(shared_ptr<RenderWindowWidget> win) {
@@ -44,7 +42,7 @@ namespace GUISpace {
         Logger::render();
         ModalConfirm::render();
         
-        NodeFlow::render();
+        NodeFlowManager::render();
 
         ImGui::Render();
     }

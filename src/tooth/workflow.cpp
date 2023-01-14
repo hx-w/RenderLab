@@ -8,6 +8,8 @@
 
 using namespace std;
 
+static int debug_id = 1;
+
 #define SERVICE_INST ToothEngine::get_instance()->get_service()
 #define TOOLKIT_EXEC(func, prefix, ...) \
 			string log_msg = ""; \
@@ -25,7 +27,7 @@ namespace ToothSpace {
 		TOOLKIT_EXEC(init_workenv, "init workspace", )
 	}
 
-	void Workspace::slot_fetch_filepath(const string& filepath, bool force) {
+	void Workspace::fetch_filepath(const string& filepath, bool force) {
 		cout << filepath.c_str() << endl;
 		TOOLKIT_EXEC(preprocess_tooth_path, "project load", filepath, force,)
 		if (_code == 2) {
@@ -35,7 +37,14 @@ namespace ToothSpace {
 				"Cache and config will be replaced if confirmed\n\n"
 				"This cannot be undone!\n\n\n"
 			);
+			return;
 		}
+		// open workflow editor
+		WorkflowParams params;
+		get_workflow_params(filepath, params);
+
+		SERVICE_INST->slot_open_workflow(debug_id, "test" + to_string(debug_id), make_shared<WorkflowParams>(params));
+		debug_id++;
 	}
 
 }

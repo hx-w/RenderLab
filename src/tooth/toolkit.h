@@ -12,7 +12,7 @@
 
 #include <string>
 
-#include "typedef.h"
+#include "wkflow_context.h"
 
 namespace ToothSpace {
 
@@ -42,7 +42,7 @@ namespace ToothSpace {
 
 
 	/// load workflow params from project path (stored in config)
-	void get_workflow_params(const std::string& /* project_path */, WorkflowParams&);
+	void get_workflow_params(const std::string& /* project_path */, WkflowCtxPtr /* wkflow_ctx*/);
 }
 
 

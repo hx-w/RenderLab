@@ -41,10 +41,12 @@ namespace ToothSpace {
 		}
 		if (_code != 1) return;
 		// open workflow editor
-		WorkflowParams params;
-		get_workflow_params(filepath, params);
+		auto wkflow_ctx = make_shared<WorkflowContext>(
+			WorkflowContext(debug_id, "test" + to_string(debug_id))
+		);
+		get_workflow_params(filepath, wkflow_ctx);
 
-		SERVICE_INST->slot_open_workflow(debug_id, "test" + to_string(debug_id), make_shared<WorkflowParams>(params));
+		SERVICE_INST->slot_open_workflow(wkflow_ctx);
 		debug_id++;
 	}
 

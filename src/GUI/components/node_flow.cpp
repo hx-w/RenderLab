@@ -44,6 +44,7 @@
 
 using namespace std;
 using namespace GUISpace;
+using namespace ToothSpace;
 
 static vector<unique_ptr<NodeFlow>> st_nodeflows; // all opened workflow editors
 
@@ -151,7 +152,7 @@ void NodeFlowHeaders(int flow_id) {
     }
 }
 
-NodeFlow::NodeFlow(const WorkflowEntity& ent): m_flow_ent(ent) {
+NodeFlow::NodeFlow(WkflowCtxPtr wkflow_ctx): m_flow_ctx(wkflow_ctx) {
     /// set reverse node_attr_id to node_id
     node_attr_records[SUBNODE(NodeId_1, 1)] = NodeId_1;
     node_attr_records[SUBNODE(NodeId_2, 1)] = NodeId_2;
@@ -202,8 +203,8 @@ void NodeFlow::delete_links(int type) {
 
 void NodeFlow::render() {
     /// A testcase
-    ImGui::Begin(("Tooth Workflow Editor - " + m_flow_ent.flow_name).c_str());
-    NodeFlowHeaders(m_flow_ent.flow_id);
+    ImGui::Begin(("Tooth Workflow Editor - " + m_flow_ctx->flow_name).c_str());
+    NodeFlowHeaders(m_flow_ctx->flow_id);
 
     ImNodes::BeginNodeEditor();
     // set to current context
@@ -246,56 +247,68 @@ void NodeFlow::render() {
 }
 
 
-void NodeFlow::get_params_links(shared_ptr<WorkflowParams> _params, vector<LinkPair>& _links) {
-    _params = m_flow_ent.node_params;
-
-    // [m_] links is storing <node_attr_id, node_attr_id>, need convert to <node_id, node_id>
-    for (auto& [_lid, _pair] : links) {
-        int firstn = 0, secondn = 0;
-        if (node_attr_records.find(_pair.first) != node_attr_records.end()) {
-            firstn = node_attr_records[_pair.first];
-        }
-        if (node_attr_records.find(_pair.second) != node_attr_records.end()) {
-            secondn = node_attr_records[_pair.second];
-        }
-        if (firstn > secondn) {
-            swap(firstn, secondn); // ensure first <= second
-        }
-        auto nodepair = make_pair(firstn, secondn);
-        
-        // check if already exists
-        if (find(_links.begin(), _links.end(), nodepair) == _links.end()) {
-            _links.emplace_back(nodepair);
-        }
-    }
-}
+//void NodeFlow::get_params_links(shared_ptr<WorkflowParams> _params, vector<LinkPair>& _links) {
+//    _params = m_flow_ent.node_params;
+//
+//    // [m_] links is storing <node_attr_id, node_attr_id>, need convert to <node_id, node_id>
+//    for (auto& [_lid, _pair] : links) {
+//        int firstn = 0, secondn = 0;
+//        if (node_attr_records.find(_pair.first) != node_attr_records.end()) {
+//            firstn = node_attr_records[_pair.first];
+//        }
+//        if (node_attr_records.find(_pair.second) != node_attr_records.end()) {
+//            secondn = node_attr_records[_pair.second];
+//        }
+//        if (firstn > secondn) {
+//            swap(firstn, secondn); // ensure first <= second
+//        }
+//        auto nodepair = make_pair(firstn, secondn);
+//        
+//        // check if already exists
+//        if (find(_links.begin(), _links.end(), nodepair) == _links.end()) {
+//            _links.emplace_back(nodepair);
+//        }
+//    }
+//}
 
 /// ------------------- NodeFlowManager ------------------
 
-void NodeFlowManager::open_workflow(
-    int flow_id,
-    const std::string& flow_name,
-    std::shared_ptr<WorkflowParams> node_params
-) {
+void NodeFlowManager::open_workflow(WkflowCtxPtr wkflow_ctx) {
     // check if flow_id is exists
     for (const auto& ndflow : st_nodeflows) {
-        if (ndflow->get_flow_id() == flow_id) {
+        if (ndflow->get_flow_id() == wkflow_ctx->flow_id) {
             /// [TODO] there must be a error
             assert(0, "Should not open a nodeflow while it is opened");
         }
     }
 
     // add to next frame
-    st_nodeflows.emplace_back(
-        make_unique<NodeFlow>(WorkflowEntity{flow_id, flow_name, node_params})
-    );
+    st_nodeflows.emplace_back(make_unique<NodeFlow>(wkflow_ctx));
 }
 
-void NodeFlowManager::check_valiation(int flow_id) {
-    /// [TODO]
+void NodeFlowManager::check_valiation(int flow_id, vector<NodeId>& node_order) {
+    shared_ptr<WorkflowParams> ptr_param;
+    vector<LinkPair> links;
+
+    for (auto& ndflow : st_nodeflows) {
+        if (ndflow->get_flow_id() == flow_id) {
+            //ndflow->get_params_links(ptr_param, links);
+            // handle ptr_param, and links
+			/// [TODO]
+
+        }
+    }
 }
 
 void NodeFlowManager::active(int flow_id) {
+    /**
+     * 1. Check links valid.
+     * 2. Create a topology sort result as vector<int> wkpath
+     * 3. Notify workflowparams and node_order
+     */
+
+    vector<NodeId> node_order;
+    check_valiation(flow_id, node_order);
     /// [TODO]
 }
 

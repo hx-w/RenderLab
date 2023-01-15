@@ -8,6 +8,7 @@
 #include <memory>
 #include <functional>
 #include <communication/ContextHub.h>
+#include <wkflow_context.h>
 
 namespace RenderSpace {
 	class RenderWindowWidget;
@@ -63,9 +64,9 @@ namespace GUISpace {
 			bind(&GUISpace::ModalConfirm::add_notice, ::placeholders::_1, ::placeholders::_2)
 		);
 
-		m_autobus->registerMethod<void(int, const string&, shared_ptr<WorkflowParams>)>(
+		m_autobus->registerMethod<void(ToothSpace::WkflowCtxPtr)>(
 			m_symbol + "/open_workflow",
-			bind(&GUISpace::NodeFlowManager::open_workflow, ::placeholders::_1, ::placeholders::_2, ::placeholders::_3)
+			bind(&GUISpace::NodeFlowManager::open_workflow, ::placeholders::_1)
 		);
 	}
 

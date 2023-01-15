@@ -53,7 +53,7 @@ namespace ToothSpace {
 		}
 	}
 
-	void get_workflow_params(const string& path, WorkflowParams& params) {
-		/// [TODO]
+	void get_workflow_params(const string& path, WkflowCtxPtr wkflow_ctx) {
+		/// [TODO] compelete wkflow_ctx->node_states and node_order
 	}
 }

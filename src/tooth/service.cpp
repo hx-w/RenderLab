@@ -52,8 +52,8 @@ namespace ToothSpace {
         _service->sync_invoke("GUI/add_notice", name, notice);
     }
 
-    void ToothService::slot_open_workflow(int flow_id, const string& flow_name, shared_ptr<WorkflowParams> ptr_params) {
-        auto _service = ContextHub::getInstance()->getServiceTable<void(int, const string&, shared_ptr<WorkflowParams>)>();
-        _service->sync_invoke("GUI/open_workflow", flow_id, flow_name, ptr_params);
+    void ToothService::slot_open_workflow(shared_ptr<WorkflowContext> ptr_params) {
+        auto _service = ContextHub::getInstance()->getServiceTable<void(shared_ptr<WorkflowContext>)>();
+        _service->sync_invoke("GUI/open_workflow", ptr_params);
     }
 }

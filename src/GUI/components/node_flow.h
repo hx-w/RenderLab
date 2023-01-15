@@ -16,6 +16,8 @@
 #include <memory>
 #include <functional>
 
+#include <wkflow_context.h>
+
 
 struct ImNodesEditorContext;
 namespace GUISpace {
@@ -31,20 +33,10 @@ namespace GUISpace {
 
 	/// mantain links
 	using LinkPair = std::pair<int, int>;
-    using WorkflowParams = std::map<
-        int /* node_id */,
-        std::map<std::string /* option */, std::any> /* node_params */
-    >;
-
-    struct WorkflowEntity {
-        int flow_id;
-        std::string flow_name;
-        std::shared_ptr<WorkflowParams> node_params;
-    };
 
     class NodeFlow {
     public:
-        NodeFlow(const WorkflowEntity&);
+        NodeFlow(ToothSpace::WkflowCtxPtr);
 
         ~NodeFlow();
 
@@ -57,12 +49,12 @@ namespace GUISpace {
 
         void render();
 
-        int get_flow_id() const { return m_flow_ent.flow_id; };
+        int get_flow_id() const { return m_flow_ctx->flow_id; };
 
-        void get_params_links(std::shared_ptr<WorkflowParams>, std::vector<LinkPair>&);
+        //void get_params_links(std::shared_ptr<WorkflowParams>, std::vector<LinkPair>&);
 
     private:
-        WorkflowEntity m_flow_ent;
+        ToothSpace::WkflowCtxPtr m_flow_ctx;
 
 		std::map<int /* link_id */, LinkPair /* <node_attr_id, node_attr_id> */> links;
         std::map<int /* node_attr_id */, NodeId /* node_id */> node_attr_records;
@@ -77,16 +69,17 @@ namespace GUISpace {
     public:
         /// recive raw, convert to WorkflowEntity, and create a NodeFlow
         static void open_workflow(
-            int /* flow_id */,
-            const std::string& /* flow_name */,
-            std::shared_ptr<WorkflowParams> /* node_params */
+            ToothSpace::WkflowCtxPtr /* wkflow_ctx */
         );
+        
+		// check button callback
+        static void check_valiation(int /* flow_id */, std::vector<NodeId>& /* exec_order */);
 
-        static void check_valiation(int /* flow_id */); // check button callback
+		// active button callback
+        static void active(int /* flow_id */);
 
-        static void active(int /* flow_id */); // active button callback
-
-        static void delete_selected_links(); // delete all selected links from all nodeflows
+		// delete all selected links from all nodeflows
+        static void delete_selected_links();
         static void delete_all_links(int /* flow_id */);
         
         static void render(); // render all

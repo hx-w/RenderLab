@@ -4,7 +4,7 @@
 #include <string>
 #include <memory>
 #include <communication/AutoBus.hpp>
-#include "typedef.h"
+#include "wkflow_context.h"
 
 namespace ToothSpace {
     class ToothEngine;
@@ -20,7 +20,7 @@ namespace ToothSpace {
     public:
         void slot_add_log(std::string&&, const std::string&);
         void slot_add_notice(const std::string&, const std::string&);
-        void slot_open_workflow(int, const std::string&, std::shared_ptr<WorkflowParams>);
+        void slot_open_workflow(std::shared_ptr<WorkflowContext>);
 
     private:
         void _subscribe();

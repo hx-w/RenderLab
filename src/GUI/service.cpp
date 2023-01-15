@@ -61,7 +61,20 @@ namespace GUISpace {
 
 		m_autobus->registerMethod<void(const string&, const string&)>(
 			m_symbol + "/add_notice",
-			bind(&GUISpace::ModalConfirm::add_notice, ::placeholders::_1, ::placeholders::_2)
+			[this](const string& title, const string& detail) {
+				GUISpace::ModalConfirm::add_notice(title, detail);
+			}
+		);
+
+		m_autobus->registerMethod<void(const string&, function<void(any&&)>&&, any&&)>(
+			m_symbol + "/add_notice",
+			[this](const string& title, function<void(any&&)>&& custom, any&& param) {
+				GUISpace::ModalConfirm::add_notice(
+					title, 
+					forward<decltype(custom)>(custom),
+					forward<decltype(param)>(param)
+				);
+			}
 		);
 
 		m_autobus->registerMethod<void(ToothSpace::WkflowCtxPtr)>(

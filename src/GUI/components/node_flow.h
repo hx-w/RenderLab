@@ -23,13 +23,12 @@ struct ImNodesEditorContext;
 namespace GUISpace {
     enum NodeId {
         NodeId_1 = 1 << 3   /* preprocess */,
-        NodeId_2 = 1 << 5   /* pmtr_remesh */,
-        NodeId_3 = 1 << 7   /* pmtr_nurbs */,
+        NodeId_2 = 1 << 5   /* pmtr_nurbs */,
+        NodeId_3 = 1 << 7   /* pmtr_remesh */,
         NodeId_4 = 1 << 9   /* gen_GT */,
         NodeId_5 = 1 << 11  /* gen_ML */,
         NodeId_6 = 1 << 13  /* postprocess */,
     };
-
 
 	/// mantain links
 	using LinkPair = std::pair<int, int>;
@@ -49,9 +48,11 @@ namespace GUISpace {
 
         void render();
 
-        int get_flow_id() const { return m_flow_ctx->flow_id; };
+        int get_flow_id() const { return m_flow_ctx->flow_id; }
+        ToothSpace::WkflowCtxPtr get_wkflow_context() { return m_flow_ctx; }
 
-        //void get_params_links(std::shared_ptr<WorkflowParams>, std::vector<LinkPair>&);
+        // for links <node_attr_id, node_attr_id>, convert to <node_id, node_id>
+        void get_links (std::vector<LinkPair>&) const;
 
     private:
         ToothSpace::WkflowCtxPtr m_flow_ctx;
@@ -73,7 +74,7 @@ namespace GUISpace {
         );
         
 		// check button callback
-        static void check_valiation(int /* flow_id */, std::vector<NodeId>& /* exec_order */);
+        static bool check_valiation(int /* flow_id */, std::vector<NodeId>& /* node_order */);
 
 		// active button callback
         static void active(int /* flow_id */);

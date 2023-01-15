@@ -18,10 +18,12 @@
 #include <iostream>
 #include <cassert>
 #include <mutex>
+#include <algorithm>
 #include <imgui.h>
 #include <imnodes.h>
 
 #include "node_flow.h"
+#include "modal_confirm.h"
 
 //#define SUBNODE(node_id, inc) ((std::hash<int>()(node_id) % 0xdeadbeef) + inc)
 #define SUBNODE(node_id, inc) (node_id + inc)
@@ -147,9 +149,38 @@ void NodeFlowHeaders(int flow_id) {
 		ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(5 / 7.0f, 0.6f, 0.6f));
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(5 / 7.0f, 0.7f, 0.7f));
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(5 / 7.0f, 0.8f, 0.8f));
-		ImGui::Button("Check");
+		vector<NodeId> node_order;
+        auto str_id_success = "Check successfully - " + to_string(flow_id);
+        auto str_id_failed = "Check failed - " + to_string(flow_id);
+        if (ImGui::Button("Check")) {
+            if (NodeFlowManager::check_valiation(flow_id, node_order)) {
+                // success
+                //ImGui::OpenPopup(str_id_success.c_str());
+            }
+            else {
+                // failed
+                ModalConfirm::add_notice("test", [](any&& param) {
+					ImGui::TextColored(ImVec4(10, 200, 10, 255), "node links is invalid!");
+		            ImGui::Text("Node order:\n");
+                    auto ndlist = any_cast<vector<NodeId>>(param);
+                    ImGui::Button("?");
+		            for (auto& nd : ndlist) {
+		                switch (nd) {
+		                case NodeId_1: ImGui::Button("Preprocess"); break;
+		                case NodeId_2: ImGui::Button("Parameter_Nurbs"); break;
+		                case NodeId_3: ImGui::Button("Parameter_Remesh"); break;
+		                case NodeId_4: ImGui::Button("Generator_GT"); break;
+		                case NodeId_5: ImGui::Button("Generator_ML"); break;
+		                case NodeId_6: ImGui::Button("Postprocess"); break;
+		                }
+		            }
+                    }, move(node_order));
+            }
+        }
 		ImGui::PopStyleColor(3);
     }
+
+
 }
 
 NodeFlow::NodeFlow(WkflowCtxPtr wkflow_ctx): m_flow_ctx(wkflow_ctx) {
@@ -247,29 +278,27 @@ void NodeFlow::render() {
 }
 
 
-//void NodeFlow::get_params_links(shared_ptr<WorkflowParams> _params, vector<LinkPair>& _links) {
-//    _params = m_flow_ent.node_params;
-//
-//    // [m_] links is storing <node_attr_id, node_attr_id>, need convert to <node_id, node_id>
-//    for (auto& [_lid, _pair] : links) {
-//        int firstn = 0, secondn = 0;
-//        if (node_attr_records.find(_pair.first) != node_attr_records.end()) {
-//            firstn = node_attr_records[_pair.first];
-//        }
-//        if (node_attr_records.find(_pair.second) != node_attr_records.end()) {
-//            secondn = node_attr_records[_pair.second];
-//        }
-//        if (firstn > secondn) {
-//            swap(firstn, secondn); // ensure first <= second
-//        }
-//        auto nodepair = make_pair(firstn, secondn);
-//        
-//        // check if already exists
-//        if (find(_links.begin(), _links.end(), nodepair) == _links.end()) {
-//            _links.emplace_back(nodepair);
-//        }
-//    }
-//}
+void NodeFlow::get_links(vector<LinkPair>& _links) const {
+    // [m_] links is storing <node_attr_id, node_attr_id>, need convert to <node_id, node_id>
+    for (const auto& [_lid, _pair] : links) {
+        int firstn = 0, secondn = 0;
+        if (node_attr_records.find(_pair.first) != node_attr_records.end()) {
+            firstn = node_attr_records.at(_pair.first);
+        }
+        if (node_attr_records.find(_pair.second) != node_attr_records.end()) {
+            secondn = node_attr_records.at(_pair.second);
+        }
+        if (firstn > secondn) {
+            swap(firstn, secondn); // ensure first <= second
+        }
+        auto nodepair = make_pair(firstn, secondn);
+        
+        // check if already exists
+        if (find(_links.begin(), _links.end(), nodepair) == _links.end()) {
+            _links.emplace_back(nodepair);
+        }
+    }
+}
 
 /// ------------------- NodeFlowManager ------------------
 
@@ -286,18 +315,24 @@ void NodeFlowManager::open_workflow(WkflowCtxPtr wkflow_ctx) {
     st_nodeflows.emplace_back(make_unique<NodeFlow>(wkflow_ctx));
 }
 
-void NodeFlowManager::check_valiation(int flow_id, vector<NodeId>& node_order) {
-    shared_ptr<WorkflowParams> ptr_param;
+bool NodeFlowManager::check_valiation(int flow_id, vector<NodeId>& node_order) {
     vector<LinkPair> links;
 
     for (auto& ndflow : st_nodeflows) {
         if (ndflow->get_flow_id() == flow_id) {
-            //ndflow->get_params_links(ptr_param, links);
+            ndflow->get_links(links);
             // handle ptr_param, and links
 			/// [TODO]
-
+            sort(links.begin(), links.end());
+            // for test
+            node_order.clear();
+            node_order.emplace_back(NodeId_1);
+            node_order.emplace_back(NodeId_3);
+            node_order.emplace_back(NodeId_5);
+            node_order.emplace_back(NodeId_6);
         }
     }
+    return false;
 }
 
 void NodeFlowManager::active(int flow_id) {

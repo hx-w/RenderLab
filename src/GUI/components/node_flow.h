@@ -52,11 +52,14 @@ namespace GUISpace {
         void reset_nodes_pos();
 
         /// action delete link
-        void delete_selected_links();
+        /// @param type: int, 0 => selected, 1 => all
+        void delete_links(int /* type */);
 
         void render();
 
         int get_flow_id() const { return m_flow_ent.flow_id; };
+
+        void get_params_links(std::shared_ptr<WorkflowParams>, std::vector<LinkPair>&);
 
     private:
         WorkflowEntity m_flow_ent;
@@ -83,7 +86,8 @@ namespace GUISpace {
 
         static void active(int /* flow_id */); // active button callback
 
-        static void delete_links(); // delete all selected links from all nodeflows
+        static void delete_selected_links(); // delete all selected links from all nodeflows
+        static void delete_all_links(int /* flow_id */);
         
         static void render(); // render all
     };

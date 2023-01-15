@@ -14,7 +14,7 @@ namespace ToothSpace {
 			// init interpreter for current thread
 			py::scoped_interpreter guard{};
 			auto _py_pkg = py::module_::import(PY_INITENV_MODULE);
-			auto reqs = py::make_tuple("trimesh", "toml");
+			auto reqs = py::make_tuple(PY_REQUIREMENTS);
 			_py_pkg.attr("make_requirements_installed")(
 				reqs, "https://pypi.tuna.tsinghua.edu.cn/simple"
 			);

@@ -39,6 +39,7 @@ namespace ToothSpace {
 			);
 			return;
 		}
+		if (_code != 1) return;
 		// open workflow editor
 		WorkflowParams params;
 		get_workflow_params(filepath, params);

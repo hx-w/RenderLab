@@ -56,7 +56,6 @@ void Node_Preprocess(int node_id) {
         (0, 182, 208, 255), (0, 129, 201, 255), (0, 182, 248, 100),
         /* custom scripts */
         ImNodes::BeginOutputAttribute(SUBNODE(node_id, 1));
-        ImGui::Text("output");
         ImNodes::EndOutputAttribute();     
     )
 }
@@ -67,11 +66,9 @@ void Node_Pmtr_Nurbs(int node_id) {
         (119, 67, 219, 255), (59, 52, 134, 255), (119, 67, 219, 100),
         /* custom scripts */
         ImNodes::BeginInputAttribute(SUBNODE(node_id, 1));
-        ImGui::Text("input");
         ImNodes::EndInputAttribute();
-
+        ImGui::SameLine();
         ImNodes::BeginOutputAttribute(SUBNODE(node_id, 2));
-        ImGui::Text("output");
         ImNodes::EndOutputAttribute();
     )
 }
@@ -82,11 +79,9 @@ void Node_Pmtr_Remesh(int node_id) {
         (119, 67, 219, 255), (59, 52, 134, 255), (119, 67, 219, 100),
         /* custom scripts */
         ImNodes::BeginInputAttribute(SUBNODE(node_id, 1));
-        ImGui::Text("input");
         ImNodes::EndInputAttribute();
-
+        ImGui::SameLine();
         ImNodes::BeginOutputAttribute(SUBNODE(node_id, 2));
-        ImGui::Text("output");
         ImNodes::EndOutputAttribute();
     )
 }
@@ -97,11 +92,9 @@ void Node_Generator_GT(int node_id) {
         (5, 89, 91, 255), (6, 44, 48, 255), (5, 89, 91, 100),
         /* custom scripts */
         ImNodes::BeginInputAttribute(SUBNODE(node_id, 1));
-        ImGui::Text("input");
         ImNodes::EndInputAttribute();
-
+        ImGui::SameLine();
         ImNodes::BeginOutputAttribute(SUBNODE(node_id, 2));
-        ImGui::Text("output");
         ImNodes::EndOutputAttribute();
     )
 }
@@ -112,11 +105,9 @@ void Node_Generator_ML(int node_id) {
         (5, 89, 91, 255), (6, 44, 48, 255), (5, 89, 91, 100),
         /* custom scripts */
         ImNodes::BeginInputAttribute(SUBNODE(node_id, 1));
-        ImGui::Text("input");
         ImNodes::EndInputAttribute();
-
+        ImGui::SameLine();
         ImNodes::BeginOutputAttribute(SUBNODE(node_id, 2));
-        ImGui::Text("output");
         ImNodes::EndOutputAttribute();
     )
 }
@@ -127,12 +118,11 @@ void Node_Postprocess(int node_id) {
         (215, 82, 129, 255), (185, 49, 96, 255), (215, 82, 129, 100),
         /* custom scripts */
         ImNodes::BeginInputAttribute(SUBNODE(node_id, 1));
-        ImGui::Text("input");
         ImNodes::EndInputAttribute();
     )
 }
 
-void NodeFlowHeaders() {
+void NodeFlowHeaders(int flow_id) {
     {
 		ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(3 / 7.0f, 0.6f, 0.6f));
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(3 / 7.0f, 0.7f, 0.7f));
@@ -145,7 +135,9 @@ void NodeFlowHeaders() {
 		ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0 / 7.0f, 0.6f, 0.6f));
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0 / 7.0f, 0.7f, 0.7f));
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0 / 7.0f, 0.8f, 0.8f));
-		ImGui::Button("Clear");
+        if (ImGui::Button("Clear")) {
+            NodeFlowManager::delete_all_links(flow_id);
+        }
 		ImGui::PopStyleColor(3);
 
     }
@@ -188,33 +180,36 @@ void NodeFlow::reset_nodes_pos() {
     ImNodes::SetNodeGridSpacePos(NodeId_6, ImVec2(691.0f, 177.0f));
 }
 
-void NodeFlow::delete_selected_links() {
-    // in this context
-    const int num_selected_links = ImNodes::NumSelectedLinks();
-    if (num_selected_links > 0) {
-        std::vector<int> selected_links(num_selected_links, 0);
-        ImNodes::GetSelectedLinks(selected_links.data());
-        
-        for (auto lid : selected_links) {
-            // carefully delete
-            if (links.find(lid) != links.end()) {
-                links.erase(lid);
-            }
-        }
+void NodeFlow::delete_links(int type) {
+    if (type == 1) {
+        links.clear();
+    }
+    else {
+		const int num_selected_links = ImNodes::NumSelectedLinks();
+		if (num_selected_links > 0) {
+			std::vector<int> selected_links(num_selected_links, 0);
+			ImNodes::GetSelectedLinks(selected_links.data());
+			
+			for (auto lid : selected_links) {
+				// carefully delete
+				if (links.find(lid) != links.end()) {
+					links.erase(lid);
+				}
+			}
+		}
     }
 }
 
 void NodeFlow::render() {
     /// A testcase
     ImGui::Begin(("Tooth Workflow Editor - " + m_flow_ent.flow_name).c_str());
-    NodeFlowHeaders();
+    NodeFlowHeaders(m_flow_ent.flow_id);
 
     ImNodes::BeginNodeEditor();
     // set to current context
     ImNodes::EditorContextSet(m_ctx);
     call_once(m_init, bind(&NodeFlow::reset_nodes_pos, this));
 
-    const auto fid = m_flow_ent.flow_id * 10;
     Node_Preprocess(NodeId_1);
     Node_Pmtr_Nurbs(NodeId_2);
     Node_Pmtr_Remesh(NodeId_3);
@@ -229,7 +224,6 @@ void NodeFlow::render() {
 
     ImNodes::MiniMap(0.2, ImNodesMiniMapLocation_TopRight);
     ImNodes::EndNodeEditor();
-
     /**
      * ImGui::GetIO().WantCaptureKeyboard == true, use ImGui::IsKeyDown to capture
      * or set Want... = false, glfw will handle and notify from renderer
@@ -240,7 +234,7 @@ void NodeFlow::render() {
         ImGui::IsKeyDown(ImGuiKey_Delete) ||
         ImGui::IsKeyDown(ImGuiKey_X)
     ) {
-        delete_selected_links();
+        delete_links(0);
     }
     // add new link, render in next frame
     int start_attr = -1, end_attr = -1;
@@ -251,6 +245,30 @@ void NodeFlow::render() {
     ImGui::End();
 }
 
+
+void NodeFlow::get_params_links(shared_ptr<WorkflowParams> _params, vector<LinkPair>& _links) {
+    _params = m_flow_ent.node_params;
+
+    // [m_] links is storing <node_attr_id, node_attr_id>, need convert to <node_id, node_id>
+    for (auto& [_lid, _pair] : links) {
+        int firstn = 0, secondn = 0;
+        if (node_attr_records.find(_pair.first) != node_attr_records.end()) {
+            firstn = node_attr_records[_pair.first];
+        }
+        if (node_attr_records.find(_pair.second) != node_attr_records.end()) {
+            secondn = node_attr_records[_pair.second];
+        }
+        if (firstn > secondn) {
+            swap(firstn, secondn); // ensure first <= second
+        }
+        auto nodepair = make_pair(firstn, secondn);
+        
+        // check if already exists
+        if (find(_links.begin(), _links.end(), nodepair) == _links.end()) {
+            _links.emplace_back(nodepair);
+        }
+    }
+}
 
 /// ------------------- NodeFlowManager ------------------
 
@@ -281,9 +299,17 @@ void NodeFlowManager::active(int flow_id) {
     /// [TODO]
 }
 
-void NodeFlowManager::delete_links() {
+void NodeFlowManager::delete_selected_links() {
     for (auto& ndflow : st_nodeflows) {
-        ndflow->delete_selected_links();
+        ndflow->delete_links(0);
+    }
+}
+
+void NodeFlowManager::delete_all_links(int flow_id) {
+    for (auto& ndflow : st_nodeflows) {
+        if (ndflow->get_flow_id() == flow_id) {
+            ndflow->delete_links(1);
+        }
     }
 }
 

@@ -41,7 +41,7 @@ namespace GUISpace {
 				if (key == 72  /* GLFW_KEY_H */) GUISpace::ImGuiViewer::change_visibility();
 				if (key == 261 /* GLFW_KEY_DELETE */ || 
 					key == 259 /* GLFW_KEY_BACKSPACE */)
-					GUISpace::NodeFlowManager::delete_links();
+					GUISpace::NodeFlowManager::delete_selected_links();
 			});
 	}
 

@@ -2,15 +2,10 @@
  * \file   node_flow.cpp
  * \brief  !!!important
  * 
- *         ImNodes use only ONE context, 
- *         so dont use NodeId_X as shared
+ *         'NodeFlow' maintain WkflowCtxPtr for each nodeflow
+ *         'NodeFlowManager' is a collection of static functions for NodeFlow
  * 
- *         solution: 
- *            RealNodeId_X for each flow: NodeId_X + flow_id
- *         since flow_id and NodeId_X both are hash value
- *         NodeAttrId is increase 1 each time for NodeId_X
- *  
- * \author Administrator
+ * \author CarOL
  * \date   January 2023
  *********************************************************************/
 
@@ -24,6 +19,9 @@
 
 #include "node_flow.h"
 #include "modal_confirm.h"
+
+// tooth toolkit
+#include <toolkit.h>
 
 //#define SUBNODE(node_id, inc) ((std::hash<int>()(node_id) % 0xdeadbeef) + inc)
 #define SUBNODE(node_id, inc) (node_id + inc)
@@ -44,11 +42,20 @@
 
 #define HASHLINK(link) ((hash<int>()(link.first) + hash<int>()(link.second)) % 0xdeadbeef) 
 
+
 using namespace std;
 using namespace GUISpace;
 using namespace ToothSpace;
 
+
 static vector<unique_ptr<NodeFlow>> st_nodeflows; // all opened workflow editors
+
+
+void ColoredButton(ImVec4&& clr, const char* title) {
+    //ImGui::PushStyleColor(ImGuiCol_Button, forward<ImVec4>(clr));
+    ImGui::Button(title);
+    //ImGui::PopStyleColor();
+}
 
 /**
  * Individual nodes.
@@ -153,28 +160,34 @@ void NodeFlowHeaders(int flow_id) {
         auto str_id_success = "Check successfully - " + to_string(flow_id);
         auto str_id_failed = "Check failed - " + to_string(flow_id);
         if (ImGui::Button("Check")) {
+            /// [TODO]
             if (NodeFlowManager::check_valiation(flow_id, node_order)) {
                 // success
-                //ImGui::OpenPopup(str_id_success.c_str());
             }
             else {
-                // failed
-                ModalConfirm::add_notice("test", [](any&& param) {
+                // failed case
+                ModalConfirm::add_notice("Checking Failed", [](any&& param) {
 					ImGui::TextColored(ImVec4(10, 200, 10, 255), "node links is invalid!");
-		            ImGui::Text("Node order:\n");
+                    // a tricky style
                     auto ndlist = any_cast<vector<NodeId>>(param);
-                    ImGui::Button("?");
-		            for (auto& nd : ndlist) {
-		                switch (nd) {
-		                case NodeId_1: ImGui::Button("Preprocess"); break;
-		                case NodeId_2: ImGui::Button("Parameter_Nurbs"); break;
-		                case NodeId_3: ImGui::Button("Parameter_Remesh"); break;
-		                case NodeId_4: ImGui::Button("Generator_GT"); break;
-		                case NodeId_5: ImGui::Button("Generator_ML"); break;
-		                case NodeId_6: ImGui::Button("Postprocess"); break;
+                    auto ndlist_sz = ndlist.size();
+                    for (auto ind = 0; ind < ndlist_sz; ++ind) {
+		                switch (ndlist[ind]) {
+                        case NodeId_1: ColoredButton(ImVec4(0, 182, 208, 255), "Preprocess"); break;
+                        case NodeId_2: ColoredButton(ImVec4(119, 67, 219, 255), "Parameter_Nurbs"); break;
+                        case NodeId_3: ColoredButton(ImVec4(119, 67, 219, 255), "Parameter_Remesh"); break;
+                        case NodeId_4: ColoredButton(ImVec4(5, 89, 91, 255), "Generator_GT"); break;
+                        case NodeId_5: ColoredButton(ImVec4(5, 89, 91, 255), "Generator_ML"); break;
+                        case NodeId_6: ColoredButton(ImVec4(215, 82, 129, 255), "Postprocess"); break;
 		                }
-		            }
-                    }, move(node_order));
+                        if (ind != ndlist_sz - 1) {
+                            // not the last one, exits some drawing
+                            ImGui::SameLine();
+                            ImGui::Text("->");
+                            ImGui::SameLine();
+                        }
+                    }
+                }, move(node_order));
             }
         }
 		ImGui::PopStyleColor(3);
@@ -322,16 +335,18 @@ bool NodeFlowManager::check_valiation(int flow_id, vector<NodeId>& node_order) {
         if (ndflow->get_flow_id() == flow_id) {
             ndflow->get_links(links);
             // handle ptr_param, and links
-			/// [TODO]
             sort(links.begin(), links.end());
-            // for test
-            node_order.clear();
-            node_order.emplace_back(NodeId_1);
-            node_order.emplace_back(NodeId_3);
-            node_order.emplace_back(NodeId_5);
-            node_order.emplace_back(NodeId_6);
+            /// see tooth/toolkit.h - topological sort
+            ToothSpace::topological_sort(links, node_order);
+            break;
         }
     }
+
+    if (node_order.empty()) return false;
+	/// check node_order valid
+	/// [TODO]
+    
+
     return false;
 }
 

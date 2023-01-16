@@ -21,18 +21,6 @@
 
 struct ImNodesEditorContext;
 namespace GUISpace {
-    enum NodeId {
-        NodeId_1 = 1 << 3   /* preprocess */,
-        NodeId_2 = 1 << 5   /* pmtr_nurbs */,
-        NodeId_3 = 1 << 7   /* pmtr_remesh */,
-        NodeId_4 = 1 << 9   /* gen_GT */,
-        NodeId_5 = 1 << 11  /* gen_ML */,
-        NodeId_6 = 1 << 13  /* postprocess */,
-    };
-
-	/// mantain links
-	using LinkPair = std::pair<int, int>;
-
     class NodeFlow {
     public:
         NodeFlow(ToothSpace::WkflowCtxPtr);

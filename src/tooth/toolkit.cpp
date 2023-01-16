@@ -56,4 +56,52 @@ namespace ToothSpace {
 	void get_workflow_params(const string& path, WkflowCtxPtr wkflow_ctx) {
 		/// [TODO] compelete wkflow_ctx->node_states and node_order
 	}
+
+
+	void _topo_dfs(
+		NodeId nd,
+		map<NodeId, bool>& visited,
+		const vector<LinkPair>& links,
+		vector<NodeId>& node_order
+	) {
+		visited[nd] = true;
+		// from nd as start
+		for (const auto& lk : links) {
+			if (lk.first == static_cast<int>(nd)) {
+				auto nd_next = static_cast<NodeId>(lk.second);
+				if (!visited.at(nd_next)) {
+					_topo_dfs(nd_next, visited, links, node_order);
+				}
+			}
+		}
+		node_order.emplace_back(nd);
+	}
+
+	void topological_sort(const vector<LinkPair>& links, vector<NodeId>& node_order) {
+		node_order.clear();
+		// maintain nodes when add new node
+		auto all_nodes = {
+			NodeId_1, NodeId_2, NodeId_3, NodeId_4, NodeId_5, NodeId_6
+		};
+		
+		map<NodeId, bool> visited;
+		// init visited as false
+		for (auto& nd : all_nodes) {
+			visited[nd] = false;
+		}
+
+		auto search_start = [&](NodeId nd) {
+			// in case of new added node except 6 nodes
+			if (visited.find(nd) == visited.end()) visited[nd] = false;
+			if (!visited.at(nd)) {
+				_topo_dfs(nd, visited, links, node_order);
+			}
+		};
+
+		for (auto& lk : links) {
+			search_start(static_cast<NodeId>(lk.first));
+			search_start(static_cast<NodeId>(lk.second));
+		}
+		reverse(node_order.begin(), node_order.end());
+	}
 }

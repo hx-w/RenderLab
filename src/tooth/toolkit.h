@@ -43,6 +43,10 @@ namespace ToothSpace {
 
 	/// load workflow params from project path (stored in config)
 	void get_workflow_params(const std::string& /* project_path */, WkflowCtxPtr /* wkflow_ctx*/);
+
+
+	/// topological sort for nodeflow
+	void topological_sort(const std::vector<LinkPair>& /* links */, std::vector<NodeId>& /* node_order */);
 }
 
 

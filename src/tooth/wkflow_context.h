@@ -19,13 +19,37 @@ enum NodeId {
 
 namespace ToothSpace {
 	using WorkflowParams = std::map<
-		int /* node_id */,
+		NodeId /* node_id */,
 		std::map<std::string /* option */, std::any> /* node_params */
 	>;
 
     struct WorkflowContext {
         WorkflowContext(int fid, const std::string& fname):
-            flow_id(fid), flow_name(fname), node_states(), node_order() {}
+            flow_id(fid), flow_name(fname), node_states(), node_order() {
+			// template states
+			node_states[NodeId_1] = {
+				{"Ensure manifolds", true}, // input manifolds ensure
+			};
+			node_states[NodeId_2] = {
+				{"CtrPtr size", std::make_pair(3, 5)},
+				{"Assists", false},
+				{"CtrPtr weights", "auto"},
+				{"Remesh size", std::make_pair(100, 100)}
+			};
+			node_states[NodeId_3] = {
+				{"Parameterize method", "Yenh 2019"},
+				{"Remesh size", std::make_pair(100, 100)}
+			};
+			node_states[NodeId_4] = {
+
+			};
+			node_states[NodeId_5] = {
+
+			};
+			node_states[NodeId_6] = {
+
+			};
+		}
 
         int flow_id = 0;
         std::string flow_name = "";

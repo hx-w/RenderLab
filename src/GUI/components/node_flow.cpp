@@ -50,6 +50,16 @@ using namespace ToothSpace;
 
 static vector<unique_ptr<NodeFlow>> st_nodeflows; // all opened workflow editors
 
+static void HelpMarker(const char* desc) {
+    ImGui::TextDisabled("(?)");
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
+        ImGui::BeginTooltip();
+        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+        ImGui::TextUnformatted(desc);
+        ImGui::PopTextWrapPos();
+        ImGui::EndTooltip();
+    }
+}
 
 void ColoredButton(ImVec4&& clr, const char* title) {
     //ImGui::PushStyleColor(ImGuiCol_Button, forward<ImVec4>(clr));
@@ -61,17 +71,29 @@ void ColoredButton(ImVec4&& clr, const char* title) {
  * Individual nodes.
  */
 /// [Node] preprocess
-void Node_Preprocess(int node_id) {
+void Node_Preprocess(NodeId node_id, WkflowCtxPtr wkflow_ctx) {
     SHOWNODE(node_id, "[Preprocess]",
         (0, 182, 208, 255), (0, 129, 201, 255), (0, 182, 248, 100),
         /* custom scripts */
         ImNodes::BeginOutputAttribute(SUBNODE(node_id, 1));
-        ImNodes::EndOutputAttribute();     
+        ImNodes::EndOutputAttribute();
+        {
+            // stupid, but works
+			ImGui::Checkbox(
+                "Ensure manifolds",
+                (bool *)(& wkflow_ctx->node_states[NodeId_1]["Ensure manifolds"])
+            );
+            ImGui::SameLine();
+            HelpMarker(
+                "If input meshes are not manifolds,\n"
+                "program will convert them to manifolds as possible"
+            );
+        }
     )
 }
 
 /// [Node] parameterization_nurbs
-void Node_Pmtr_Nurbs(int node_id) {
+void Node_Pmtr_Nurbs(NodeId node_id, WkflowCtxPtr wkflow_ctx) {
     SHOWNODE(node_id, "[Parameter by Nurbs]",
         (119, 67, 219, 255), (59, 52, 134, 255), (119, 67, 219, 100),
         /* custom scripts */
@@ -84,7 +106,7 @@ void Node_Pmtr_Nurbs(int node_id) {
 }
 
 /// [Node] parameterization_remesh
-void Node_Pmtr_Remesh(int node_id) {
+void Node_Pmtr_Remesh(NodeId node_id, WkflowCtxPtr wkflow_ctx) {
     SHOWNODE(node_id, "[Parameter by Remesh]",
         (119, 67, 219, 255), (59, 52, 134, 255), (119, 67, 219, 100),
         /* custom scripts */
@@ -97,7 +119,7 @@ void Node_Pmtr_Remesh(int node_id) {
 }
 
 /// [Node] generator_GT
-void Node_Generator_GT(int node_id) {
+void Node_Generator_GT(NodeId node_id, WkflowCtxPtr wkflow_ctx) {
     SHOWNODE(node_id, "[Generate by GT]",
         (5, 89, 91, 255), (6, 44, 48, 255), (5, 89, 91, 100),
         /* custom scripts */
@@ -110,7 +132,7 @@ void Node_Generator_GT(int node_id) {
 }
 
 /// [Node] generator_ML
-void Node_Generator_ML(int node_id) {
+void Node_Generator_ML(NodeId node_id, WkflowCtxPtr wkflow_ctx) {
     SHOWNODE(node_id, "[Generate by ML]",
         (5, 89, 91, 255), (6, 44, 48, 255), (5, 89, 91, 100),
         /* custom scripts */
@@ -123,7 +145,7 @@ void Node_Generator_ML(int node_id) {
 }
 
 /// [Node] postprocess
-void Node_Postprocess(int node_id) {
+void Node_Postprocess(NodeId node_id, WkflowCtxPtr wkflow_ctx) {
     SHOWNODE(node_id, "[Postprecess]",
         (215, 82, 129, 255), (185, 49, 96, 255), (215, 82, 129, 100),
         /* custom scripts */
@@ -255,12 +277,12 @@ void NodeFlow::render() {
     ImNodes::EditorContextSet(m_ctx);
     call_once(m_init, bind(&NodeFlow::reset_nodes_pos, this));
 
-    Node_Preprocess(NodeId_1);
-    Node_Pmtr_Nurbs(NodeId_2);
-    Node_Pmtr_Remesh(NodeId_3);
-    Node_Generator_GT(NodeId_4);
-    Node_Generator_ML(NodeId_5);
-    Node_Postprocess(NodeId_6);
+    Node_Preprocess(NodeId_1, m_flow_ctx);
+    Node_Pmtr_Nurbs(NodeId_2, m_flow_ctx);
+    Node_Pmtr_Remesh(NodeId_3, m_flow_ctx);
+    Node_Generator_GT(NodeId_4, m_flow_ctx);
+    Node_Generator_ML(NodeId_5, m_flow_ctx);
+    Node_Postprocess(NodeId_6, m_flow_ctx);
     
     // create links for each frame
     for (auto& [_id, _link] : links) {
@@ -345,9 +367,16 @@ bool NodeFlowManager::check_valiation(int flow_id, vector<NodeId>& node_order) {
     if (node_order.empty()) return false;
 	/// check node_order valid
 	/// [TODO]
-    
-
-    return false;
+    if (node_order[0] != NodeId_1) return false;
+    if (node_order.back() != NodeId_6) return false;
+    auto result = false;
+    for (auto& nd : node_order) {
+        if (nd == NodeId_2 || nd == NodeId_3) {
+            result = true;
+            break;
+        }
+    }
+    return result;
 }
 
 void NodeFlowManager::active(int flow_id) {

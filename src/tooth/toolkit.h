@@ -11,10 +11,10 @@
 #define TOOTH_TOOLKIT_H
 
 #include <string>
-
 #include "wkflow_context.h"
 
 namespace ToothSpace {
+	class ToothPack;
 
 #define PY_INITENV_MODULE  "scripts.py_env_checker"
 #define PY_LOADPROJ_MODULE "scripts.py_load_project"
@@ -42,7 +42,7 @@ namespace ToothSpace {
 
 
 	/// load workflow params from project path (stored in config)
-	void get_workflow_params(const std::string& /* project_path */, WkflowCtxPtr /* wkflow_ctx*/);
+	void get_tooth_pack_cache(const std::string& /* project_path */, ToothPack* /* tpack */);
 
 
 	/// topological sort for nodeflow

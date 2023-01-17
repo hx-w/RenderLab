@@ -5,10 +5,10 @@
 #include "toolkit.h"
 #include "engine.h"
 #include "service.h"
+#include "tooth_pack.h"
 
 using namespace std;
 
-static int debug_id = 1;
 
 #define SERVICE_INST ToothEngine::get_instance()->get_service()
 #define TOOLKIT_EXEC(func, prefix, ...) \
@@ -25,6 +25,7 @@ static int debug_id = 1;
 namespace ToothSpace {
 	Workspace::Workspace() {
 		TOOLKIT_EXEC(init_workenv, "init workspace", )
+		atomic_init(&_curr_wkflow_id, 1);
 	}
 
 	void Workspace::fetch_filepath(const string& filepath, bool force) {
@@ -41,13 +42,15 @@ namespace ToothSpace {
 		}
 		if (_code != 1) return;
 		// open workflow editor
-		auto wkflow_ctx = make_shared<WorkflowContext>(
-			WorkflowContext(debug_id, "test" + to_string(debug_id))
+		auto wkflow_id = _gen_wkflow_id();
+		_tooth_packs.emplace_back(
+			make_shared<ToothPack>(wkflow_id, filepath)
 		);
-		get_workflow_params(filepath, wkflow_ctx);
 
-		SERVICE_INST->slot_open_workflow(wkflow_ctx);
-		debug_id++;
+		SERVICE_INST->slot_open_workflow(_tooth_packs.back()->get_context());
 	}
 
+	int Workspace::_gen_wkflow_id() {
+		return _curr_wkflow_id++;
+	}
 }

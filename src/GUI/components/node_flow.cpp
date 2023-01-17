@@ -88,6 +88,14 @@ void Node_Preprocess(NodeId node_id, WkflowCtxPtr wkflow_ctx) {
                 "If input meshes are not manifolds,\n"
                 "program will convert them to manifolds as possible"
             );
+            ImGui::Checkbox(
+                "Auto fix position",
+                (bool*)(&wkflow_ctx->node_states[NodeId_1]["Auto fix position"])
+            );
+            ImGui::SameLine();
+            HelpMarker(
+                "Auto transform project to world origin"
+            );
         }
     )
 }

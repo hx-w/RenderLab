@@ -96,6 +96,10 @@ def update_config(project_path: str, target_files: List[str], force: bool = Fals
             'source': {
                 'files': target_files,
                 'output': output_folder
+            },
+            'workflow': {
+                'node_order': [],
+                'context': {}
             }
         }
     # write config file

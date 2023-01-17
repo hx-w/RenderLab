@@ -1,4 +1,5 @@
 #include "toolkit.h"
+#include "tooth_pack.h"
 
 #include <iostream>
 #include <vector>
@@ -53,8 +54,33 @@ namespace ToothSpace {
 		}
 	}
 
-	void get_workflow_params(const string& path, WkflowCtxPtr wkflow_ctx) {
-		/// [TODO] compelete wkflow_ctx->node_states and node_order
+	void get_tooth_pack_cache(const string& path, ToothPack* tpack) {
+		auto& meshes = tpack->get_meshes();	  // <string, uint32>
+		auto& context = tpack->get_context();
+
+		py::scoped_interpreter guard{};
+		// load files names
+		auto _py_os = py::module_::import("os");
+		auto _py_toml = py::module_::import("toml");
+		auto _py_pkg = py::module_::import(PY_LOADPROJ_MODULE);
+		auto cfg_name = _py_pkg.attr("config_name"); // '.rdlab.toml'
+		auto cfg_full = _py_os.attr("path").attr("join")(path, cfg_name);
+		
+		auto cfg_inst = _py_toml.attr("load")(cfg_full);
+		auto _files = cfg_inst["source"]["files"].cast<py::list>();
+		for (auto& _f : _files) {
+			meshes[_f.cast<string>()] = -1; // default -1
+		}
+
+		// init context
+		auto _ndorder = cfg_inst["workflow"]["node_order"].cast<py::list>();
+		context->node_order.clear();
+		for (auto _nd : _ndorder) {
+			context->node_order.emplace_back(_nd.cast<NodeId>());
+		}
+		auto _ctx = cfg_inst["workflow"]["context"].cast<py::dict>();
+		
+		/// [TODO]
 	}
 
 

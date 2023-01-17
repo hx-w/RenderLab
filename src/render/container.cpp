@@ -43,7 +43,7 @@ namespace RenderSpace {
             mesh->_shader() = m_shaders["background"];
             mesh->get_ready();
             auto ID = add_drawable(mesh);
-            cout << "background mesh ID: " << ID << endl;
+            printf("background mesh ID: %X\n", ID);
         }
     }
 

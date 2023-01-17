@@ -29,6 +29,7 @@ namespace ToothSpace {
 			// template states
 			node_states[NodeId_1] = {
 				{"Ensure manifolds", true}, // input manifolds ensure
+				{"Auto fix position", true},
 			};
 			node_states[NodeId_2] = {
 				{"CtrPtr size", std::make_pair(3, 5)},
@@ -51,10 +52,12 @@ namespace ToothSpace {
 			};
 		}
 
-        int flow_id = 0;
+		int flow_id = 0;
         std::string flow_name = "";
         WorkflowParams node_states;
         std::vector<int> node_order;
+
+		// extra members
     };
 
     using WkflowCtxPtr = std::shared_ptr<WorkflowContext>;

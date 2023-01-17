@@ -105,7 +105,7 @@ def update_config(project_path: str, target_files: List[str], force: bool = Fals
     # write config file
     with open(config_full, 'w') as f:
         toml.dump(config, f)
-
+    
     # create output folder if not exists
     if not os.path.exists(os.path.join(project_path, output_folder)):
         os.mkdir(os.path.join(project_path, output_folder))

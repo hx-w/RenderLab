@@ -55,7 +55,7 @@ namespace ToothSpace {
 		int flow_id = 0;
         std::string flow_name = "";
         WorkflowParams node_states;
-        std::vector<int> node_order;
+        std::vector<NodeId> node_order;
 
 		// extra members
     };

@@ -42,6 +42,10 @@ namespace GUISpace {
         // for links <node_attr_id, node_attr_id>, convert to <node_id, node_id>
         void get_links (std::vector<LinkPair>&) const;
 
+        void set_visible(bool v) {
+            m_visible = v;
+        }
+
     private:
         ToothSpace::WkflowCtxPtr m_flow_ctx;
 
@@ -49,6 +53,8 @@ namespace GUISpace {
         std::map<int /* node_attr_id */, NodeId /* node_id */> node_attr_records;
         
         ImNodesEditorContext* m_ctx;
+
+        bool m_visible;
 
         std::once_flag m_init; // check if is first call, init nodes positions
     };
@@ -70,6 +76,8 @@ namespace GUISpace {
 		// delete all selected links from all nodeflows
         static void delete_selected_links();
         static void delete_all_links(int /* flow_id */);
+
+        static void set_workflow_visible(int /* flow_id */, bool /* visible */);
         
         static void render(); // render all
     };

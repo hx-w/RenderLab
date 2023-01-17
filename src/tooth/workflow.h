@@ -17,6 +17,10 @@ namespace ToothSpace {
 		void fetch_filepath(const std::string& /* filepath */, bool = false);
 
 
+		/// STEP-2 confirm workflow
+		///		since WkflowCtxPtr is a pointer, only flow_id is needed
+		void confirm_workflow(int /* flow_id */, int /* status */);
+
 	private:
 		int _gen_wkflow_id();
 

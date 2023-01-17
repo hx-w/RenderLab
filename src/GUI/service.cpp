@@ -4,14 +4,20 @@
 #include "components/logger.h"
 #include "components/modal_confirm.h"
 #include "components/node_flow.h"
+#include "components/project_panel.h"
 
 #include <memory>
 #include <functional>
 #include <communication/ContextHub.h>
 #include <wkflow_context.h>
+//#include <tooth_pack.h>
 
 namespace RenderSpace {
 	class RenderWindowWidget;
+}
+
+namespace ToothSpace {
+	class ToothPack;
 }
 
 using namespace std;
@@ -80,6 +86,11 @@ namespace GUISpace {
 		m_autobus->registerMethod<void(ToothSpace::WkflowCtxPtr)>(
 			m_symbol + "/open_workflow",
 			bind(&GUISpace::NodeFlowManager::open_workflow, ::placeholders::_1)
+		);
+
+		m_autobus->registerMethod<void(shared_ptr<ToothSpace::ToothPack>)>(
+			m_symbol + "/add_tooth_pack",
+			bind(&GUISpace::ProjectPanel::add_tooth_pack, ::placeholders::_1)
 		);
 	}
 

@@ -12,6 +12,7 @@
 #include "components/logger.h"
 #include "components/modal_confirm.h"
 #include "components/node_flow.h"
+#include "components/project_panel.h"
 
 
 namespace GUISpace {
@@ -23,7 +24,6 @@ namespace GUISpace {
     void ImGuiViewer::setup() {
         // init ImNodes config
         ImNodes::CreateContext();
-        //ImNodes::StyleColorsDark();
     }
 
     void ImGuiViewer::update(shared_ptr<RenderWindowWidget> win) {
@@ -43,6 +43,7 @@ namespace GUISpace {
         ModalConfirm::render();
         
         NodeFlowManager::render();
+        ProjectPanel::render();
 
         ImGui::Render();
     }

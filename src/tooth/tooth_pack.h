@@ -13,6 +13,8 @@ namespace ToothSpace {
 		WkflowCtxPtr get_context() { return wkflow_ctx;  }
 		std::map<std::string, uint32_t>& get_meshes() { return meshes;  }
 
+		const std::string& get_basedir() const { return basedir; }
+
 	private:
 		WkflowCtxPtr wkflow_ctx;
 		

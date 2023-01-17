@@ -4,6 +4,8 @@
 #include <communication/ContextHub.h>
 
 #include "workflow.h"
+#include "wkflow_context.h"
+#include "tooth_pack.h"
 
 using namespace std;
 using namespace fundamental;
@@ -40,6 +42,8 @@ namespace ToothSpace {
                     }
                 }
             });
+        m_autobus->subscribe<void(int, int /* status */)>(SignalPolicy::Sync, "GUI/confirm_workflow",
+            bind(&Workspace::confirm_workflow, m_workspace.get(), ::placeholders::_1, ::placeholders::_2));
     }
 
     void ToothService::slot_add_log(string&& type, const string& msg) {
@@ -52,8 +56,13 @@ namespace ToothSpace {
         _service->sync_invoke("GUI/add_notice", name, notice);
     }
 
-    void ToothService::slot_open_workflow(shared_ptr<WorkflowContext> ptr_params) {
-        auto _service = ContextHub::getInstance()->getServiceTable<void(shared_ptr<WorkflowContext>)>();
+    void ToothService::slot_open_workflow(WkflowCtxPtr ptr_params) {
+        auto _service = ContextHub::getInstance()->getServiceTable<void(WkflowCtxPtr)>();
         _service->sync_invoke("GUI/open_workflow", ptr_params);
+    }
+
+    void ToothService::slot_add_tooth_pack(shared_ptr<ToothPack> tpack_ptr) {
+        auto _service = ContextHub::getInstance()->getServiceTable<void(shared_ptr<ToothPack>)>();
+        _service->sync_invoke("GUI/add_tooth_pack", tpack_ptr);
     }
 }

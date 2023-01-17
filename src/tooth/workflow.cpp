@@ -9,7 +9,6 @@
 
 using namespace std;
 
-
 #define SERVICE_INST ToothEngine::get_instance()->get_service()
 #define TOOLKIT_EXEC(func, prefix, ...) \
 			string log_msg = ""; \
@@ -47,7 +46,38 @@ namespace ToothSpace {
 			make_shared<ToothPack>(wkflow_id, filepath)
 		);
 
+		/// notice GUI module to setup
 		SERVICE_INST->slot_open_workflow(_tooth_packs.back()->get_context());
+	}
+
+	/// status = 0, failed; = 1, success
+	void Workspace::confirm_workflow(int flow_id, int status) {
+		auto iter = _tooth_packs.begin();
+		for (; iter != _tooth_packs.end(); ++iter) {
+			if ((*iter)->get_context()->flow_id == flow_id) {
+				break; // found, and must be found
+			}
+		}
+		auto& flow_name = (*iter)->get_context()->flow_name;
+
+		if (status == 0) {
+			// failed case
+			SERVICE_INST->slot_add_log("warn", "Discard workflow: " + flow_name);
+
+			// do something
+		}
+		else if (status == 1) {
+			// success case
+
+			// save to cache
+			save_tooth_pack_cache((*iter).get());
+
+			SERVICE_INST->slot_add_log("info", "Confirm workflow: " + flow_name);
+			SERVICE_INST->slot_add_tooth_pack((*iter));
+		}
+		else {
+			// invalid case
+		}
 	}
 
 	int Workspace::_gen_wkflow_id() {

@@ -54,9 +54,10 @@ namespace ToothSpace {
 		}
 	}
 
-	void get_tooth_pack_cache(const string& path, ToothPack* tpack) {
+	void get_tooth_pack_cache(ToothPack* tpack) {
 		auto& meshes = tpack->get_meshes();	  // <string, uint32>
 		auto& context = tpack->get_context();
+		auto& path = tpack->get_basedir();
 
 		py::scoped_interpreter guard{};
 		// load files names
@@ -76,13 +77,40 @@ namespace ToothSpace {
 		auto _ndorder = cfg_inst["workflow"]["node_order"].cast<py::list>();
 		context->node_order.clear();
 		for (auto _nd : _ndorder) {
-			context->node_order.emplace_back(_nd.cast<NodeId>());
+			context->node_order.emplace_back(static_cast<NodeId>(_nd.cast<int>()));
 		}
 		auto _ctx = cfg_inst["workflow"]["context"].cast<py::dict>();
 		
-		/// [TODO]
+		/// [TODO] init context params
 	}
 
+	void save_tooth_pack_cache(ToothPack* tpack) {
+		auto& context = tpack->get_context();
+		auto& path = tpack->get_basedir();
+
+		py::scoped_interpreter guard{};
+		// load files names
+		auto _py_os = py::module_::import("os");
+		auto _py_toml = py::module_::import("toml");
+		auto _py_pkg = py::module_::import(PY_LOADPROJ_MODULE);
+		auto cfg_name = _py_pkg.attr("config_name"); // '.rdlab.toml'
+		auto cfg_full = _py_os.attr("path").attr("join")(path, cfg_name);
+		
+		auto cfg_inst = _py_toml.attr("load")(cfg_full);
+		// clear node_order
+		auto ndorder = py::list{};
+		for (auto nd : context->node_order) {
+			ndorder.append(static_cast<int>(nd));
+		}
+		cfg_inst["workflow"]["node_order"] = ndorder;
+		/// [TODO] only save node_order for now
+		
+
+		/// save cfg_inst to cfg_full
+		auto _opened_file = py::module_::import("builtins").attr("open")(cfg_full, "w");
+		_py_toml.attr("dump")(cfg_inst, _opened_file);
+		_opened_file.attr("close")();
+	}
 
 	void _topo_dfs(
 		NodeId nd,

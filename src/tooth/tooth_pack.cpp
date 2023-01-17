@@ -16,8 +16,8 @@ ToothPack::ToothPack(int wkflow_id, const string& filepath) {
 		WorkflowContext(wkflow_id, wkflow_name)
 	);
 
-	// cached in config
-	get_tooth_pack_cache(filepath, this);
-
 	basedir = filepath;
+
+	// cached in config
+	get_tooth_pack_cache(this);
 }

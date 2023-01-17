@@ -42,8 +42,9 @@ namespace ToothSpace {
 
 
 	/// load workflow params from project path (stored in config)
-	void get_tooth_pack_cache(const std::string& /* project_path */, ToothPack* /* tpack */);
+	void get_tooth_pack_cache(ToothPack* /* tpack */);
 
+	void save_tooth_pack_cache(ToothPack* /* tpack */);
 
 	/// topological sort for nodeflow
 	void topological_sort(const std::vector<LinkPair>& /* links */, std::vector<NodeId>& /* node_order */);

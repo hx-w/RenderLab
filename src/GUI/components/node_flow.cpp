@@ -20,6 +20,9 @@
 #include "node_flow.h"
 #include "modal_confirm.h"
 
+#include "../service.h"
+#include "../engine.h"
+
 // tooth toolkit
 #include <toolkit.h>
 
@@ -42,6 +45,7 @@
 
 #define HASHLINK(link) ((hash<int>()(link.first) + hash<int>()(link.second)) % 0xdeadbeef) 
 
+#define SERVICE_INST GUIEngine::get_instance()->get_service()
 
 using namespace std;
 using namespace GUISpace;
@@ -75,7 +79,7 @@ void Node_Preprocess(NodeId node_id, WkflowCtxPtr wkflow_ctx) {
     SHOWNODE(node_id, "[Preprocess]",
         (0, 182, 208, 255), (0, 129, 201, 255), (0, 182, 248, 100),
         /* custom scripts */
-        ImNodes::BeginOutputAttribute(SUBNODE(node_id, 1));
+        ImNodes::BeginOutputAttribute(SUBNODE(node_id, 2));
         ImNodes::EndOutputAttribute();
         {
             // stupid, but works
@@ -163,14 +167,18 @@ void Node_Postprocess(NodeId node_id, WkflowCtxPtr wkflow_ctx) {
 }
 
 void NodeFlowHeaders(int flow_id) {
+    /// =============== ACTIVE ====================
     {
 		ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(3 / 7.0f, 0.6f, 0.6f));
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(3 / 7.0f, 0.7f, 0.7f));
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(3 / 7.0f, 0.8f, 0.8f));
-		ImGui::Button("Active");
+        if (ImGui::Button("Active")) {
+            NodeFlowManager::active(flow_id);
+        }
 		ImGui::PopStyleColor(3);
     }
 	ImGui::SameLine();
+    /// =============== CLEAR ====================
     {
 		ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0 / 7.0f, 0.6f, 0.6f));
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0 / 7.0f, 0.7f, 0.7f));
@@ -182,6 +190,7 @@ void NodeFlowHeaders(int flow_id) {
 
     }
 	ImGui::SameLine();
+    /// =============== CHECK ====================
     {
 		ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(5 / 7.0f, 0.6f, 0.6f));
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(5 / 7.0f, 0.7f, 0.7f));
@@ -226,9 +235,9 @@ void NodeFlowHeaders(int flow_id) {
 
 }
 
-NodeFlow::NodeFlow(WkflowCtxPtr wkflow_ctx): m_flow_ctx(wkflow_ctx) {
+NodeFlow::NodeFlow(WkflowCtxPtr wkflow_ctx): m_flow_ctx(wkflow_ctx), m_visible(true) {
     /// set reverse node_attr_id to node_id
-    node_attr_records[SUBNODE(NodeId_1, 1)] = NodeId_1;
+    node_attr_records[SUBNODE(NodeId_1, 2)] = NodeId_1; // NodeId_1 only has out
     node_attr_records[SUBNODE(NodeId_2, 1)] = NodeId_2;
     node_attr_records[SUBNODE(NodeId_2, 2)] = NodeId_2;
     node_attr_records[SUBNODE(NodeId_3, 1)] = NodeId_3;
@@ -239,6 +248,15 @@ NodeFlow::NodeFlow(WkflowCtxPtr wkflow_ctx): m_flow_ctx(wkflow_ctx) {
     node_attr_records[SUBNODE(NodeId_5, 2)] = NodeId_5;
     node_attr_records[SUBNODE(NodeId_6, 1)] = NodeId_6;
     m_ctx = ImNodes::EditorContextCreate();
+
+    // preset by context
+    links.clear();
+    auto& ndorder = wkflow_ctx->node_order;
+    auto ndorder_size = ndorder.size();
+    for (auto i = 1; i < ndorder_size; ++i) {
+        auto lk = LinkPair(SUBNODE(ndorder[i - 1], 2), SUBNODE(ndorder[i], 1));
+        links[HASHLINK(lk)] = lk;
+    }
 }
 
 NodeFlow::~NodeFlow() {
@@ -276,7 +294,8 @@ void NodeFlow::delete_links(int type) {
 }
 
 void NodeFlow::render() {
-    /// A testcase
+    if (!m_visible) return;
+
     ImGui::Begin(("Tooth Workflow Editor - " + m_flow_ctx->flow_name).c_str());
     NodeFlowHeaders(m_flow_ctx->flow_id);
 
@@ -388,15 +407,22 @@ bool NodeFlowManager::check_valiation(int flow_id, vector<NodeId>& node_order) {
 }
 
 void NodeFlowManager::active(int flow_id) {
-    /**
-     * 1. Check links valid.
-     * 2. Create a topology sort result as vector<int> wkpath
-     * 3. Notify workflowparams and node_order
-     */
-
-    vector<NodeId> node_order;
-    check_valiation(flow_id, node_order);
-    /// [TODO]
+	// find ctx_ptr
+	for (auto& ndflow : st_nodeflows) {
+		if (ndflow->get_flow_id() == flow_id) {
+			auto& wkflow_ctx = ndflow->get_wkflow_context();
+			// check valid (topological sort)
+			auto status = static_cast<int>(NodeFlowManager::check_valiation(flow_id, wkflow_ctx->node_order));
+			
+			SERVICE_INST->notify<void(int, int)>("/confirm_workflow", flow_id, status);
+            
+            if (status == 1) {
+                // success, set 0 visible
+                set_workflow_visible(flow_id, false);
+            }
+			break;
+		}
+	}
 }
 
 void NodeFlowManager::delete_selected_links() {
@@ -416,5 +442,13 @@ void NodeFlowManager::delete_all_links(int flow_id) {
 void NodeFlowManager::render() {
     for (auto& ndflow : st_nodeflows) {
         ndflow->render();
+    }
+}
+
+void NodeFlowManager::set_workflow_visible(int flow_id, bool visible) {
+    for (auto& ndflow : st_nodeflows) {
+        if (ndflow->get_flow_id() == flow_id) {
+            ndflow->set_visible(visible);
+        }
     }
 }

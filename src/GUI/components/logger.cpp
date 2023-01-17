@@ -65,7 +65,7 @@ void Logger::render() {
             clr = ImVec4(0.7, 0.8, 0.3, 1.);
             break;
         case LOG_WARN:
-            clr = ImVec4(0.8, 1.0, 0.0, 1.);
+            clr = ImVec4(0.8, 0.5, 0.0, 1.);
             break;
         default: break;
         }

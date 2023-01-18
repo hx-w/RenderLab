@@ -47,8 +47,13 @@ void ProjectPanel::render() {
 			auto& proj_ctx = proj->get_context();
 			auto& proj_meshes = proj->get_meshes();
 
-			//ImGui::BeginTabItem(proj_ctx->flow_name.c_str(), (bool*)0, ImGuiTabItemFlags_None);
 			if (ImGui::BeginTabItem(proj_ctx->flow_name.c_str())) {
+				if (ImGui::TreeNode("Meshes")) {
+					
+
+					ImGui::TreePop();
+				}
+
 
 				ImGui::EndTabItem();
 			}

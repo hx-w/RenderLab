@@ -152,9 +152,9 @@ namespace ToothSpace {
 			}
 		};
 
-		for (auto& lk : links) {
-			search_start(static_cast<NodeId>(lk.first));
-			search_start(static_cast<NodeId>(lk.second));
+		for (auto iter = links.rbegin(); iter != links.rend(); ++iter) {
+			search_start(static_cast<NodeId>((*iter).first));
+			search_start(static_cast<NodeId>((*iter).second));
 		}
 		reverse(node_order.begin(), node_order.end());
 	}

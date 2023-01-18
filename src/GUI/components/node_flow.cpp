@@ -30,9 +30,9 @@
 #define SUBNODE(node_id, inc) (node_id + inc)
 
 #define SHOWNODE(node_id, title, deft_color, active_color, hover_color, ...) \
-    ImNodes::PushColorStyle(ImNodesCol_TitleBar, IM_COL32##deft_color); \
+    ImNodes::PushColorStyle(ImNodesCol_TitleBar, IM_COL32##active_color); \
     ImNodes::PushColorStyle(ImNodesCol_TitleBarSelected, IM_COL32##active_color); \
-    ImNodes::PushColorStyle(ImNodesCol_TitleBarHovered, IM_COL32##hover_color); \
+    ImNodes::PushColorStyle(ImNodesCol_TitleBarHovered, IM_COL32##active_color); \
     ImNodes::BeginNode(node_id); \
     ImNodes::BeginNodeTitleBar(); \
     ImGui::TextUnformatted(title); \
@@ -296,13 +296,19 @@ void NodeFlow::delete_links(int type) {
 void NodeFlow::render() {
     if (!m_visible) return;
 
-    ImGui::Begin(("Tooth Workflow Editor - " + m_flow_ctx->flow_name).c_str());
-    NodeFlowHeaders(m_flow_ctx->flow_id);
+    auto wind_name = "Tooth Workflow Editor - " + m_flow_ctx->flow_name;
+    ImGui::Begin(wind_name.c_str(), (bool*)0, ImGuiWindowFlags_NoResize);
+	ImGui::SetWindowSize(ImVec2(950, 500)); // fixed size
 
+    NodeFlowHeaders(m_flow_ctx->flow_id);
     ImNodes::BeginNodeEditor();
     // set to current context
     ImNodes::EditorContextSet(m_ctx);
-    call_once(m_init, bind(&NodeFlow::reset_nodes_pos, this));
+
+    // only called in first loop
+    call_once(m_init, [this]() {
+		reset_nodes_pos();
+    });
 
     Node_Preprocess(NodeId_1, m_flow_ctx);
     Node_Pmtr_Nurbs(NodeId_2, m_flow_ctx);
@@ -350,9 +356,10 @@ void NodeFlow::get_links(vector<LinkPair>& _links) const {
         if (node_attr_records.find(_pair.second) != node_attr_records.end()) {
             secondn = node_attr_records.at(_pair.second);
         }
-        if (firstn > secondn) {
-            swap(firstn, secondn); // ensure first <= second
-        }
+        /// no need swap, will raise error
+        //if (firstn > secondn) {
+        //    swap(firstn, secondn); // ensure first <= second
+        //}
         auto nodepair = make_pair(firstn, secondn);
         
         // check if already exists

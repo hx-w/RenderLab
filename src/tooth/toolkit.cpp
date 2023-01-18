@@ -1,5 +1,7 @@
 #include "toolkit.h"
 #include "tooth_pack.h"
+#include "engine.h"
+#include "service.h"
 
 #include <iostream>
 #include <vector>
@@ -8,6 +10,7 @@
 using namespace std;
 namespace py = pybind11;
 
+#define SERVICE_INST ToothEngine::get_instance()->get_service()
 
 namespace ToothSpace {
 	bool init_workenv(string& status) {
@@ -110,6 +113,19 @@ namespace ToothSpace {
 		auto _opened_file = py::module_::import("builtins").attr("open")(cfg_full, "w");
 		_py_toml.attr("dump")(cfg_inst, _opened_file);
 		_opened_file.attr("close")();
+	}
+
+	void load_meshes_to_renderer(ToothPack* tpack) {
+		py::scoped_interpreter guard{};
+		auto _py_os = py::module_::import("os");
+		auto& meshes = tpack->get_meshes();
+		auto& basedir = tpack->get_basedir();
+
+		for (auto& [msh_name, msh_id] : meshes) {
+			// msh_name has backword: xxx.obj
+			auto full_path = _py_os.attr("path").attr("join")(basedir, msh_name).cast<string>();
+			msh_id = SERVICE_INST->slot_load_mesh(full_path);
+		}
 	}
 
 	void _topo_dfs(

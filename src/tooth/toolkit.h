@@ -46,6 +46,8 @@ namespace ToothSpace {
 
 	void save_tooth_pack_cache(ToothPack* /* tpack */);
 
+	void load_meshes_to_renderer(ToothPack* /* tpack */);
+
 	/// topological sort for nodeflow
 	void topological_sort(const std::vector<LinkPair>& /* links */, std::vector<NodeId>& /* node_order */);
 }

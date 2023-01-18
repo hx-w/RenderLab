@@ -65,4 +65,9 @@ namespace ToothSpace {
         auto _service = ContextHub::getInstance()->getServiceTable<void(shared_ptr<ToothPack>)>();
         _service->sync_invoke("GUI/add_tooth_pack", tpack_ptr);
     }
+
+    uint32_t ToothService::slot_load_mesh(const string& meshpath) {
+        auto _service = ContextHub::getInstance()->getServiceTable<uint32_t(const string&)>();
+        return _service->sync_invoke("render/load_mesh", meshpath);
+    }
 }

@@ -73,6 +73,9 @@ namespace ToothSpace {
 			save_tooth_pack_cache((*iter).get());
 
 			SERVICE_INST->slot_add_log("info", "Confirm workflow: " + flow_name);
+			// load mesh to renderer
+			load_meshes_to_renderer((*iter).get());
+
 			SERVICE_INST->slot_add_tooth_pack((*iter));
 		}
 		else {

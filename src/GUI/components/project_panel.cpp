@@ -60,7 +60,14 @@ void ProjectPanel::render() {
 
 			if (ImGui::BeginTabItem(proj_ctx->flow_name.c_str())) {
 				if (ImGui::TreeNode("Meshes")) {
-					
+					/// [TODO] Some methods here
+					ImGui::TextColored(ImVec4(255, 255, 100, 255), "[TODO] some methods here");
+					for (auto& [msh_name, msh_id] : proj_meshes) {
+						if (ImGui::TreeNode((void*)(intptr_t)msh_id, msh_name.c_str())) {
+
+							ImGui::TreePop();
+						}
+					}
 
 					ImGui::TreePop();
 				}
@@ -75,6 +82,8 @@ void ProjectPanel::render() {
 
 	ImGui::End();
 
+
+	// import modal
 	if (show_import_modal) {
 #if 1
 		static imgui_ext::file_browser_modal fileBrowser("Import");

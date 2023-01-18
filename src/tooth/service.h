@@ -23,6 +23,7 @@ namespace ToothSpace {
         void slot_add_notice(const std::string&, const std::string&);
         void slot_open_workflow(std::shared_ptr<WorkflowContext>);
         void slot_add_tooth_pack(std::shared_ptr<ToothPack>);
+        uint32_t slot_load_mesh(const std::string&);
 
     private:
         void _subscribe();

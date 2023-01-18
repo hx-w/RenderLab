@@ -21,6 +21,8 @@ namespace RenderSpace {
         glGenVertexArrays(1, &m_vao);
         glGenBuffers(1, &m_vbo);
         glGenBuffers(1, &m_ebo);
+
+        m_shade_mode = GL_FILL;
     }
 
     void DrawableBase::draw() {
@@ -30,6 +32,10 @@ namespace RenderSpace {
         }
         m_shader->use();
         glBindVertexArray(m_vao);
+
+		glPointSize(3.0f);
+		// shade mode
+		glPolygonMode(GL_FRONT_AND_BACK, m_shade_mode);
 
         // shader configure
         ///1. local transform = identity

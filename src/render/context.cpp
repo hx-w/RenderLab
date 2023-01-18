@@ -50,7 +50,7 @@ namespace RenderSpace {
     DrawableID RenderContext::ctx_add_drawable(shared_ptr<GeometryBase> geom) {
         // if is mesh
         auto geom_mesh = dynamic_pointer_cast<Mesh>(geom);
-        auto drawable_mesh = make_shared<NewMeshDrawable>(*geom_mesh, Vector3f(0.8f));
+        auto drawable_mesh = make_shared<NewMeshDrawable>(*geom_mesh, Vector3f(0.5f));
         drawable_mesh->_shader() = m_container->shaders()["default"];
         drawable_mesh->get_ready();
         auto drawable_id = m_container->add_drawable(drawable_mesh);

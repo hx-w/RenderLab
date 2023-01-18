@@ -51,7 +51,7 @@ namespace RenderSpace {
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
 		//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
 #endif
-
+		glfwWindowHint(GLFW_SAMPLES, 4);
 		// glfw m_window creation
 		// --------------------
 		m_window = glfwCreateWindow(w, h, "Render Lab", NULL, NULL);
@@ -75,6 +75,7 @@ namespace RenderSpace {
 		// glEnable(GL_CULL_FACE);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_MULTISAMPLE);
 		glfwSwapInterval(1); // Enable vsync
 	}
 

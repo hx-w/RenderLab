@@ -18,6 +18,11 @@ using namespace RenderSpace;
 
 #define SERVICE_INST GUIEngine::get_instance()->get_service()
 
+// same link glfw
+#define GL_POINT 0x1B00
+#define GL_LINE  0x1B01
+#define GL_FILL  0x1B02
+
 using ToothPackPtr = shared_ptr<ToothPack>;
 using DrawablePtr = shared_ptr<DrawableBase>;
 
@@ -44,6 +49,8 @@ static vector<ProjectInst> st_projects;
 
 static bool show_import_modal = false; // import project
 
+static const char* st_shade_modes[] = { "Point", "Grid", "Flat" };
+
 static void HelpMarker(const char* desc) {
     ImGui::TextDisabled("(?)");
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
@@ -53,6 +60,28 @@ static void HelpMarker(const char* desc) {
         ImGui::PopTextWrapPos();
         ImGui::EndTooltip();
     }
+}
+
+const string imgui_name(const char* name, const string& tag) {
+	return name + ("##" + tag);
+}
+
+void mesh_property_render(DrawablePtr msh, const string& msh_name) {
+	/// P01 shade mode
+	{
+		int _curr = 0;
+		switch (msh->_shade_mode()) {
+		case GL_POINT: _curr = 0; break;
+		case GL_LINE:  _curr = 1; break;
+		case GL_FILL:  _curr = 2; break;
+		}
+		ImGui::Combo(imgui_name("shade mode", msh_name).c_str(), &_curr, st_shade_modes, IM_ARRAYSIZE(st_shade_modes));
+		switch (_curr) {
+		case 0: msh->_shade_mode() = GL_POINT; break;
+		case 1: msh->_shade_mode() = GL_LINE; break;
+		case 2: msh->_shade_mode() = GL_FILL; break;
+		}
+	}
 }
 
 void ProjectPanel::add_tooth_pack(shared_ptr<ToothPack> tpack_ptr) {
@@ -89,6 +118,8 @@ void ProjectPanel::render() {
 					ImGui::TextColored(ImVec4(255, 255, 100, 255), "[TODO] some methods here");
 					for (auto& [msh_name, msh_id] : proj_meshes) {
 						if (ImGui::TreeNode((void*)(intptr_t)msh_id, msh_name.c_str())) {
+
+							mesh_property_render(proj.meshes_inst.at(msh_id), msh_name);
 
 							ImGui::TreePop();
 						}

@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <string>
+#include <any>
 
 #include <communication/ContextHub.h>
 
@@ -46,6 +47,8 @@ namespace RenderSpace {
         bool ctx_remove_drawable(DrawableID);
 
         std::shared_ptr<DrawableBase> ctx_get_drawable(DrawableID);
+
+        bool ctx_set_drawable_property(DrawableID, const std::string&, const std::any&);
 
         template <class Func, class ...Args>
         void ctx_notify(const std::string& addr, Args&&... args) {

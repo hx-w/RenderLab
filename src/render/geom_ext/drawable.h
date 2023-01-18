@@ -46,6 +46,8 @@ namespace RenderSpace {
 
         uint32_t& _shade_mode() { return m_shade_mode; }
 
+        geometry::Mat4f& _model_transf() { return m_model_transf; }
+
     protected:
         void _init_buffer();
         virtual void _draw() = 0;

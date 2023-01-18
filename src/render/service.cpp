@@ -44,6 +44,12 @@ namespace RenderSpace {
                 return m_context->ctx_get_drawable(msh_id);
             }
         );
+        m_autobus->registerMethod<bool(DrawableID, const string&, const any&)>(
+            m_symbol + "/set_drawable_property",
+            [this](DrawableID msh_id, const string& property, const any& value) {
+                return m_context->ctx_set_drawable_property(msh_id, property, value);
+            }
+        );
     }
 
     void RenderService::start_thread(string tname, function<void()>&& func) {

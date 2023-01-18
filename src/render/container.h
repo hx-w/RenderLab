@@ -43,7 +43,7 @@ namespace RenderSpace {
         ///     - "visible" : bool
         ///     - "shade_mode": uint32_t
         ///     - "shader": Shader
-        ///     - "offset": Vector3f
+        ///     - "model_transf": Mat4
         bool set_drawable_property(DrawableID, const std::string&, const std::any&);
 
         std::shared_ptr<DrawableBase> get_drawable_inst(DrawableID);

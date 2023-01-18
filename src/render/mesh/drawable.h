@@ -1,5 +1,4 @@
-#ifndef DRAWABLE_H
-#define DRAWABLE_H
+#pragma once
 #include <mutex>
 #include <vector>
 #include <string>
@@ -184,4 +183,3 @@ namespace RenderSpace {
     };
 }
 
-#endif

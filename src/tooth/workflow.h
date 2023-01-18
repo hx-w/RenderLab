@@ -21,8 +21,14 @@ namespace ToothSpace {
 		///		since WkflowCtxPtr is a pointer, only flow_id is needed
 		void confirm_workflow(int /* flow_id */, int /* status */);
 
+
+		/// active workflow stage
+		void active_stage(int /* flow_id */, int /* node_id */);
+
 	private:
 		int _gen_wkflow_id();
+
+		std::shared_ptr<ToothPack> _find_tpack(int /* flow_id */);
 
 	private:
 		std::atomic<int> _curr_wkflow_id;

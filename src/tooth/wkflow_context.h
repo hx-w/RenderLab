@@ -17,6 +17,11 @@ enum NodeId {
 	NodeId_6 = 1 << 13  /* postprocess */,
 };
 
+enum ProjectType {
+	Proj_CBCT,  // 4 meshes
+	Proj_IOS    // 2 meshes
+};
+
 namespace ToothSpace {
 	using WorkflowParams = std::map<
 		NodeId /* node_id */,
@@ -58,6 +63,7 @@ namespace ToothSpace {
         std::vector<NodeId> node_order;
 
 		// extra members
+		ProjectType proj_t = Proj_CBCT; // reset in tooth pack constructor
     };
 
     using WkflowCtxPtr = std::shared_ptr<WorkflowContext>;

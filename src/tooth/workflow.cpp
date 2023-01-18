@@ -1,6 +1,7 @@
 #include "workflow.h"
 
 #include <iostream>
+#include <cassert>
 
 #include "toolkit.h"
 #include "engine.h"
@@ -52,13 +53,8 @@ namespace ToothSpace {
 
 	/// status = 0, failed; = 1, success
 	void Workspace::confirm_workflow(int flow_id, int status) {
-		auto iter = _tooth_packs.begin();
-		for (; iter != _tooth_packs.end(); ++iter) {
-			if ((*iter)->get_context()->flow_id == flow_id) {
-				break; // found, and must be found
-			}
-		}
-		auto& flow_name = (*iter)->get_context()->flow_name;
+		auto tpack = _find_tpack(flow_id);
+		auto& flow_name = tpack->get_context()->flow_name;
 
 		if (status == 0) {
 			// failed case
@@ -70,13 +66,13 @@ namespace ToothSpace {
 			// success case
 
 			// save to cache
-			save_tooth_pack_cache((*iter).get());
+			save_tooth_pack_cache(tpack.get());
 
 			SERVICE_INST->slot_add_log("info", "Confirm workflow: " + flow_name);
 			// load mesh to renderer
-			load_meshes_to_renderer((*iter).get());
+			load_meshes_to_renderer(tpack.get());
 
-			SERVICE_INST->slot_add_tooth_pack((*iter));
+			SERVICE_INST->slot_add_tooth_pack(tpack);
 		}
 		else {
 			// invalid case
@@ -85,5 +81,46 @@ namespace ToothSpace {
 
 	int Workspace::_gen_wkflow_id() {
 		return _curr_wkflow_id++;
+	}
+
+	shared_ptr<ToothPack> Workspace::_find_tpack(int flow_id) {
+		for (auto& tpack : _tooth_packs) {
+			if (tpack->get_context()->flow_id == flow_id) {
+				return tpack;
+			}
+		}
+		// failed
+		return nullptr;
+	}
+
+	void Workspace::active_stage(int flow_id, int node_id) {
+		auto tpack = _find_tpack(flow_id);
+		auto node = static_cast<NodeId>(node_id);
+
+		switch (node) {
+		case NodeId_1:
+			// preprocess
+
+			break;
+		case NodeId_2:
+			// pmtr_nurbs
+			break;
+		case NodeId_3:
+			// pmtr_remesh
+			break;
+		case NodeId_4:
+			// generate_GT
+			break;
+		case NodeId_5:
+			// generate_ML
+			break;
+		case NodeId_6:
+			// postprocess
+			break;
+		default:
+			// error
+			assert(false);
+		}
+
 	}
 }

@@ -20,4 +20,14 @@ ToothPack::ToothPack(int wkflow_id, const string& filepath) {
 
 	// cached in config
 	get_tooth_pack_cache(this);
+
+	if (meshes.size() == 2) {
+		wkflow_ctx->proj_t = Proj_IOS;
+	}
+	else if (meshes.size() == 4) {
+		wkflow_ctx->proj_t = Proj_CBCT;
+	}
+	else {
+		// failed
+	}
 }

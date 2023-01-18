@@ -103,6 +103,10 @@ namespace RenderSpace {
                 m_drawables[id]->_shade_mode() = any_cast<uint32_t>(value);
                 return true;
             }
+            else if (property == "model_transf") {
+                m_drawables[id]->_model_transf() = any_cast<geometry::Mat4f>(value);
+                return true;
+            }
             else {
                 return false;
             }

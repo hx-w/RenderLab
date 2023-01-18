@@ -77,8 +77,13 @@ def update_config(project_path: str, target_files: List[str], force: bool = Fals
         config = toml.load(config_full)
         # check hash
         if force or config['meta']['hash'] == hash_value:
+            if force and config['meta']['hash'] != hash_value:
+                # clear workflow cache if force and hash changed
+                config['workflow']['node_order'] = []
+                config['workflow']['context'] = {}
+                config['meta']['hash'] = hash_value
+
             config['meta']['modify_time'] = now_str
-            config['meta']['hash'] = hash_value
             config['source']['files'] = target_files
             config['source']['output'] = output_folder
         else:

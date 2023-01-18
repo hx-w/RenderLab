@@ -135,11 +135,18 @@ void Node_Generator_GT(NodeId node_id, WkflowCtxPtr wkflow_ctx) {
     SHOWNODE(node_id, "[Generate by GT]",
         (5, 89, 91, 255), (6, 44, 48, 255), (5, 89, 91, 100),
         /* custom scripts */
-        ImNodes::BeginInputAttribute(SUBNODE(node_id, 1));
-        ImNodes::EndInputAttribute();
-        ImGui::SameLine();
-        ImNodes::BeginOutputAttribute(SUBNODE(node_id, 2));
-        ImNodes::EndOutputAttribute();
+        /// IOS do not has GT
+        if (wkflow_ctx->proj_t == Proj_CBCT) {
+			ImNodes::BeginInputAttribute(SUBNODE(node_id, 1));
+			ImNodes::EndInputAttribute();
+			ImGui::SameLine();
+			ImNodes::BeginOutputAttribute(SUBNODE(node_id, 2));
+			ImNodes::EndOutputAttribute();
+        }
+        else {
+			// empty node will raise error
+			ImGui::Dummy(ImVec2(10, 10));
+        }
     )
 }
 

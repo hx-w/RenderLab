@@ -66,4 +66,8 @@ namespace RenderSpace {
         return m_container->get_drawable_inst(id);
     }
 
+    bool RenderContext::ctx_set_drawable_property(DrawableID id, const string& property, const any& value) {
+        return m_container->set_drawable_property(id, property, value);
+    }
+
 }  // namespace RenderSpace

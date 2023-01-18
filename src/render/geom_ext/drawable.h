@@ -1,14 +1,12 @@
-#ifndef GEOM_DRAWABLE_H
-#define GEOM_DRAWABLE_H
+#pragma once
 
 #include <mutex>
 #include <vector>
 #include <atomic>
 #include <string>
+#include <memory>
 
 #include <geom_types.h>
-
-#include "../shader.h"
 
 namespace RenderSpace {
     enum GeomType {
@@ -26,26 +24,25 @@ namespace RenderSpace {
         geometry::Vector3f Normal;
     };
 
+    class Shader;
     // base class
     class DrawableBase {
     public:
         DrawableBase() = default;
         ~DrawableBase();
 
-
         /**
          * get_ready -> update -> draw
          */
-
         void draw();
 
         void update();
 
         void get_ready();
 
-        Shader& _shader() { return m_shader; }
+        std::shared_ptr<Shader>& _shader() { return m_shader; }
 
-        GeomType _type() { return m_type; }
+        GeomType& _type() { return m_type; }
 
         geometry::Vector3f& _offset() { return m_offset; }
 
@@ -62,9 +59,9 @@ namespace RenderSpace {
         uint32_t m_ebo;
 
         uint32_t m_shade_mode = 0;  // wireframe or solid
-        geometry::Vector3f m_offset = geometry::Vector3f(0.0);
+        geometry::Vector3f m_offset = geometry::Vector3f(0.0f);
 
-        Shader m_shader;
+        std::shared_ptr<Shader> m_shader;
         GeomType m_type;
  
     protected:
@@ -91,5 +88,3 @@ namespace RenderSpace {
     };
 
 }
-
-#endif

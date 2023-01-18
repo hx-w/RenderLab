@@ -1,7 +1,7 @@
 #include "drawable.h"
+#include "../shader.h"
 
 #include <mesh.h>
-
 #include <glm/glm.hpp>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -28,18 +28,18 @@ namespace RenderSpace {
         if (!_ready_to_draw) {
             return;
         }
-        m_shader.use();
+        m_shader->use();
         glBindVertexArray(m_vao);
 
         // shader configure
         ///1. local transform = identity
-        m_shader.setMat4("model", glm::mat4(1.0f));
+        m_shader->setMat4("model", glm::mat4(1.0f));
         ///2. model offset
-        m_shader.setVec3("offset", m_offset);
+        m_shader->setVec3("offset", m_offset);
         ///3. shade mode
         glPolygonMode(GL_FRONT_AND_BACK, m_shade_mode);
         ///4. randomColor
-        m_shader.setBool("randomColor", false);
+        m_shader->setBool("randomColor", false);
 
         _draw(); // custom draw
 
@@ -94,7 +94,7 @@ namespace RenderSpace {
     }
 
     void NewMeshDrawable::_draw() {
-        m_shader.setBool("ignoreLight", false);
+        m_shader->setBool("ignoreLight", false);
         glLineWidth(1.0f);
         if (m_ebo != 0 && !m_faces.empty()) {
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);

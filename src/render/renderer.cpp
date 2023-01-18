@@ -213,17 +213,17 @@ namespace RenderSpace {
 			m_win_widget->cameraUp
 		);
 		for (auto& [_, shader] : shaders) {
-			shader.use();
+			shader->use();
 
 			// pass projection matrix to shader (note that in this case it could change every frame)
-			shader.setMat4("projection", projection);
+			shader->setMat4("projection", projection);
 
 			// camera/view transformation
-			shader.setMat4("view", view);
+			shader->setMat4("view", view);
 
-			shader.setVec3("lightColor",  m_win_widget->lightColor);
-			shader.setVec3("lightPos", m_win_widget->lightPos);
-			shader.setVec3("viewPos", m_win_widget->cameraPos);
+			shader->setVec3("lightColor",  m_win_widget->lightColor);
+			shader->setVec3("lightPos", m_win_widget->lightPos);
+			shader->setVec3("viewPos", m_win_widget->cameraPos);
 		}
 	}
 }

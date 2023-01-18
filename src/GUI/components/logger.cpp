@@ -53,19 +53,19 @@ void Logger::render() {
     // lock_guard<mutex> lk(st_logger_mutex);
     ImGui::Begin("Logger");
     for (auto& msg : st_logger_messages) {
-        ImVec4 clr = ImVec4(0.7, 0.7, 0.7, 1.);
+        ImVec4 clr = ImVec4(0.7f, 0.7f, 0.7f, 1.f);
         switch (msg.level) {
         case LOG_ERROR:
-            clr = ImVec4(0.9, .0, .0, 1.);
+            clr = ImVec4(0.9f, .0f, .0f, 1.f);
             break;
         case LOG_FATAL:
-            clr = ImVec4(1.0, .0, .0, 1.);
+            clr = ImVec4(1.0f, .0f, .0f, 1.f);
             break;
         case LOG_INFO:
-            clr = ImVec4(0.7, 0.8, 0.3, 1.);
+            clr = ImVec4(0.7f, 0.8f, 0.3f, 1.f);
             break;
         case LOG_WARN:
-            clr = ImVec4(0.8, 0.5, 0.0, 1.);
+            clr = ImVec4(0.8f, 0.5f, 0.0f, 1.f);
             break;
         default: break;
         }

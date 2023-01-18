@@ -221,9 +221,7 @@ void NodeFlowHeaders(int flow_id) {
 		                }
                         if (ind != ndlist_sz - 1) {
                             // not the last one, exits some drawing
-                            ImGui::SameLine();
-                            ImGui::Text("->");
-                            ImGui::SameLine();
+                            ImGui::SameLine(); ImGui::Text("->"); ImGui::SameLine();
                         }
                     }
                 }, move(node_order));

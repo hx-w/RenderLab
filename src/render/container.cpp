@@ -3,9 +3,10 @@
 #include <iostream>
 #include <chrono>
 //#include <omp.h>
-
 #include <mesh.h>
+#include "geom_ext/drawable.h"
 #include "shader.h"
+
 
 using namespace std;
 using namespace geometry;
@@ -27,8 +28,8 @@ namespace RenderSpace {
 #ifdef _WIN32
         shader_dir = ".\\resource\\shader\\";
 #endif
-        m_shaders["default"] = Shader(shader_dir + "default.vs", shader_dir + "default.fs");
-        m_shaders["background"] = Shader(shader_dir + "background.vs", shader_dir + "background.fs");
+        m_shaders["default"] = make_shared<Shader>(shader_dir + "default.vs", shader_dir + "default.fs");
+        m_shaders["background"] = make_shared<Shader>(shader_dir + "background.vs", shader_dir + "background.fs");
 
         // setup background mesh
         {
@@ -95,7 +96,7 @@ namespace RenderSpace {
                 return true;
             }
             else if (property == "shader") {
-                m_drawables[id]->_shader() = any_cast<Shader>(value);
+                m_drawables[id]->_shader() = any_cast<shared_ptr<Shader>>(value);
                 return true;
             }
             else if (property == "offset") {

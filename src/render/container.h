@@ -10,10 +10,11 @@
 #include <unordered_map>
 #include <any>
 
-#include "geom_ext/drawable.h"
-#include "shader.h"
-
 namespace RenderSpace {
+    // !!!important 前向声明 只能用作指针定义
+    class Shader;
+    class DrawableBase;
+
     using DrawableID = uint32_t;
     using DrawableHub = std::unordered_map<
         DrawableID,
@@ -21,7 +22,7 @@ namespace RenderSpace {
     >;
     using ShaderHub = std::unordered_map<
         std::string,
-        Shader
+        std::shared_ptr<Shader>
     >;
 
     class RenderContainer {

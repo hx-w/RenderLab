@@ -5,12 +5,19 @@
 
 #include <vector>
 
+#include "file_browser.h"
+#include "../engine.h"
+#include "../service.h"
+
 using namespace std;
 using namespace GUISpace;
 using namespace ToothSpace;
 
 
+#define SERVICE_INST GUIEngine::get_instance()->get_service()
+
 static vector<shared_ptr<ToothPack>> st_projects;
+static bool show_import_modal = false; // import project
 
 static void HelpMarker(const char* desc) {
     ImGui::TextDisabled("(?)");
@@ -37,9 +44,13 @@ void ProjectPanel::add_tooth_pack(shared_ptr<ToothPack> tpack_ptr) {
 void ProjectPanel::render() {
 	ImGui::Begin("Project Panel");
 
-	ImGui::Button("Import Project");
+	if (ImGui::Button("Import Project")) {
+		show_import_modal = !show_import_modal;
+	}
 	ImGui::SameLine();
 	HelpMarker("or drag file in the window");
+
+	ImGui::Spacing();
 
 	if (ImGui::BeginTabBar("Confirmed_Workflows", ImGuiTabBarFlags_Reorderable)) {
 		
@@ -63,4 +74,18 @@ void ProjectPanel::render() {
 	}
 
 	ImGui::End();
+
+	if (show_import_modal) {
+#if 1
+		static imgui_ext::file_browser_modal fileBrowser("Import");
+		std::string path;
+		if (fileBrowser.render(true, path)) {
+			show_import_modal = false;
+			/// [Notify] GUI/filepath_selected
+			SERVICE_INST->notify<void(const string&)>("/filepath_selected", path);
+		}
+#else
+		/// [TODO] implement windows pretty file dialogs
+#endif
+	}
 }

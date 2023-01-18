@@ -46,6 +46,8 @@ namespace RenderSpace {
         ///     - "offset": Vector3f
         bool set_drawable_property(DrawableID, const std::string&, const std::any&);
 
+        std::shared_ptr<DrawableBase> get_drawable_inst(DrawableID);
+
     private:
         void _setup();
 

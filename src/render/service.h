@@ -10,9 +10,7 @@
 #include <communication/AutoBus.hpp>
 #include <communication/ContextHub.h>
 
-#include "xwindow.h"
-#include "shader.h"
-#include "mesh/elements.h"
+
 namespace RenderSpace {
     class RenderWindowWidget;
     class RenderContext;

@@ -1,6 +1,7 @@
 #include "project_panel.h"
 
 #include <tooth_pack.h>
+#include <geom_ext/drawable.h>
 #include <imgui.h>
 
 #include <vector>
@@ -9,14 +10,38 @@
 #include "../engine.h"
 #include "../service.h"
 
+
 using namespace std;
 using namespace GUISpace;
 using namespace ToothSpace;
-
+using namespace RenderSpace;
 
 #define SERVICE_INST GUIEngine::get_instance()->get_service()
 
-static vector<shared_ptr<ToothPack>> st_projects;
+using ToothPackPtr = shared_ptr<ToothPack>;
+using DrawablePtr = shared_ptr<DrawableBase>;
+
+struct ProjectInst {
+	ProjectInst(ToothPackPtr _tpack): tpack(_tpack) {
+		auto& meshes_rec = tpack->get_meshes();
+
+		// this could be dangerous, but easy to impl
+		for (auto [_, msh_id] : meshes_rec) {
+			meshes_inst[msh_id] = SERVICE_INST->slot_get_drawable_inst(msh_id);
+		}
+	}
+
+
+	~ProjectInst() {
+		// notify xrender / xtooth to delete
+	}
+
+	ToothPackPtr tpack; // mesh only has name to id
+	map<uint32_t, DrawablePtr> meshes_inst;
+};
+
+static vector<ProjectInst> st_projects;
+
 static bool show_import_modal = false; // import project
 
 static void HelpMarker(const char* desc) {
@@ -33,11 +58,11 @@ static void HelpMarker(const char* desc) {
 void ProjectPanel::add_tooth_pack(shared_ptr<ToothPack> tpack_ptr) {
 	// carefull add
 	for (auto& proj : st_projects) {
-		if (proj->get_context()->flow_id == tpack_ptr->get_context()->flow_id) {
+		if (proj.tpack->get_context()->flow_id == tpack_ptr->get_context()->flow_id) {
 			return;
 		}
 	}
-	st_projects.emplace_back(tpack_ptr);
+	st_projects.emplace_back(ProjectInst(tpack_ptr));
 }
 
 
@@ -55,8 +80,8 @@ void ProjectPanel::render() {
 	if (ImGui::BeginTabBar("Confirmed_Workflows", ImGuiTabBarFlags_Reorderable)) {
 		
 		for (auto& proj : st_projects) {
-			auto& proj_ctx = proj->get_context();
-			auto& proj_meshes = proj->get_meshes();
+			auto& proj_ctx = proj.tpack->get_context();
+			auto& proj_meshes = proj.tpack->get_meshes();
 
 			if (ImGui::BeginTabItem(proj_ctx->flow_name.c_str())) {
 				if (ImGui::TreeNode("Meshes")) {

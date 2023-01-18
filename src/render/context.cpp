@@ -4,6 +4,7 @@
 #include "container.h"
 #include "xwindow.h"
 #include "geom_ext/drawable.h"
+#include "service.h"
 
 #include <mesh.h>
 
@@ -59,6 +60,10 @@ namespace RenderSpace {
 
     bool RenderContext::ctx_remove_drawable(DrawableID id) {
         return m_container->remove_drawable(id);
+    }
+
+    shared_ptr<DrawableBase> RenderContext::ctx_get_drawable(DrawableID id) {
+        return m_container->get_drawable_inst(id);
     }
 
 }  // namespace RenderSpace

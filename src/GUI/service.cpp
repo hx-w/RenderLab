@@ -99,4 +99,9 @@ namespace GUISpace {
 		auto _service = ContextHub::getInstance()->getServiceTable<uint32_t(const string&)>();
 		_service->sync_invoke("render/load_mesh", file_path);
 	}
+
+	shared_ptr<DrawableBase> GUIService::slot_get_drawable_inst(uint32_t msh_id) {
+		auto _service = ContextHub::getInstance()->getServiceTable<shared_ptr<DrawableBase>(uint32_t)>();
+		return _service->sync_invoke("render/get_drawable_inst", msh_id);
+	}
 }

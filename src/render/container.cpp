@@ -113,4 +113,9 @@ namespace RenderSpace {
         }
         return false;
     }
+
+    shared_ptr<DrawableBase> RenderContainer::get_drawable_inst(DrawableID id) {
+        if (m_drawables.find(id) == m_drawables.end()) return nullptr;
+        return m_drawables.at(id);
+    }
 }

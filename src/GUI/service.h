@@ -5,6 +5,10 @@
 #include <memory>
 #include <communication/AutoBus.hpp>
 
+namespace RenderSpace {
+    class DrawableBase;
+}
+
 namespace GUISpace {
 
     class GUIEngine;
@@ -19,6 +23,9 @@ namespace GUISpace {
         /// [Slots]
         void slot_load_mesh(const std::string&);
        
+        /// [Slots]
+        std::shared_ptr<RenderSpace::DrawableBase> slot_get_drawable_inst(uint32_t);
+
         /// generic notify
         template <class Func, class ...Args>
         void notify(const std::string& addr, Args&& ...args) {

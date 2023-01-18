@@ -7,8 +7,6 @@
 
 #include <communication/ContextHub.h>
 
-#include "service.h"
-
 namespace geometry {
     class GeometryBase;
 }
@@ -16,6 +14,8 @@ namespace geometry {
 namespace RenderSpace {
     using DrawableID = uint32_t;
 
+    class RenderService;
+    class DrawableBase;
     class RenderContainer;
     class RenderWindowWidget;
 
@@ -44,6 +44,8 @@ namespace RenderSpace {
         DrawableID ctx_add_drawable(std::shared_ptr<geometry::GeometryBase>);
 
         bool ctx_remove_drawable(DrawableID);
+
+        std::shared_ptr<DrawableBase> ctx_get_drawable(DrawableID);
 
         template <class Func, class ...Args>
         void ctx_notify(const std::string& addr, Args&&... args) {

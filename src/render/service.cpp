@@ -33,7 +33,15 @@ namespace RenderSpace {
         m_autobus->registerMethod<uint32_t(const string&)>(
             m_symbol + "/load_mesh",
             [this](const string& file_path) -> uint32_t {
-                return this->m_context->ctx_load_drawable(file_path);
+                return m_context->ctx_load_drawable(file_path);
+            }
+        );
+        /// @brief get drawble instance
+        ///       THIS COULD BE DANGEROUS
+        m_autobus->registerMethod<shared_ptr<DrawableBase>(DrawableID)>(
+            m_symbol + "/get_drawable_inst",
+            [this](DrawableID msh_id) {
+                return m_context->ctx_get_drawable(msh_id);
             }
         );
     }

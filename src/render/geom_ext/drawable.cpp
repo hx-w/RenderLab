@@ -33,18 +33,16 @@ namespace RenderSpace {
         m_shader->use();
         glBindVertexArray(m_vao);
 
-		glPointSize(3.0f);
+		glPointSize(2.0f);
 		// shade mode
 		glPolygonMode(GL_FRONT_AND_BACK, m_shade_mode);
 
         // shader configure
         ///1. local transform = identity
-        m_shader->setMat4("model", glm::mat4(1.0f));
-        ///2. model offset
-        m_shader->setVec3("offset", m_offset);
-        ///3. shade mode
+        m_shader->setMat4("model", m_model_transf);
+        ///2. shade mode
         glPolygonMode(GL_FRONT_AND_BACK, m_shade_mode);
-        ///4. randomColor
+        ///3. randomColor
         m_shader->setBool("randomColor", false);
 
         _draw(); // custom draw

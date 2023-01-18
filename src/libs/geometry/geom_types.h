@@ -21,6 +21,8 @@ namespace geometry {
     using Vector2f = glm::vec2;
     using Vector2u = glm::uvec2;
 
+    using Mat4f = glm::mat4;
+
     class GeometryBase {
     public:
         GeometryBase() = default;

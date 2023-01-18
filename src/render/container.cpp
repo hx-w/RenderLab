@@ -99,10 +99,6 @@ namespace RenderSpace {
                 m_drawables[id]->_shader() = any_cast<shared_ptr<Shader>>(value);
                 return true;
             }
-            else if (property == "offset") {
-                m_drawables[id]->_offset() = any_cast<Vector3f>(value);
-                return true;
-            }
             else if (property == "shade_mode") {
                 m_drawables[id]->_shade_mode() = any_cast<uint32_t>(value);
                 return true;

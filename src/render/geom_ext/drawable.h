@@ -44,8 +44,6 @@ namespace RenderSpace {
 
         GeomType& _type() { return m_type; }
 
-        geometry::Vector3f& _offset() { return m_offset; }
-
         uint32_t& _shade_mode() { return m_shade_mode; }
 
     protected:
@@ -59,7 +57,8 @@ namespace RenderSpace {
         uint32_t m_ebo;
 
         uint32_t m_shade_mode = 0;  // wireframe or solid
-        geometry::Vector3f m_offset = geometry::Vector3f(0.0f);
+        // local transform
+        geometry::Mat4f m_model_transf = geometry::Mat4f(1.0f);
 
         std::shared_ptr<Shader> m_shader;
         GeomType m_type;

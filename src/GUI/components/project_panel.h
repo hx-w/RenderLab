@@ -15,4 +15,6 @@ namespace GUISpace {
 
 		static void render();
 	};
+
+	static void next_workflow_stage(int /* flow_id */);
 }

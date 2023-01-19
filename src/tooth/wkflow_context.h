@@ -60,10 +60,14 @@ namespace ToothSpace {
 		int flow_id = 0;
         std::string flow_name = "";
         WorkflowParams node_states;
+
+		// node_order manage
         std::vector<NodeId> node_order;
+		int stage_curr = -1;
 
 		// extra members
 		ProjectType proj_t = Proj_CBCT; // reset in tooth pack constructor
+
     };
 
     using WkflowCtxPtr = std::shared_ptr<WorkflowContext>;

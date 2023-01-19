@@ -100,7 +100,7 @@ namespace ToothSpace {
 		switch (node) {
 		case NodeId_1:
 			// preprocess
-
+			action_node_1(tpack);
 			break;
 		case NodeId_2:
 			// pmtr_nurbs

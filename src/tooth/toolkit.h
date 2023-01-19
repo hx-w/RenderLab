@@ -50,6 +50,15 @@ namespace ToothSpace {
 
 	/// topological sort for nodeflow
 	void topological_sort(const std::vector<LinkPair>& /* links */, std::vector<NodeId>& /* node_order */);
+
+
+	/**
+	 * Active stage for Nodes.
+	 * called in workspace, invoked from GUI actions
+	 */
+
+	/// [preprocess]
+	void action_node_1(std::shared_ptr<ToothPack> /* tpack */);
 }
 
 

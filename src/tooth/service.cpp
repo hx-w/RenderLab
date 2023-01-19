@@ -44,6 +44,9 @@ namespace ToothSpace {
             });
         m_autobus->subscribe<void(int, int /* status */)>(SignalPolicy::Sync, "GUI/confirm_workflow",
             bind(&Workspace::confirm_workflow, m_workspace.get(), ::placeholders::_1, ::placeholders::_2));
+    
+        m_autobus->subscribe<void(int, int)>(SignalPolicy::Sync, "GUI/active_workflow_stage",
+            bind(&Workspace::active_stage, m_workspace.get(), ::placeholders::_1, ::placeholders::_2));
     }
 
     void ToothService::slot_add_log(string&& type, const string& msg) {
@@ -69,5 +72,10 @@ namespace ToothSpace {
     uint32_t ToothService::slot_load_mesh(const string& meshpath) {
         auto _service = ContextHub::getInstance()->getServiceTable<uint32_t(const string&)>();
         return _service->sync_invoke("render/load_mesh", meshpath);
+    }
+
+    bool ToothService::slot_set_drawable_property(uint32_t msh_id, const string& prop, const any& val) {
+        auto _service = ContextHub::getInstance()->getServiceTable<bool(uint32_t, const string&, const any&)>();
+        return _service->sync_invoke("render/set_drawable_property", msh_id, prop, val);
     }
 }

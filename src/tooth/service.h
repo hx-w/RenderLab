@@ -1,6 +1,7 @@
 ﻿#ifndef TOOTH_SERVICE_H
 #define TOOTH_SERVICE_H
 
+#include <any>
 #include <string>
 #include <memory>
 #include <communication/AutoBus.hpp>
@@ -24,6 +25,7 @@ namespace ToothSpace {
         void slot_open_workflow(std::shared_ptr<WorkflowContext>);
         void slot_add_tooth_pack(std::shared_ptr<ToothPack>);
         uint32_t slot_load_mesh(const std::string&);
+        bool slot_set_drawable_property(uint32_t, const std::string&, const std::any&);
 
     private:
         void _subscribe();

@@ -6,6 +6,8 @@
 #include <mesh.h>
 #include "geom_ext/drawable.h"
 #include "shader.h"
+#include <line.hpp>
+#include <intersection.h>
 
 
 using namespace std;
@@ -117,5 +119,35 @@ namespace RenderSpace {
     shared_ptr<DrawableBase> RenderContainer::get_drawable_inst(DrawableID id) {
         if (m_drawables.find(id) == m_drawables.end()) return nullptr;
         return m_drawables.at(id);
+    }
+
+    bool RenderContainer::pickcmd(
+        Ray&& pick_ray,
+        vector<DrawableID>& picked_ids,
+        vector<Vector3f>& picked_points, vector<Vector3f>& picked_normals,
+        bool muti
+    ) {
+        picked_ids.clear(); picked_points.clear(); picked_normals.clear();
+
+        /// [TODO]
+        // only pick mesh
+        for (auto& [draw_id, draw_ptr] : m_drawables) {
+            if (!draw_ptr->_visible()) continue;
+            if (draw_ptr->_type() != GeomTypeMesh) continue;
+
+            vector<geometry::Point3f> _pnts;
+            vector<geometry::Vector3f> _nmls;
+
+            auto success = geometry::intersect(
+                pick_ray,
+                *dynamic_pointer_cast<NewMeshDrawable>(draw_ptr)->_raw(),
+                _pnts,
+                _nmls,
+                !muti
+            );
+            
+        }
+
+        return false;
     }
 }

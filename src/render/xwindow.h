@@ -11,6 +11,10 @@
 struct GLFWwindow;
 namespace RenderSpace {
     typedef std::pair<glm::vec3, glm::vec3> AABB; // min, max
+    enum InteractMode {
+        DefaultMode = 0x0,
+        PickMode    = 0x1
+    };
 
     class RenderService;
     class RenderContext;
@@ -36,6 +40,8 @@ namespace RenderSpace {
 
         // view control
         void viewfit_BBOX(const AABB& aabb);
+
+        void set_interact_mode(InteractMode);
 
     public:
         unsigned int m_scr_width = 800;
@@ -72,6 +78,8 @@ namespace RenderSpace {
 
     private:
         std::map<int, time_t> m_key_last_active; // for click, only record GLFW_PRESS
+        InteractMode interact_mode = PickMode;
+        bool key_down_GTRL = false;
 
     private:
         std::shared_ptr<RenderContext> m_context;

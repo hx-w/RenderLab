@@ -7,6 +7,7 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
+
 namespace RenderSpace {
     DrawableBase::~DrawableBase() {
         std::lock_guard<std::mutex> lk(m_mutex);
@@ -27,7 +28,7 @@ namespace RenderSpace {
 
     void DrawableBase::draw() {
         std::lock_guard<std::mutex> lock(m_mutex);
-        if (!_ready_to_draw) {
+        if (!m_visible || !_ready_to_draw) {
             return;
         }
         m_shader->use();
@@ -95,6 +96,8 @@ namespace RenderSpace {
         }
         m_faces = mesh.get_faces();
         m_type = GeomType::GeomTypeMesh;
+
+        m_raw = std::make_shared<geometry::Mesh>(mesh);
     }
 
     void NewMeshDrawable::_draw() {

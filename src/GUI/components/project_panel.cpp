@@ -80,6 +80,8 @@ void mesh_property_render(DrawablePtr msh, const string& msh_name) {
 		case 1: msh->_shade_mode() = GL_LINE; break;
 		case 2: msh->_shade_mode() = GL_FILL; break;
 		}
+
+		ImGui::Checkbox(imgui_name("visible", msh_name).c_str(), &msh->_visible());
 	}
 }
 

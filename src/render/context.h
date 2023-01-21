@@ -7,6 +7,7 @@
 #include <any>
 
 #include <communication/ContextHub.h>
+#include <geom_types.h>
 
 namespace geometry {
     class GeometryBase;
@@ -42,13 +43,19 @@ namespace RenderSpace {
         /// @brief only load **MESH** drawable object from file
         DrawableID ctx_load_drawable(const std::string& filename);
 
-        DrawableID ctx_add_drawable(std::shared_ptr<geometry::GeometryBase>);
+        DrawableID ctx_add_drawable(std::shared_ptr<geometry::GeometryBase>, int /* type */ = 2);
 
         bool ctx_remove_drawable(DrawableID);
 
         std::shared_ptr<DrawableBase> ctx_get_drawable(DrawableID);
 
         bool ctx_set_drawable_property(DrawableID, const std::string&, const std::any&);
+
+
+        void ctx_change_interact_mode(int /* interact_mode */);
+
+        /// pick from container
+        void ctx_pick_drawables(const geometry::Vector3f&, const geometry::Vector3f&, bool);
 
         template <class Func, class ...Args>
         void ctx_notify(const std::string& addr, Args&&... args) {

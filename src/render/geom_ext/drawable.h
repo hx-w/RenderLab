@@ -48,6 +48,8 @@ namespace RenderSpace {
 
         geometry::Mat4f& _model_transf() { return m_model_transf; }
 
+        bool& _visible() { return m_visible; }
+
     protected:
         void _init_buffer();
         virtual void _draw() = 0;
@@ -69,6 +71,8 @@ namespace RenderSpace {
         std::atomic<bool> _ready_to_update = false;
         std::atomic<bool> _ready_to_draw = false;
     
+        bool m_visible = true;
+
     protected:
         std::mutex m_mutex;
     };
@@ -83,9 +87,13 @@ namespace RenderSpace {
     
         void _draw() override;
 
+        decltype(auto) _raw() { return m_raw; }
+
     private:
         std::vector<VertexPrimitive> m_vertices;
         std::vector<geometry::Vector3u> m_faces;
+
+        std::shared_ptr<geometry::Mesh> m_raw; // stupid
     };
 
 }

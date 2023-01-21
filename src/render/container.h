@@ -9,6 +9,7 @@
 #include <vector>
 #include <unordered_map>
 #include <any>
+#include <geom_types.h>
 
 namespace RenderSpace {
     // !!!important 前向声明 只能用作指针定义
@@ -47,6 +48,12 @@ namespace RenderSpace {
         bool set_drawable_property(DrawableID, const std::string&, const std::any&);
 
         std::shared_ptr<DrawableBase> get_drawable_inst(DrawableID);
+
+        bool pickcmd(
+            geometry::Ray&&,
+            std::vector<DrawableID>&, std::vector<geometry::Vector3f>&, std::vector<geometry::Vector3f>&,
+            bool = false
+        );
 
     private:
         void _setup();

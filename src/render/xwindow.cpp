@@ -1,6 +1,7 @@
 ﻿#include "xwindow.h"
 #include "service.h"
 #include "context.h"
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <chrono>
@@ -69,6 +70,12 @@ namespace RenderSpace {
         if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
             cameraPos += cameraMove * glm::vec3(0.0f, 1.0f, 0.0f);
         }
+        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+            key_down_GTRL = true;
+        }
+        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_RELEASE) {
+            key_down_GTRL = false;
+        }
     }
 
     // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -78,6 +85,7 @@ namespace RenderSpace {
         // height will be significantly larger than specified on retina displays.
         m_scr_width = width;
         m_scr_height = height;
+        glViewport(0, 0, m_scr_width, m_scr_height);
         /// [TODO] window resize notify
     }
 
@@ -154,11 +162,12 @@ namespace RenderSpace {
             switch(button) {
 			case GLFW_MOUSE_BUTTON_LEFT:
                 leftMousePressed = false;
-                //if (CTRL_down) {
-                //    glm::vec3 direction(0.0);
-                //    pickingRay(glm::vec2(realX, realY), direction);
-                //    /// [TODO] picking ray notify
-                //}
+                if (interact_mode == PickMode && key_down_GTRL) {
+                    glm::vec3 direction(0.0);
+                    pickingRay(glm::vec2(realX, realY), direction);
+                    /// [TODO] picking ray notify
+                    m_context->ctx_pick_drawables(cameraPos, direction, false);
+                }
 				break;
 			case GLFW_MOUSE_BUTTON_MIDDLE:
 				break;
@@ -210,5 +219,9 @@ namespace RenderSpace {
         front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
         cameraPos = center - front * max_size * 1.5f;
         cameraFront = front;
+    }
+
+    void RenderWindowWidget::set_interact_mode(InteractMode mode) {
+        interact_mode = mode;
     }
 }

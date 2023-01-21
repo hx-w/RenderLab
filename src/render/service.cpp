@@ -50,6 +50,12 @@ namespace RenderSpace {
                 return m_context->ctx_set_drawable_property(msh_id, property, value);
             }
         );
+        m_autobus->registerMethod<void(int)>(
+            m_symbol + "/set_interact_mode",
+            [this](int mode) {
+                m_context->ctx_change_interact_mode(mode);
+            }
+        );
     }
 
     void RenderService::start_thread(string tname, function<void()>&& func) {

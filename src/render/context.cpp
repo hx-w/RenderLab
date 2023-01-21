@@ -9,6 +9,7 @@
 #include <mesh.h>
 
 #include <iostream>
+#include <line.hpp>
 
 using namespace std;
 using namespace geometry;
@@ -47,14 +48,31 @@ namespace RenderSpace {
         return ctx_add_drawable(make_shared<Mesh>(geom_mesh));
     }
 
-    DrawableID RenderContext::ctx_add_drawable(shared_ptr<GeometryBase> geom) {
-        // if is mesh
-        auto geom_mesh = dynamic_pointer_cast<Mesh>(geom);
-        auto drawable_mesh = make_shared<NewMeshDrawable>(*geom_mesh, Vector3f(0.5f));
-        drawable_mesh->_shader() = m_container->shaders()["default"];
-        drawable_mesh->get_ready();
-        auto drawable_id = m_container->add_drawable(drawable_mesh);
-        m_service->slot_add_log("info", "Add drawable object with id " + to_string(drawable_id));
+    DrawableID RenderContext::ctx_add_drawable(shared_ptr<GeometryBase> geom, int type) {
+        auto geom_type = static_cast<GeomType>(type);
+        
+        auto post_setup = [&](shared_ptr<DrawableBase> drawable) -> DrawableID {
+			drawable->_shader() = m_container->shaders()["default"];
+			drawable->get_ready();
+			auto drawable_id = m_container->add_drawable(drawable);
+            return drawable_id;
+        };
+
+        DrawableID drawable_id = -1;
+
+        if (geom_type == GeomTypeMesh) {
+			// if is mesh
+			auto geom_mesh = dynamic_pointer_cast<Mesh>(geom);
+			auto drawable_mesh = make_shared<NewMeshDrawable>(*geom_mesh, Vector3f(0.5f));
+			drawable_id = post_setup(drawable_mesh);
+        }
+        else if (geom_type == GeomTypeArrow) {
+
+        }
+        else if (geom_type == GeomTypePoint) {
+
+        }
+		m_service->slot_add_log("info", "Add drawable object with id " + to_string(drawable_id));
         return drawable_id;
     }
 
@@ -68,6 +86,32 @@ namespace RenderSpace {
 
     bool RenderContext::ctx_set_drawable_property(DrawableID id, const string& property, const any& value) {
         return m_container->set_drawable_property(id, property, value);
+    }
+
+    void RenderContext::ctx_pick_drawables(const Vector3f& origin, const Vector3f& direction, bool muti) {
+        Ray pick_ray(origin, direction);
+
+        vector<DrawableID> picked_ids;
+        vector<Vector3f> picked_points;
+        vector<Vector3f> picked_normals;
+
+        auto success = m_container->pickcmd(
+            move(pick_ray), picked_ids, picked_points, picked_normals, muti
+        );
+
+        if (success) {
+            /// [Notify] render/picked_drawables
+            ctx_notify<void(vector<DrawableID>&, vector<Vector3f>&, vector<Vector3f>&)>(
+                "/picked_drawables", picked_ids, picked_points, picked_normals
+            );
+        }
+        else {
+            // not picked
+        }
+    }
+
+    void RenderContext::ctx_change_interact_mode(int mode) {
+        m_window->set_interact_mode(static_cast<InteractMode>(mode));
     }
 
 }  // namespace RenderSpace

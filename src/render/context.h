@@ -43,7 +43,11 @@ namespace RenderSpace {
         /// @brief only load **MESH** drawable object from file
         DrawableID ctx_load_drawable(const std::string& filename);
 
-        DrawableID ctx_add_drawable(std::shared_ptr<geometry::GeometryBase>, int /* type */ = 2);
+        DrawableID ctx_add_drawable(
+            std::shared_ptr<geometry::GeometryBase>,
+            geometry::Vector3f& = geometry::Vector3f(0.5),
+            int /* type */ = 2
+        );
 
         bool ctx_remove_drawable(DrawableID);
 

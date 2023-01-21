@@ -56,9 +56,9 @@ namespace RenderSpace {
         virtual void _update() = 0;
 
     protected:
-        uint32_t m_vao;
-        uint32_t m_vbo;
-        uint32_t m_ebo;
+        uint32_t m_vao = 0;
+        uint32_t m_vbo = 0;
+        uint32_t m_ebo = 0;
 
         uint32_t m_shade_mode = 0;  // wireframe or solid
         // local transform
@@ -81,7 +81,7 @@ namespace RenderSpace {
     class NewMeshDrawable : public DrawableBase {
     public:
         // copy from geometry::mesh
-        NewMeshDrawable(geometry::Mesh&, geometry::Vector3f clr);
+        NewMeshDrawable(geometry::Mesh&, geometry::Vector3f /* color */);
 
         void _update() override;
     
@@ -94,6 +94,23 @@ namespace RenderSpace {
         std::vector<geometry::Vector3u> m_faces;
 
         std::shared_ptr<geometry::Mesh> m_raw; // stupid
+    };
+
+    class ArrowDrawable : public DrawableBase {
+    public:
+        ArrowDrawable(geometry::Ray&, float /* length */, geometry::Vector3f /* color */);
+
+        void _update() override;
+
+        void _draw() override;
+
+        decltype(auto) _raw() { return m_raw; }
+
+    private:
+        std::vector<VertexPrimitive> m_vertices;
+        std::vector<unsigned int> m_lines;
+
+        std::shared_ptr<geometry::Ray> m_raw;
     };
 
 }

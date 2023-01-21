@@ -24,6 +24,10 @@ namespace RenderSpace {
 
         m_window->init_context(static_cast<shared_ptr<RenderContext>>(this));
         m_service->init_context(static_cast<shared_ptr<RenderContext>>(this));
+
+        /// [DEBUG]
+        auto ray = make_shared<Ray>(Ray(Vector3f(0.0f), Vector3f(1.0, 1.0, 1.0)));
+        ctx_add_drawable(ray, Vector3f(1.0, 0.0, 0.0), 1);
     }
 
     void RenderContext::ctx_update_and_draw() {
@@ -48,7 +52,7 @@ namespace RenderSpace {
         return ctx_add_drawable(make_shared<Mesh>(geom_mesh));
     }
 
-    DrawableID RenderContext::ctx_add_drawable(shared_ptr<GeometryBase> geom, int type) {
+    DrawableID RenderContext::ctx_add_drawable(shared_ptr<GeometryBase> geom, Vector3f& clr, int type) {
         auto geom_type = static_cast<GeomType>(type);
         
         auto post_setup = [&](shared_ptr<DrawableBase> drawable) -> DrawableID {
@@ -61,16 +65,18 @@ namespace RenderSpace {
         DrawableID drawable_id = -1;
 
         if (geom_type == GeomTypeMesh) {
-			// if is mesh
 			auto geom_mesh = dynamic_pointer_cast<Mesh>(geom);
-			auto drawable_mesh = make_shared<NewMeshDrawable>(*geom_mesh, Vector3f(0.5f));
+			auto drawable_mesh = make_shared<NewMeshDrawable>(*geom_mesh, clr);
 			drawable_id = post_setup(drawable_mesh);
         }
         else if (geom_type == GeomTypeArrow) {
-
+            auto geom_ray = dynamic_pointer_cast<Ray>(geom);
+            auto drawable_ray = make_shared<ArrowDrawable>(*geom_ray, 1.0f, clr);
+            drawable_ray->_shade_mode() = 0x01;
+            drawable_id = post_setup(drawable_ray);
         }
         else if (geom_type == GeomTypePoint) {
-
+            
         }
 		m_service->slot_add_log("info", "Add drawable object with id " + to_string(drawable_id));
         return drawable_id;

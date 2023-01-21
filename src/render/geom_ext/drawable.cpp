@@ -147,7 +147,7 @@ namespace RenderSpace {
         // https://blog.sina.com.cn/s/blog_6496e38e0102vi7e.html
 
         // head of the length: 20%
-        auto circle_center = ori + length * 0.8f;
+        auto circle_center = ori + dir * (length * 0.8f);
         auto ijk = { Vector3f(1.0f, 0.0f, 0.0f), Vector3f(0.0f, 1.0f, 0.0f), Vector3f(0.0f, 0.0f, 1.0f) };
 
         auto a = Vector3f(0.0f), b = Vector3f(0.0f);
@@ -169,7 +169,7 @@ namespace RenderSpace {
         
         m_vertices.clear();
         m_vertices.emplace_back(VertexPrimitive(ori, clr, Vector3f(1.0)));
-        m_vertices.emplace_back(VertexPrimitive(ori + length, clr, Vector3f(1.0)));
+        m_vertices.emplace_back(VertexPrimitive(ori + dir * length, clr, Vector3f(1.0)));
 
         for (auto& ang : angles) {
             auto v = Vector3f(

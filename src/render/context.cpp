@@ -24,10 +24,6 @@ namespace RenderSpace {
 
         m_window->init_context(static_cast<shared_ptr<RenderContext>>(this));
         m_service->init_context(static_cast<shared_ptr<RenderContext>>(this));
-
-        /// [DEBUG]
-        auto ray = make_shared<Ray>(Ray(Vector3f(0.0f), Vector3f(1.0, 1.0, 1.0)));
-        ctx_add_drawable(ray, Vector3f(1.0, 0.0, 0.0), 1);
     }
 
     void RenderContext::ctx_update_and_draw() {
@@ -96,6 +92,10 @@ namespace RenderSpace {
 
     void RenderContext::ctx_pick_drawables(const Vector3f& origin, const Vector3f& direction, bool muti) {
         Ray pick_ray(origin, direction);
+
+        /// [DEBUG]
+        auto ray = make_shared<Ray>(pick_ray);
+        ctx_add_drawable(ray, Vector3f(1.0, 0.0, 0.0), 1);
 
         vector<DrawableID> picked_ids;
         vector<Vector3f> picked_points;

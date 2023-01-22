@@ -43,12 +43,12 @@ namespace geometry {
             auto _verts = py_verts.unchecked<2>();
             auto _faces = py_faces.unchecked<2>();
 
-			for (auto _row = 0; _row < _verts.shape(0); ++_row) {
-				vertices.emplace_back(Point3f(_verts(_row, 0), _verts(_row, 1), _verts(_row, 2)));
-			}
-			for (auto _row = 0; _row < _faces.shape(0); ++_row) {
-				faces.emplace_back(Vector3u(_faces(_row, 0), _faces(_row, 1), _faces(_row, 2)));
-			}
+            for (auto _row = 0; _row < _verts.shape(0); ++_row) {
+                vertices.emplace_back(Point3f(_verts(_row, 0), _verts(_row, 1), _verts(_row, 2)));
+            }
+            for (auto _row = 0; _row < _faces.shape(0); ++_row) {
+                faces.emplace_back(Vector3u(_faces(_row, 0), _faces(_row, 1), _faces(_row, 2)));
+            }
             status++;
         }
         catch (const std::exception& e) {

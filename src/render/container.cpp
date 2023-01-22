@@ -147,13 +147,6 @@ namespace RenderSpace {
             );
         }
 
-        /// DEBUG
-        {
-            float t, u, v = 0.0f;
-            auto res = intersect_triangle(pick_ray, Point3f(-1, 1, 0), Point3f(0, -1, 0), Point3f(1, 0, 0), &t, &u, &v);
-            cout << res << endl;
-        }
-
         return false;
     }
 }

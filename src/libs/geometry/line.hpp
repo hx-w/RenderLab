@@ -41,7 +41,9 @@ namespace geometry {
     public:
         Ray() = default;
         Ray(const Point3f& origin, const Vector3f& direction)
-            : m_origin(origin), m_direction(direction) {}
+            : m_origin(origin) {
+            m_direction = glm::normalize(direction);
+        }
 
         Point3f get_origin() const { return m_origin; }
         Vector3f get_direction() const { return m_direction; }

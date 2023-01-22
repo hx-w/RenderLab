@@ -25,6 +25,8 @@ namespace RenderSpace {
 				make_shared<RenderContainer>(),
 				make_shared<RenderWindowWidget>()
 		);
+		m_context->window()->m_scr_height = _height;
+		m_context->window()->m_scr_width = _width;
 		setup_post();
 	}
 
@@ -202,12 +204,18 @@ namespace RenderSpace {
 		m_win_widget->deltaTime = currentFrame - m_win_widget->lastFrame;
 		m_win_widget->lastFrame = currentFrame;
 
+		if ((float)m_win_widget->m_scr_height < 1e-6 &&
+			(float)m_win_widget->m_scr_width < 1e-6) {
+			return;
+		}
+
 		// activate shader
 		glm::mat4 projection = glm::perspective(
 			glm::radians(m_win_widget->fov),
 			(float)m_win_widget->m_scr_width / (float)m_win_widget->m_scr_height,
 			0.1f, 500.0f
 		);
+
 		glm::mat4 view = glm::lookAt(
 			m_win_widget->cameraPos,
 			m_win_widget->cameraPos + m_win_widget->cameraFront,

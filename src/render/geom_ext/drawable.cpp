@@ -156,7 +156,6 @@ namespace RenderSpace {
             auto _a = glm::cross(dir, t);
             if (glm::length(_a) >= 1e-6) {
 				a = glm::normalize(_a);
-
 				b = glm::normalize(glm::cross(dir, a));
 				break;
             }

@@ -48,7 +48,7 @@ namespace RenderSpace {
         return ctx_add_drawable(make_shared<Mesh>(geom_mesh));
     }
 
-    DrawableID RenderContext::ctx_add_drawable(shared_ptr<GeometryBase> geom, Vector3f& clr, int type) {
+    DrawableID RenderContext::ctx_add_drawable(shared_ptr<GeometryBase> geom, Props& props, int type) {
         auto geom_type = static_cast<GeomType>(type);
         
         auto post_setup = [&](shared_ptr<DrawableBase> drawable) -> DrawableID {
@@ -60,14 +60,27 @@ namespace RenderSpace {
 
         DrawableID drawable_id = -1;
 
+        // decode properties
+        /// color
+        auto clr = Vector3f(0.5); // default
+        if (props.find("color") != props.end()) {
+            clr = any_cast<Vector3f>(props.at("color"));
+        }
+
         if (geom_type == GeomTypeMesh) {
 			auto geom_mesh = dynamic_pointer_cast<Mesh>(geom);
 			auto drawable_mesh = make_shared<NewMeshDrawable>(*geom_mesh, clr);
 			drawable_id = post_setup(drawable_mesh);
         }
         else if (geom_type == GeomTypeArrow) {
+            // decode properties for arrow
+            auto arrow_len = 1.0f;
+            if (props.find("arrow_length") != props.end()) {
+                arrow_len = any_cast<float>(props.at("arrow_length"));
+            }
+
             auto geom_ray = dynamic_pointer_cast<Ray>(geom);
-            auto drawable_ray = make_shared<ArrowDrawable>(*geom_ray, 1.0f, clr);
+            auto drawable_ray = make_shared<ArrowDrawable>(*geom_ray, arrow_len, clr);
             drawable_ray->_shade_mode() = 0x01;
             drawable_id = post_setup(drawable_ray);
         }
@@ -93,10 +106,6 @@ namespace RenderSpace {
     void RenderContext::ctx_pick_drawables(const Vector3f& origin, const Vector3f& direction, bool muti) {
         Ray pick_ray(origin, direction);
 
-        /// [DEBUG]
-        auto ray = make_shared<Ray>(pick_ray);
-        ctx_add_drawable(ray, Vector3f(1.0, 0.0, 0.0), 1);
-
         vector<DrawableID> picked_ids;
         vector<Vector3f> picked_points;
         vector<Vector3f> picked_normals;
@@ -108,7 +117,7 @@ namespace RenderSpace {
         if (success) {
             /// [Notify] render/picked_drawables
             ctx_notify<void(vector<DrawableID>&, vector<Vector3f>&, vector<Vector3f>&)>(
-                "/picked_drawables", picked_ids, picked_points, picked_normals
+                "/picked_points", picked_ids, picked_points, picked_normals
             );
         }
         else {

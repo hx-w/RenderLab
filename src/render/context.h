@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 #include <any>
+#include <map>
 
 #include <communication/ContextHub.h>
 #include <geom_types.h>
@@ -15,6 +16,7 @@ namespace geometry {
 
 namespace RenderSpace {
     using DrawableID = uint32_t;
+    using Props = std::map<std::string, std::any>;
 
     class RenderService;
     class DrawableBase;
@@ -45,7 +47,7 @@ namespace RenderSpace {
 
         DrawableID ctx_add_drawable(
             std::shared_ptr<geometry::GeometryBase>,
-            geometry::Vector3f& = geometry::Vector3f(0.5),
+            Props& /* properties */ = Props{},
             int /* type */ = 2
         );
 

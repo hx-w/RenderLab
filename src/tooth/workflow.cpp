@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <cassert>
+#include <line.hpp>
 
 #include "toolkit.h"
 #include "engine.h"
@@ -122,5 +123,21 @@ namespace ToothSpace {
 			assert(false);
 		}
 
+	}
+
+	void Workspace::pick_service_handler(
+		vector<uint32_t>& picked_ids,
+		vector<geometry::Point3f>& picked_pnts,
+		vector<geometry::Vector3f>& picked_nmls
+	) {
+		/// handler 
+		
+
+		// [DEBUG] show arrow
+		auto picked_num = picked_ids.size();
+		for (auto i = 0; i < picked_num; ++i) {
+			auto ray = geometry::Ray(picked_pnts[i], picked_nmls[i]);
+			SERVICE_INST->slot_show_arrow(ray, 0.5f, geometry::Vector3f(1.0f, 0.0f, 1.0f));
+		}
 	}
 }

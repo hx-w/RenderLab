@@ -160,6 +160,15 @@ namespace RenderSpace {
 
             if (success) {
                 auto picked_num = _pnts.size();
+                auto& transf = draw_ptr->_model_transf();
+
+                // transf back
+                for (auto i = 0; i < picked_num; ++i) {
+                    auto nml_end = Vector3f(transf * glm::vec4(_nmls[i] + _pnts[i], 1.0f));
+                    _pnts[i] = Vector3f(transf * glm::vec4(_pnts[i], 1.0f));
+                    _nmls[i] = nml_end - _pnts[i];
+                }
+
                 auto _picked_ids = vector<DrawableID>(picked_num, draw_id);
                 picked_ids.insert(picked_ids.end(), _picked_ids.begin(), _picked_ids.end());
                 picked_points.insert(picked_points.end(), _pnts.begin(), _pnts.end());

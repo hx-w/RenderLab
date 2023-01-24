@@ -7,6 +7,7 @@
 #include "context.h"
 
 using namespace std;
+using namespace geometry;
 using namespace fundamental;
 
 namespace RenderSpace {
@@ -56,6 +57,12 @@ namespace RenderSpace {
                 m_context->ctx_change_interact_mode(mode);
             }
         );
+        m_autobus->registerMethod<DrawableID(shared_ptr<GeometryBase>, Props&, int)>(
+            m_symbol + "/add_geometry",
+            [this](shared_ptr<GeometryBase> geom, Props& props, int type) -> bool {
+                return m_context->ctx_add_drawable(geom, props, type);
+            }
+		);
     }
 
     void RenderService::start_thread(string tname, function<void()>&& func) {

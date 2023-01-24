@@ -2,7 +2,6 @@
  * mesh method
  */
 
-#include <glm/glm.hpp>
 #include <vector>
 #include <string>
 
@@ -24,6 +23,9 @@ namespace geometry {
         std::vector<Vector3u>& faces() { return m_faces; }
 
         uint32_t hash() const;
+
+    private:
+        static void _split_words(const std::string&, std::vector<std::string>&, char);
 
     private:    
         std::vector<Point3f> m_vertices;

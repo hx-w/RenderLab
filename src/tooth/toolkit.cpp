@@ -15,6 +15,7 @@ namespace py = pybind11;
 
 #define SERVICE_INST ToothEngine::get_instance()->get_service()
 
+py::scoped_interpreter guard{};
 
 namespace ToothSpace {
 	bool init_workenv(string& status) {
@@ -38,7 +39,7 @@ namespace ToothSpace {
 
 	int preprocess_tooth_path(const string& path, bool force, string& status) {
 		try {
-			py::scoped_interpreter guard{};
+			//py::scoped_interpreter guard{};
 			// check path is folder, and folder's elements valid
 			auto _py_os = py::module_::import("os");
 			if (!_py_os.attr("path").attr("isdir")(path).cast<bool>()) {
@@ -72,7 +73,7 @@ namespace ToothSpace {
 		auto& context = tpack->get_context();
 		auto& path = tpack->get_basedir();
 		try {
-			py::scoped_interpreter guard{};
+			//py::scoped_interpreter guard{};
 			// load files names
 			auto _py_os = py::module_::import("os");
 			auto _py_toml = py::module_::import("toml");
@@ -106,7 +107,7 @@ namespace ToothSpace {
 		auto& path = tpack->get_basedir();
 
 		try {
-			py::scoped_interpreter guard{};
+			//py::scoped_interpreter guard{};
 			// load files names
 			auto _py_os = py::module_::import("os");
 			auto _py_toml = py::module_::import("toml");
@@ -135,7 +136,7 @@ namespace ToothSpace {
 	}
 
 	void load_meshes_to_renderer(ToothPack* tpack) {
-		py::scoped_interpreter guard{};
+		//py::scoped_interpreter guard{};
 		auto _py_os = py::module_::import("os");
 		auto& meshes = tpack->get_meshes();
 		auto& basedir = tpack->get_basedir();
@@ -202,7 +203,7 @@ namespace ToothSpace {
 
 		// only calc one obb transf
 		try {
-			py::scoped_interpreter guard{};
+			//py::scoped_interpreter guard{};
 			auto _py_os = py::module_::import("os");
 			auto _py_trimesh = py::module_::import("trimesh");
 

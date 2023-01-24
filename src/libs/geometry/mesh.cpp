@@ -1,12 +1,12 @@
 #include <iostream>
 #include <fstream>
 #include <functional>
-#include <pybind11/embed.h>
-#include <pybind11/numpy.h>
+#include <fstream>
+#include <sstream>
 
 #include "mesh.h"
 
-namespace py = pybind11;
+using namespace std;
 
 namespace geometry {
 
@@ -21,55 +21,36 @@ namespace geometry {
         std::vector<Point3f> vertices;  
         std::vector<Vector3u> faces;
 
+        string line;
+
         status = 0;
         try {
-            py::scoped_interpreter guard{};
-            // load by py module [trimesh]
-            auto py_trimesh = py::module_::import("trimesh");
-            auto _mesh = py_trimesh.attr("load")(filename.c_str());
+			while (getline(file, line)) {
+				if (line.empty()) {
+					continue;
+				}
+				if (line[0] == '#') {
+					continue;
+				}
+				vector<string> words;
+				_split_words(line, words, ' ');
 
-            /**
-             * directly access pymem, must split into two steps
-             * 1. cast raw data into py::array_t<T>
-             * 2. make py::array_t<T> unchecked
-             * if merge these two steps into one,
-             * `_faces(row, col)` will get a wrong output
-             * 
-             * @date 2023.01.09
-             */
-            auto py_verts = _mesh.attr("vertices").cast<py::array_t<float>>();
-            auto py_faces = _mesh.attr("faces").cast<py::array_t<uint32_t>>();
-
-            auto _verts = py_verts.unchecked<2>();
-            auto _faces = py_faces.unchecked<2>();
-
-            for (auto _row = 0; _row < _verts.shape(0); ++_row) {
-                vertices.emplace_back(Point3f(_verts(_row, 0), _verts(_row, 1), _verts(_row, 2)));
-            }
-            for (auto _row = 0; _row < _faces.shape(0); ++_row) {
-                faces.emplace_back(Vector3u(_faces(_row, 0), _faces(_row, 1), _faces(_row, 2)));
-            }
-            status++;
+				if (words[0] == "v") {
+					vertices.emplace_back(Point3f(stof(words[1]), stof(words[2]), stof(words[3])));
+				}
+				else if (words[0] == "f") {
+					faces.emplace_back(Vector3f(
+						stof(words[1]) - 1, stof(words[2]) - 1, stof(words[3]) - 1
+					));
+				}
+			}
+            status = 2;
         }
-        catch (const std::exception& e) {
-            vertices.clear();
-            faces.clear();
-            std::string line;
-            while (std::getline(file, line)) {
-                if (line[0] == 'v') {
-                    float x, y, z;
-                    sscanf(line.c_str(), "v %f %f %f", &x, &y, &z);
-                    vertices.emplace_back(Point3f(x, y, z));
-                }
-                else if (line[0] == 'f') {
-                    uint32_t a, b, c;
-                    // [BUG] todo
-                    sscanf(line.c_str(), "f %d %d %d", &a, &b, &c);
-                    faces.emplace_back(Vector3u(a - 1, b - 1, c - 1));
-                }
-            }
-            status++;
+        catch (exception& e) {
+            clog << "load mesh err: " << e.what() << endl;
         }
+
+        file.close();
         return Mesh(vertices, faces);
     }
 
@@ -82,6 +63,11 @@ namespace geometry {
         return _h;
     }
 
-
-
+    void Mesh::_split_words(const string& line, vector<string>& words, char delim) {
+        stringstream ss(line);
+        string word = "";
+        while (getline(ss, word, delim)) {
+            words.emplace_back(word);
+        }
+    }
 }

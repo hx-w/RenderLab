@@ -2,12 +2,16 @@
 #include <functional>
 #include <iostream>
 #include <chrono>
+#include <numeric>
 //#include <omp.h>
 #include <mesh.h>
-#include "geom_ext/drawable.h"
-#include "shader.h"
 #include <line.hpp>
 #include <intersection.h>
+
+#define GLM_SWIZZLE
+#include <glm/glm.hpp>
+#include "geom_ext/drawable.h"
+#include "shader.h"
 
 
 using namespace std;
@@ -125,28 +129,63 @@ namespace RenderSpace {
         Ray&& pick_ray,
         vector<DrawableID>& picked_ids,
         vector<Vector3f>& picked_points, vector<Vector3f>& picked_normals,
-        bool muti
+        bool multi
     ) {
         picked_ids.clear(); picked_points.clear(); picked_normals.clear();
 
-        /// [TODO]
+        int cloest_ind = -1;
+        float cloest_dist = numeric_limits<float>::max();
+
         // only pick mesh
         for (auto& [draw_id, draw_ptr] : m_drawables) {
             if (!draw_ptr->_visible()) continue;
             if (draw_ptr->_type() != GeomTypeMesh) continue;
 
-            vector<geometry::Point3f> _pnts;
-            vector<geometry::Vector3f> _nmls;
+            vector<Point3f> _pnts;
+            vector<Vector3f> _nmls;
 
-            auto success = geometry::intersect(
-                pick_ray,
+            auto inv_transf = glm::inverse(draw_ptr->_model_transf());
+            auto n_ori = glm::vec3(inv_transf * glm::vec4(pick_ray.get_origin(), 1.0f));
+            auto n_end = glm::vec3(inv_transf * glm::vec4(pick_ray.get_point(1.0f), 1.0f));
+
+            auto n_ray = Ray(n_ori, n_end - n_ori);
+
+            auto success = intersect(
+                n_ray,
                 *dynamic_pointer_cast<NewMeshDrawable>(draw_ptr)->_raw(),
                 _pnts,
                 _nmls,
-                !muti
+                !multi
             );
+
+            if (success) {
+                auto picked_num = _pnts.size();
+                auto _picked_ids = vector<DrawableID>(picked_num, draw_id);
+                picked_ids.insert(picked_ids.end(), _picked_ids.begin(), _picked_ids.end());
+                picked_points.insert(picked_points.end(), _pnts.begin(), _pnts.end());
+                picked_normals.insert(picked_normals.end(), _nmls.begin(), _nmls.end());
+
+                if (!multi) {
+                    auto _dist = glm::length(n_ori - _pnts[0]);
+                    if (_dist < cloest_dist) {
+                        cloest_dist = _dist;
+                        cloest_ind = picked_ids.size() - 1;
+                    }
+                }
+            }
         }
 
-        return false;
+        // judge multi
+        if (!multi && cloest_ind >= 0) {
+            picked_ids.swap(vector<DrawableID>{picked_ids[cloest_ind]});
+            picked_points.swap(vector<Vector3f>{picked_points[cloest_ind]});
+            picked_normals.swap(vector<Vector3f>{picked_normals[cloest_ind]});
+        }
+
+        if (picked_ids.empty()) {
+            return false;
+        }
+
+        return true;
     }
 }

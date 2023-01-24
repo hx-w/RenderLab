@@ -74,14 +74,15 @@ void mesh_property_render(DrawablePtr msh, const string& msh_name) {
 		case GL_LINE:  _curr = 1; break;
 		case GL_FILL:  _curr = 2; break;
 		}
+		const float width = ImGui::GetWindowWidth();
+		const float combo_width = width * 0.25f;
+		ImGui::SetNextItemWidth(combo_width);
 		ImGui::Combo(imgui_name("shade mode", msh_name).c_str(), &_curr, st_shade_modes, IM_ARRAYSIZE(st_shade_modes));
 		switch (_curr) {
 		case 0: msh->_shade_mode() = GL_POINT; break;
 		case 1: msh->_shade_mode() = GL_LINE; break;
 		case 2: msh->_shade_mode() = GL_FILL; break;
 		}
-
-		ImGui::Checkbox(imgui_name("visible", msh_name).c_str(), &msh->_visible());
 	}
 }
 
@@ -119,9 +120,13 @@ namespace GUISpace {
 						/// [TODO] Some methods here
 						ImGui::TextColored(ImVec4(255, 255, 100, 255), "[TODO] some methods here");
 						for (auto& [msh_name, msh_id] : proj_meshes) {
+							auto msh = proj.meshes_inst.at(msh_id);
+							ImGui::Checkbox(imgui_name("##", msh_name).c_str(), &msh->_visible());
+							ImGui::SameLine();
+
 							if (ImGui::TreeNode((void*)(intptr_t)msh_id, msh_name.c_str())) {
 
-								mesh_property_render(proj.meshes_inst.at(msh_id), msh_name);
+								mesh_property_render(msh, msh_name);
 
 								ImGui::TreePop();
 							}

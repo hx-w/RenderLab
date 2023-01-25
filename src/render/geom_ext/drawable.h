@@ -71,6 +71,8 @@ namespace RenderSpace {
 
     protected:
         std::mutex m_mutex;
+
+        std::vector<VertexPrimitive> m_vertices;
     };
 
     // ------------------------------

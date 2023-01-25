@@ -82,11 +82,7 @@ namespace RenderSpace {
     bool RenderContainer::set_drawable_property(DrawableID id, const string& property, const std::any& value) {
         lock_guard<mutex> lock(m_mutex);
         if (m_drawables.find(id) != m_drawables.end()) {
-            if (property == "visible") {
-                // m_drawables[id]->_visible() = any_cast<bool>(value);
-                return true;
-            }
-            else if (property == "shader") {
+            if (property == "shader") {
                 m_drawables[id]->_shader() = any_cast<shared_ptr<Shader>>(value);
                 return true;
             }
@@ -147,7 +143,7 @@ namespace RenderSpace {
                 picked_normals.insert(picked_normals.end(), _nmls.begin(), _nmls.end());
 
                 if (!multi) {
-                    auto _dist = glm::length(pick_ray.get_origin() - _pnts[0]);
+                    auto _dist = glm::length(n_ray.get_origin() - _pnts[0]);
                     if (_dist < cloest_dist) {
                         cloest_dist = _dist;
                         cloest_ind = picked_ids.size() - 1;

@@ -142,6 +142,22 @@ namespace RenderSpace {
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_faces.size() * sizeof(geometry::Vector3u), &m_faces[0], GL_STATIC_DRAW);
     }
 
+    void NewMeshDrawable::_compute_aabb() {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_aabb = geometry::default_bbox;
+
+        const auto& verts = m_raw->get_vertices();
+        for (auto& pnt : verts) {
+            if (pnt.x < m_aabb.first.x) m_aabb.first.x = pnt.x;
+            if (pnt.y < m_aabb.first.y) m_aabb.first.y = pnt.y;
+            if (pnt.z < m_aabb.first.z) m_aabb.first.z = pnt.z;
+            if (pnt.x > m_aabb.second.x) m_aabb.second.x = pnt.x;
+            if (pnt.y > m_aabb.second.y) m_aabb.second.y = pnt.y;
+            if (pnt.z > m_aabb.second.z) m_aabb.second.z = pnt.z;
+        }
+        aabb_valid = true;
+    }
+
     ArrowDrawable::ArrowDrawable(Ray& ray, float length, Vector3f clr) {
         auto dir = glm::normalize(ray.get_direction());
         auto ori = ray.get_origin();

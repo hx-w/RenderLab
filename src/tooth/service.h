@@ -7,6 +7,10 @@
 #include <communication/AutoBus.hpp>
 #include <geom_types.h>
 
+namespace RenderSpace {
+    class DrawableBase;
+}
+
 namespace ToothSpace {
     class ToothEngine;
     class Workspace;
@@ -33,6 +37,8 @@ namespace ToothSpace {
 
         // to renderer
         void slot_update_transform(const glm::mat4&);
+
+        std::shared_ptr<RenderSpace::DrawableBase> slot_get_drawable_inst(uint32_t);
 
     private:
         void _subscribe();

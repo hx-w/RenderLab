@@ -37,22 +37,6 @@ namespace RenderSpace {
 #endif
         m_shaders["default"] = make_shared<Shader>(shader_dir + "default.vs", shader_dir + "default.fs");
         m_shaders["background"] = make_shared<Shader>(shader_dir + "background.vs", shader_dir + "background.fs");
-
-        // setup background mesh
-        //{
-        //    auto raw_mesh = Mesh(
-        //        vector<Point3f>{
-        //            Point3f(-1.0f, 0.0f, -1.0f), Point3f(1.0f, 0.0f, -1.0f),
-        //            Point3f(-1.0f, 0.0f, 1.0f), Point3f(1.0f, 0.0f, 1.0f)
-        //        },
-        //        vector<Vector3u>{Vector3u(0, 1, 2), Vector3u(1, 2, 3)}
-        //    );
-        //    auto mesh = make_shared<NewMeshDrawable>(raw_mesh, Vector3f(0.0f));
-        //    mesh->_shader() = m_shaders["background"];
-        //    mesh->get_ready();
-        //    auto ID = add_drawable(mesh);
-        //    printf("background mesh ID: %X\n", ID);
-        //}
     }
 
     void RenderContainer::draw_all() {

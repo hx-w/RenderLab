@@ -6,8 +6,6 @@
 #include "./mesh/elements.h"
 
 #include "renderer.h"
-#include "invoker.h"
-
 #include "context.h"
 #include "service.h"
 #include "container.h"
@@ -139,7 +137,7 @@ namespace RenderSpace {
 			"#version 130"
 #endif
 		);
-
+		glGenVertexArrays(1, &m_background_vao);
 		/// [Notify] render/render_setup
 		m_context->ctx_notify<void()>("/render_setup");
 	}
@@ -155,12 +153,8 @@ namespace RenderSpace {
 	}
 
 	int Renderer::exec() {
-		auto cmd_queue = CommandQueue::get_instance();
-
 		while (!glfwWindowShouldClose(m_window)) {
 			glfwPollEvents();
-
-			cmd_queue->invoke();            
 
 			const auto& clr = m_context->window()->bgColor;
 			glClearColor(clr.x * clr.w, clr.y * clr.w, clr.z * clr.w, clr.w);
@@ -226,15 +220,30 @@ namespace RenderSpace {
 
 		auto model_transf = m_win_widget->gizmo.getTransform();
 
-		for (auto& [_, shader] : shaders) {
+		// background shader
+		{
+			glDisable(GL_DEPTH_TEST);
+			auto& shader = shaders.at("background");
+			shader->use();
+			shader->setVec4("top_color", vec4(0.6, 0.8, 0.3, 1.));
+			shader->setVec4("bot_color", vec4(0.3, 0.0, 0.6, 1.));
+			glBindVertexArray(m_background_vao);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			glDrawArrays(GL_TRIANGLES, 0, 3);
+			glBindVertexArray(0);
+			glEnable(GL_DEPTH_TEST);
+		}
+		// default shader
+		{
+			auto& shader = shaders.at("default");
 			shader->use();
 			shader->setMat4("model", model_transf);
 			// pass projection matrix to shader (note that in this case it could change every frame)
 			shader->setMat4("projection", projection);
-
+			
 			// camera/view transformation
 			shader->setMat4("view", view);
-
+			
 			shader->setVec3("lightColor",  m_win_widget->lightColor);
 			shader->setVec3("lightPos", m_win_widget->lightPos);
 			shader->setVec3("viewPos", m_win_widget->cameraPos);

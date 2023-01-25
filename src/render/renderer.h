@@ -25,6 +25,8 @@ namespace RenderSpace {
     private:
         GLFWwindow* m_window;
     
+        GLuint m_background_vao;
+
     private:
         RenderEngine& m_engine;
 

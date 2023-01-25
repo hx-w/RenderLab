@@ -1,18 +1,9 @@
 #version 330 core
 
-layout (location = 0) in vec3 aPos;
-
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
-uniform vec3 viewPos;
-
-out vec3 FragPos; 
-out vec3 near;
-out vec3 far;
+out vec2 v_uv;
 
 void main() {
-    FragPos.xz = (aPos.xz * 200.0f) + viewPos.xz;
-    FragPos.y = -10.0f;
-    gl_Position = projection * view * vec4(FragPos, 1.0f);
+    uint idx = uint(gl_VertexID);
+    gl_Position = vec4( idx & 1U, idx >> 1U, 0.0, 0.5 ) * 4.0 - 1.0;
+    v_uv = vec2( gl_Position.xy * 0.5 + 0.5 );
 }

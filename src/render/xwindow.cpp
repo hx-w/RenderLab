@@ -245,7 +245,9 @@ namespace RenderSpace {
     }
 
     void RenderWindowWidget::update_transform_mat(const mat4& transf) {
-        cameraPos = -glm::vec3(transf[3][1], transf[3][0], transf[3][2] + 20.f);
-        gizmo.setRotationCenter(glm::vec3(transf[3][1], transf[3][0], -transf[3][2]));
+        auto transl = glm::vec3(transf[3]);
+        cameraPos = -transl + glm::vec3(0.f, 0.f, 15.f);
+        gizmo.setRotationCenter(transl);
+        lightPos = cameraPos - glm::vec3(3.f, 3.f, 0.f);
     }
 }

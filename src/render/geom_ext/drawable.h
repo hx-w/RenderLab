@@ -48,8 +48,6 @@ namespace RenderSpace {
 
         bool& _visible() { return m_visible; }
 
-        std::shared_ptr<glm::quat>& _rot() { return m_rot; }
-
     protected:
         void _init_buffer();
         virtual void _draw() = 0;
@@ -61,8 +59,6 @@ namespace RenderSpace {
         uint32_t m_ebo = 0;
 
         uint32_t m_shade_mode = 0;  // wireframe or solid
-
-        std::shared_ptr<glm::quat> m_rot; // same with xwindow
 
         std::shared_ptr<Shader> m_shader;
         GeomType m_type;
@@ -89,11 +85,24 @@ namespace RenderSpace {
 
         decltype(auto) _raw() { return m_raw; }
 
+        geometry::BBOX& _aabb() {
+            if (!aabb_valid)
+                _compute_aabb();
+            return m_aabb; 
+        }
+
+    private:
+        geometry::BBOX m_aabb = geometry::default_bbox;
+        bool aabb_valid = false;
+
     private:
         std::vector<VertexPrimitive> m_vertices;
         std::vector<geometry::Vector3u> m_faces;
 
         std::shared_ptr<geometry::Mesh> m_raw; // stupid
+
+    private:
+        void _compute_aabb();
     };
 
     class ArrowDrawable : public DrawableBase {

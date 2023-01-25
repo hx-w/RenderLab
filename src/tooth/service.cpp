@@ -7,9 +7,11 @@
 #include "workflow.h"
 #include "wkflow_context.h"
 #include "tooth_pack.h"
+#include <geom_ext/drawable.h>
 
 using namespace std;
 using namespace fundamental;
+using namespace RenderSpace;
 
 namespace ToothSpace {
     ToothService::ToothService(ToothEngine& engine) noexcept
@@ -98,5 +100,10 @@ namespace ToothSpace {
     void ToothService::slot_update_transform(const glm::mat4& transf) {
         auto _service = ContextHub::getInstance()->getServiceTable<void(const glm::mat4&)>();
         _service->sync_invoke("render/update_transform_mat", transf);
+    }
+
+    shared_ptr<DrawableBase> ToothService::slot_get_drawable_inst(uint32_t draw_id) {
+        auto _service = ContextHub::getInstance()->getServiceTable<shared_ptr<DrawableBase>(uint32_t)>();
+        return _service->sync_invoke("render/get_drawable_inst", draw_id);
     }
 }

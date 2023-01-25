@@ -10,12 +10,17 @@
 #include <geom_types.h>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <geom_ext/drawable.h>
+
 using namespace std;
+using namespace RenderSpace;
 namespace py = pybind11;
 
 #define SERVICE_INST ToothEngine::get_instance()->get_service()
 
 py::scoped_interpreter guard{};
+
+using AABB = pair<float, float>;
 
 namespace ToothSpace {
 	bool init_workenv(string& status) {
@@ -201,30 +206,32 @@ namespace ToothSpace {
 		auto& basedir = tpack->get_basedir();
 		auto& ctx = tpack->get_context();
 
+		auto proj_aabb = geometry::default_bbox;
+
+		for (auto& [_, id] : meshes_rec) {
+			auto inst = SERVICE_INST->slot_get_drawable_inst(id);
+			auto _aabb = dynamic_pointer_cast<NewMeshDrawable>(inst)->_aabb();
+
+			if (_aabb.first.x < proj_aabb.first.x) proj_aabb.first.x = _aabb.first.x;
+			if (_aabb.first.y < proj_aabb.first.y) proj_aabb.first.y = _aabb.first.y;
+			if (_aabb.first.z < proj_aabb.first.z) proj_aabb.first.z = _aabb.first.z;
+			if (_aabb.second.x > proj_aabb.second.x) proj_aabb.second.x = _aabb.second.x;
+			if (_aabb.second.y > proj_aabb.second.y) proj_aabb.second.y = _aabb.second.y;
+			if (_aabb.second.z > proj_aabb.second.z) proj_aabb.second.z = _aabb.second.z;
+		}
+
+		auto center = (proj_aabb.first + proj_aabb.second) / 2.f;
+
 		// only calc one obb transf
 		try {
-			//py::scoped_interpreter guard{};
-			auto _py_os = py::module_::import("os");
-			auto _py_trimesh = py::module_::import("trimesh");
-
-			auto full_path = _py_os.attr("path").attr("join")(basedir, meshes_rec.begin()->first);
-
-			auto msh_inst = _py_trimesh.attr("load")(full_path);
-
 			// [Auto fix position]
 			if (any_cast<bool>(ctx->node_states.at(NodeId_1).at("Auto fix position"))) {
-				auto obb_transf = msh_inst.attr("apply_obb")();
-
-				auto _mat = obb_transf.cast<py::array_t<float>>().unchecked<2>(); // 2-dim
-
-				// must be 4x4 ( transposed )
-				float flt_mat[16] = {
-					_mat(0, 0), _mat(1, 0), _mat(2, 0), _mat(3, 0),
-					_mat(0, 1), _mat(1, 1), _mat(2, 1), _mat(3, 1),
-					_mat(0, 2), _mat(1, 2), _mat(2, 2), _mat(3, 2),
-					_mat(0, 3), _mat(1, 3), _mat(2, 3), _mat(3, 3),
-				};
-				auto model_transf = glm::make_mat4(flt_mat);
+				auto model_transf = glm::mat4(
+					1.f, 0.f, 0.f, 0.f,
+					0.f, 1.f, 0.f, 0.f,
+					0.f, 0.f, 1.f, 0.f,
+					-center.x, -center.y, -center.z, 1.f
+				);
 				/// [SLOT] to renderer
 				SERVICE_INST->slot_update_transform(model_transf);
 			}

@@ -98,6 +98,10 @@ namespace ToothSpace {
 		auto tpack = _find_tpack(flow_id);
 		auto node = static_cast<NodeId>(node_id);
 
+		/// DEBUG
+		vector<float> curv;
+		compute_mesh_curvature((*tpack->get_meshes().begin()).second, "mean", curv);
+
 		switch (node) {
 		case NodeId_1:
 			// preprocess

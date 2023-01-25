@@ -33,7 +33,7 @@ namespace ToothSpace {
         bool slot_set_drawable_property(uint32_t, const std::string&, const std::any&);
 
         // to renderer
-        uint32_t slot_show_arrow(geometry::Ray&, float /* length */, geometry::Vector3f& /* color */);
+        uint32_t slot_show_arrow(geometry::Ray&, float /* length */, geometry::Vector3f&& /* color */);
 
         // to renderer
         void slot_update_transform(const glm::mat4&);

@@ -22,7 +22,7 @@ namespace GUISpace {
 			ImGuiWindowFlags_NoScrollWithMouse
 		);
 		ImGui::SetNextWindowBgAlpha(0.1);
-		ImGui::gizmo3D("##gizmo", win->gizmo.getRotation(), win->cameraFront, 180, imguiGizmo::mode3Axes | imguiGizmo::cubeAtOrigin);
+		ImGui::gizmo3D("##gizmo", win->gizmo.getRotation(), win->cameraFront, 200, imguiGizmo::mode3Axes | imguiGizmo::cubeAtOrigin);
 		ImGui::End();
 	}
 }

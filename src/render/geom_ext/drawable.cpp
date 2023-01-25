@@ -197,7 +197,7 @@ namespace RenderSpace {
             m_vertices.emplace_back(VertexPrimitive(v, clr, Vector3f(0.0)));
         }
 
-        m_lines.swap(vector<unsigned int>{0, 1, 2, 1, 3, 1, 4, 1, 5, 1});
+        vector<unsigned int>{0, 1, 2, 1, 3, 1, 4, 1, 5, 1}.swap(m_lines);
         
         m_type = GeomTypeArrow;
         m_raw = std::make_shared<geometry::Ray>(ray);

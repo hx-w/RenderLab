@@ -18,8 +18,9 @@ namespace ToothSpace {
 
 #define PY_INITENV_MODULE  "scripts.py_env_checker"
 #define PY_LOADPROJ_MODULE "scripts.py_load_project"
+#define PY_PALETTE_MODULE  "scripts.py_mesh_palette"
 
-#define PY_REQUIREMENTS ("trimesh", "toml")
+#define PY_REQUIREMENTS ("trimesh", "toml", "matplotlib")
 
 	/// call py scripts: 'scripts/py_env_checker.py'
 	bool init_workenv(std::string& /* status */);
@@ -51,6 +52,9 @@ namespace ToothSpace {
 	/// topological sort for nodeflow
 	void topological_sort(const std::vector<LinkPair>& /* links */, std::vector<NodeId>& /* node_order */);
 
+	void compute_mesh_curvature(
+		uint32_t /* id */, const std::string& /* type */, std::vector<float>& /* curv */
+	);
 
 	/**
 	 * Active stage for Nodes.

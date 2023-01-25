@@ -154,9 +154,9 @@ namespace RenderSpace {
 
         // judge multi
         if (!multi && cloest_ind >= 0) {
-            picked_ids.swap(vector<DrawableID>{picked_ids[cloest_ind]});
-            picked_points.swap(vector<Vector3f>{picked_points[cloest_ind]});
-            picked_normals.swap(vector<Vector3f>{picked_normals[cloest_ind]});
+            vector<DrawableID>{picked_ids[cloest_ind]}.swap(picked_ids);
+            vector<Vector3f>{picked_points[cloest_ind]}.swap(picked_points);
+            vector<Vector3f>{picked_normals[cloest_ind]}.swap(picked_normals);
         }
 
         if (picked_ids.empty()) {

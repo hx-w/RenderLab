@@ -48,6 +48,8 @@ namespace RenderSpace {
 
         bool& _visible() { return m_visible; }
 
+        std::vector<VertexPrimitive>& _vertices() { return m_vertices; }
+
     protected:
         void _init_buffer();
         virtual void _draw() = 0;
@@ -98,7 +100,7 @@ namespace RenderSpace {
         bool aabb_valid = false;
 
     private:
-        std::vector<VertexPrimitive> m_vertices;
+        //std::vector<VertexPrimitive> m_vertices;
         std::vector<geometry::Vector3u> m_faces;
 
         std::shared_ptr<geometry::Mesh> m_raw; // stupid
@@ -118,7 +120,7 @@ namespace RenderSpace {
         decltype(auto) _raw() { return m_raw; }
 
     private:
-        std::vector<VertexPrimitive> m_vertices;
+        //std::vector<VertexPrimitive> m_vertices;
         std::vector<unsigned int> m_lines;
 
         std::shared_ptr<geometry::Ray> m_raw;

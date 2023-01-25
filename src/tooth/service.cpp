@@ -87,7 +87,7 @@ namespace ToothSpace {
         return _service->sync_invoke("render/set_drawable_property", msh_id, prop, val);
     }
 
-    uint32_t ToothService::slot_show_arrow(geometry::Ray& ray, float len, geometry::Vector3f& clr) {
+    uint32_t ToothService::slot_show_arrow(geometry::Ray& ray, float len, geometry::Vector3f&& clr) {
         auto geom_ptr = make_shared<geometry::Ray>(ray);
         auto props = map<string, any>{
             {"color", clr }, {"arrow_length", len}

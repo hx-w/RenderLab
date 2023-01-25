@@ -8,9 +8,10 @@
 #include <pybind11/embed.h>
 #include <pybind11/numpy.h>
 #include <geom_types.h>
+#include <mesh.h>
 #include <glm/gtc/type_ptr.hpp>
-
 #include <geom_ext/drawable.h>
+
 
 using namespace std;
 using namespace RenderSpace;
@@ -200,6 +201,60 @@ namespace ToothSpace {
 		reverse(node_order.begin(), node_order.end());
 	}
 
+	/// @date 2023.01.25
+	/// use 1-dim cpp array to restore vector,
+	/// and convert to py::array_t<T> type
+	template<class T>
+	void vector_to_numpy(vector<glm::vec<3, T>>& vec, py::array& res) {
+		const auto shape_1 = vec.size();
+		const auto shape_2 = 3;
+		auto raw_vec = new T[shape_1 * shape_2];
+		for (auto _r = 0; _r < shape_1; ++_r) {
+			for (auto _c = 0; _c < shape_2; ++_c) {
+				raw_vec[_r * shape_2 + _c] = vec[_r][_c];
+			}
+		}
+		res = py::array_t<T>(shape_1 * shape_2, raw_vec);
+		delete[] raw_vec;
+	}
+
+	void compute_mesh_curvature(
+		uint32_t draw_id, const string& type, std::vector<float>& curv
+	) {
+		auto inst = SERVICE_INST->slot_get_drawable_inst(draw_id);
+		if (inst == nullptr || inst->_type() != GeomTypeMesh) return;
+		auto msh_inst = dynamic_pointer_cast<NewMeshDrawable>(inst);
+
+		curv.clear();
+		auto _py_pkg = py::module_::import(PY_PALETTE_MODULE);
+
+		py::array py_verts, py_faces;
+		vector_to_numpy(msh_inst->_raw()->vertices(), py_verts);
+		vector_to_numpy(msh_inst->_raw()->faces(), py_faces);
+
+		auto py_curv = _py_pkg.attr("py_compute_mesh_curvature")(
+			py_verts, py_faces, type
+		);
+
+		// style: jet
+		auto py_clr = _py_pkg.attr("py_mesh_palette")(py_curv, "viridis");
+		
+		/// convert numpy.ndarray to py::array_t<T>, and uncheck it
+		auto clrs = py_clr.cast<py::array_t<float>>().unchecked<2>();
+
+		auto vert_size = msh_inst->_raw()->vertices().size();
+
+		auto& vert_prims = msh_inst->_vertices();
+
+		cout << vert_size << ", " << msh_inst->_vertices().size() << endl;
+
+		for (auto ind = 0; ind < vert_size; ++ind) {
+			vert_prims[ind].Color = glm::vec3(clrs(ind, 0), clrs(ind, 1), clrs(ind, 2));
+		}
+
+		msh_inst->get_ready();
+
+	}
 
 	void action_node_1(shared_ptr<ToothPack> tpack) {
 		auto& meshes_rec = tpack->get_meshes();

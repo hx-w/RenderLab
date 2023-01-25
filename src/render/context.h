@@ -47,7 +47,7 @@ namespace RenderSpace {
 
         DrawableID ctx_add_drawable(
             std::shared_ptr<geometry::GeometryBase>,
-            Props& /* properties */ = Props{},
+            Props& /* properties */,
             int /* type */ = 2
         );
 

@@ -46,8 +46,8 @@ namespace geometry {
         }
 
         if (only_first && !points.empty()) {
-            points.swap(vector<Point3f>{points[cloest_ind]});
-            normals.swap(vector<Vector3f>{normals[cloest_ind]});
+            vector<Point3f>{points[cloest_ind]}.swap(points);
+            vector<Vector3f>{normals[cloest_ind]}.swap(normals);
         }
 
         return !points.empty();

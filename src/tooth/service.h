@@ -31,6 +31,9 @@ namespace ToothSpace {
         // to renderer
         uint32_t slot_show_arrow(geometry::Ray&, float /* length */, geometry::Vector3f& /* color */);
 
+        // to renderer
+        void slot_update_transform(const glm::mat4&);
+
     private:
         void _subscribe();
 

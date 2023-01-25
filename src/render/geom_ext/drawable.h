@@ -46,9 +46,9 @@ namespace RenderSpace {
 
         uint32_t& _shade_mode() { return m_shade_mode; }
 
-        geometry::Mat4f& _model_transf() { return m_model_transf; }
-
         bool& _visible() { return m_visible; }
+
+        std::shared_ptr<glm::quat>& _rot() { return m_rot; }
 
     protected:
         void _init_buffer();
@@ -61,8 +61,8 @@ namespace RenderSpace {
         uint32_t m_ebo = 0;
 
         uint32_t m_shade_mode = 0;  // wireframe or solid
-        // local transform
-        geometry::Mat4f m_model_transf = geometry::Mat4f(1.0f);
+
+        std::shared_ptr<glm::quat> m_rot; // same with xwindow
 
         std::shared_ptr<Shader> m_shader;
         GeomType m_type;

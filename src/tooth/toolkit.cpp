@@ -225,12 +225,8 @@ namespace ToothSpace {
 					_mat(0, 3), _mat(1, 3), _mat(2, 3), _mat(3, 3),
 				};
 				auto model_transf = glm::make_mat4(flt_mat);
-				/// [slot] to renderer
-				for (auto& msh : meshes_rec) {
-					auto res = SERVICE_INST->slot_set_drawable_property(
-						msh.second, "model_transf", model_transf
-					);
-				}
+				/// [SLOT] to renderer
+				SERVICE_INST->slot_update_transform(model_transf);
 			}
 
 

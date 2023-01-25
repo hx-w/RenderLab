@@ -45,9 +45,9 @@ namespace RenderSpace {
                 return m_context->ctx_get_drawable(msh_id);
             }
         );
-        m_autobus->registerMethod<bool(DrawableID, const string&, const any&)>(
+        m_autobus->registerMethod<bool(DrawableID, const string&, const std::any&)>(
             m_symbol + "/set_drawable_property",
-            [this](DrawableID msh_id, const string& property, const any& value) {
+            [this](DrawableID msh_id, const string& property, const std::any& value) {
                 return m_context->ctx_set_drawable_property(msh_id, property, value);
             }
         );
@@ -63,6 +63,12 @@ namespace RenderSpace {
                 return m_context->ctx_add_drawable(geom, props, type);
             }
 		);
+        m_autobus->registerMethod<void(const glm::mat4&)>(
+            m_symbol + "/update_transform_mat",
+            [this](const glm::mat4& transf) {
+                m_context->ctx_update_transform_mat(transf);
+            }
+        );
     }
 
     void RenderService::start_thread(string tname, function<void()>&& func) {

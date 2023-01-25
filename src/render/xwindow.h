@@ -7,6 +7,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <imGuIZMOquat.h>
 
 struct GLFWwindow;
 namespace RenderSpace {
@@ -43,6 +44,8 @@ namespace RenderSpace {
 
         void set_interact_mode(InteractMode);
 
+        void update_transform_mat(const mat4&);
+
     public:
         unsigned int m_scr_width = 800;
         unsigned int m_scr_height = 600;
@@ -75,6 +78,8 @@ namespace RenderSpace {
         glm::vec3 lightPos = glm::vec3(0.0f, 0.0f, 0.0f);
         glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
    
+        // zmo inst
+        vg::vGizmo3D gizmo;
 
     private:
         std::map<int, time_t> m_key_last_active; // for click, only record GLFW_PRESS

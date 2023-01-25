@@ -99,7 +99,7 @@ namespace RenderSpace {
         return m_container->get_drawable_inst(id);
     }
 
-    bool RenderContext::ctx_set_drawable_property(DrawableID id, const string& property, const any& value) {
+    bool RenderContext::ctx_set_drawable_property(DrawableID id, const string& property, const std::any& value) {
         return m_container->set_drawable_property(id, property, value);
     }
 
@@ -111,7 +111,7 @@ namespace RenderSpace {
         vector<Vector3f> picked_normals;
 
         auto success = m_container->pickcmd(
-            move(pick_ray), picked_ids, picked_points, picked_normals, muti
+            move(pick_ray), picked_ids, picked_points, picked_normals, m_window->gizmo.getTransform(), muti
         );
 
         if (success) {
@@ -127,6 +127,10 @@ namespace RenderSpace {
 
     void RenderContext::ctx_change_interact_mode(int mode) {
         m_window->set_interact_mode(static_cast<InteractMode>(mode));
+    }
+
+    void RenderContext::ctx_update_transform_mat(const glm::mat4& transf) {
+        m_window->update_transform_mat(transf);
     }
 
 }  // namespace RenderSpace

@@ -12,6 +12,7 @@
 #include <glm/glm.hpp>
 #include "geom_ext/drawable.h"
 #include "shader.h"
+#include <imGuIZMOquat.h>
 
 
 using namespace std;
@@ -94,7 +95,7 @@ namespace RenderSpace {
         return false;
     }
 
-    bool RenderContainer::set_drawable_property(DrawableID id, const string& property, const any& value) {
+    bool RenderContainer::set_drawable_property(DrawableID id, const string& property, const std::any& value) {
         lock_guard<mutex> lock(m_mutex);
         if (m_drawables.find(id) != m_drawables.end()) {
             if (property == "visible") {
@@ -107,10 +108,6 @@ namespace RenderSpace {
             }
             else if (property == "shade_mode") {
                 m_drawables[id]->_shade_mode() = any_cast<uint32_t>(value);
-                return true;
-            }
-            else if (property == "model_transf") {
-                m_drawables[id]->_model_transf() = any_cast<geometry::Mat4f>(value);
                 return true;
             }
             else {
@@ -129,12 +126,18 @@ namespace RenderSpace {
         Ray&& pick_ray,
         vector<DrawableID>& picked_ids,
         vector<Vector3f>& picked_points, vector<Vector3f>& picked_normals,
+        glm::mat4& transf,
         bool multi
     ) {
         picked_ids.clear(); picked_points.clear(); picked_normals.clear();
 
         int cloest_ind = -1;
         float cloest_dist = numeric_limits<float>::max();
+
+        auto inv_transf = glm::inverse(transf);
+        auto n_ori = glm::vec3(inv_transf * glm::vec4(pick_ray.get_origin(), 1.0f));
+		auto n_end = glm::vec3(inv_transf * glm::vec4(pick_ray.get_point(1.0f), 1.0f));
+		auto n_ray = Ray(n_ori, n_end - n_ori);
 
         // only pick mesh
         for (auto& [draw_id, draw_ptr] : m_drawables) {
@@ -143,13 +146,7 @@ namespace RenderSpace {
 
             vector<Point3f> _pnts;
             vector<Vector3f> _nmls;
-
-            auto inv_transf = glm::inverse(draw_ptr->_model_transf());
-            auto n_ori = glm::vec3(inv_transf * glm::vec4(pick_ray.get_origin(), 1.0f));
-            auto n_end = glm::vec3(inv_transf * glm::vec4(pick_ray.get_point(1.0f), 1.0f));
-
-            auto n_ray = Ray(n_ori, n_end - n_ori);
-
+            
             auto success = intersect(
                 n_ray,
                 *dynamic_pointer_cast<NewMeshDrawable>(draw_ptr)->_raw(),
@@ -160,22 +157,13 @@ namespace RenderSpace {
 
             if (success) {
                 auto picked_num = _pnts.size();
-                auto& transf = draw_ptr->_model_transf();
-
-                // transf back
-                for (auto i = 0; i < picked_num; ++i) {
-                    auto nml_end = Vector3f(transf * glm::vec4(_nmls[i] + _pnts[i], 1.0f));
-                    _pnts[i] = Vector3f(transf * glm::vec4(_pnts[i], 1.0f));
-                    _nmls[i] = nml_end - _pnts[i];
-                }
-
                 auto _picked_ids = vector<DrawableID>(picked_num, draw_id);
                 picked_ids.insert(picked_ids.end(), _picked_ids.begin(), _picked_ids.end());
                 picked_points.insert(picked_points.end(), _pnts.begin(), _pnts.end());
                 picked_normals.insert(picked_normals.end(), _nmls.begin(), _nmls.end());
 
                 if (!multi) {
-                    auto _dist = glm::length(n_ori - _pnts[0]);
+                    auto _dist = glm::length(pick_ray.get_origin() - _pnts[0]);
                     if (_dist < cloest_dist) {
                         cloest_dist = _dist;
                         cloest_ind = picked_ids.size() - 1;

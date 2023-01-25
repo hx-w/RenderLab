@@ -13,6 +13,8 @@
 #include "container.h"
 #include "xwindow.h"
 
+#include <imGuIZMOquat.h>
+
 using namespace std;
 using namespace fundamental;
 
@@ -221,9 +223,12 @@ namespace RenderSpace {
 			m_win_widget->cameraPos + m_win_widget->cameraFront,
 			m_win_widget->cameraUp
 		);
+
+		auto model_transf = m_win_widget->gizmo.getTransform();
+
 		for (auto& [_, shader] : shaders) {
 			shader->use();
-
+			shader->setMat4("model", model_transf);
 			// pass projection matrix to shader (note that in this case it could change every frame)
 			shader->setMat4("projection", projection);
 

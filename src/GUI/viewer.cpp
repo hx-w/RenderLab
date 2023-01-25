@@ -13,6 +13,7 @@
 #include "components/modal_confirm.h"
 #include "components/node_flow.h"
 #include "components/project_panel.h"
+#include "components/zmo.h"
 
 
 namespace GUISpace {
@@ -38,6 +39,7 @@ namespace GUISpace {
         }
 
         Controller::render(win);
+        Zmo::render(win);
 
         Logger::render();
         ModalConfirm::render();

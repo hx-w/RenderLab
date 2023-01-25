@@ -30,6 +30,8 @@ namespace RenderSpace {
         for (auto _k : _keys) {
             m_key_last_active[_k] = 0;
         }
+
+        imguiGizmo::setGizmoFeelingRot(1.2f);
     }
 
     RenderWindowWidget::~RenderWindowWidget() {
@@ -87,6 +89,10 @@ namespace RenderSpace {
         m_scr_height = height;
         glViewport(0, 0, m_scr_width, m_scr_height);
         /// [TODO] window resize notify
+
+        gizmo.viewportSize(width, height);
+        gizmo.setDollyScale(1.0f / (width > height ? height : width));
+        gizmo.setPanScale(1.0f / (width > height ? height : width));
     }
 
     // glfw: whenever the mouse moves, this callback is called
@@ -123,10 +129,11 @@ namespace RenderSpace {
         if (pitch < -89.0f)
             pitch = -89.0f;
 
-        glm::vec3 front;
-        front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-        front.y = sin(glm::radians(pitch));
-        front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+        glm::vec3 front(
+            cos(glm::radians(yaw)) * cos(glm::radians(pitch)),
+            sin(glm::radians(pitch)),
+            sin(glm::radians(yaw)) * cos(glm::radians(pitch))
+        );
         cameraFront = glm::normalize(front);
     }
 
@@ -141,6 +148,18 @@ namespace RenderSpace {
     }
 
     void RenderWindowWidget::mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+        auto get_modifier = [this](GLFWwindow* window) {
+            if ((glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS))
+                return GLFW_MOD_CONTROL;
+            else if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS))
+                return GLFW_MOD_SHIFT;
+            else if ((glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_RIGHT_ALT) == GLFW_PRESS))
+                return GLFW_MOD_ALT;
+            return 0;
+        };
+
+        gizmo.mouse((vgButtons)(button), get_modifier(window), action == GLFW_PRESS, realX, realY);
+        
         /// [Notify] render/mouse_event
         m_service->notify<void(int, int)>("/mouse_event", button, action);
 
@@ -223,5 +242,10 @@ namespace RenderSpace {
 
     void RenderWindowWidget::set_interact_mode(InteractMode mode) {
         interact_mode = mode;
+    }
+
+    void RenderWindowWidget::update_transform_mat(const mat4& transf) {
+        cameraPos = -glm::vec3(transf[3][1], transf[3][0], transf[3][2] + 20.f);
+        gizmo.setRotationCenter(glm::vec3(transf[3][1], transf[3][0], -transf[3][2]));
     }
 }

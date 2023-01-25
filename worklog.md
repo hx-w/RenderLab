@@ -10,4 +10,5 @@
 - [x] 导入项目绝对路径如果有中文会出问题
 
 - [x] `toolkit.cpp`中全局有一个py解释器，第一次调用py的时候又创建了一个解释器，这样居然能解决问题。
+- [x] `CMakeLists.txt`中的`target_compile_definitions(${target} XXX -DDEFINE)`默认会置`#define DEFINE 1`，如果单纯只想定义一个空白宏，需要在`-DDEFINE`后面加`=`
 

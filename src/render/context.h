@@ -63,6 +63,8 @@ namespace RenderSpace {
         /// pick from container
         void ctx_pick_drawables(const geometry::Vector3f&, const geometry::Vector3f&, bool);
 
+        void ctx_update_transform_mat(const glm::mat4&);
+
         template <class Func, class ...Args>
         void ctx_notify(const std::string& addr, Args&&... args) {
             m_service->notify<Func>(addr, std::forward<Args>(args)...);

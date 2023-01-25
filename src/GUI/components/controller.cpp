@@ -3,9 +3,6 @@
 #include "controller.h"
 #include "file_browser.h"
 
-#include "../engine.h"
-#include "../service.h"
-
 #include <xwindow.h>
 
 

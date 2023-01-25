@@ -52,6 +52,7 @@ namespace RenderSpace {
         bool pickcmd(
             geometry::Ray&&,
             std::vector<DrawableID>&, std::vector<geometry::Vector3f>&, std::vector<geometry::Vector3f>&,
+            glm::mat4&,
             bool = false
         );
 

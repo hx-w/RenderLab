@@ -10,6 +10,8 @@
 #include <line.hpp>
 #include <cmath>
 
+#include <imGuIZMOquat.h>
+
 #ifndef __PI__
 #define __PI__ 3.1415926535f
 #endif
@@ -46,12 +48,12 @@ namespace RenderSpace {
 		glPointSize(2.0f);
 
         // shader configure
-        ///1. local transform = identity
-        m_shader->setMat4("model", m_model_transf);
+        ///1. local transform = identit
+        //m_shader->setMat4("model", mat4_cast(*m_rot) * m_model_transf);
         ///2. shade mode
         glPolygonMode(GL_FRONT_AND_BACK, m_shade_mode);
         ///3. randomColor
-        m_shader->setBool("randomColor", false);
+        //m_shader->setBool("randomColor", false);
 
         _draw(); // custom draw
 

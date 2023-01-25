@@ -94,4 +94,9 @@ namespace ToothSpace {
         auto _service = ContextHub::getInstance()->getServiceTable<uint32_t(shared_ptr<geometry::GeometryBase>, map<string, any>&, int)>();
         return _service->sync_invoke("render/add_geometry", geom_ptr, props, 1);
     }
+
+    void ToothService::slot_update_transform(const glm::mat4& transf) {
+        auto _service = ContextHub::getInstance()->getServiceTable<void(const glm::mat4&)>();
+        _service->sync_invoke("render/update_transform_mat", transf);
+    }
 }

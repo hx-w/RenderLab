@@ -22,6 +22,7 @@ namespace RenderSpace {
         geometry::Vector3f Position;
         geometry::Vector3f Color;
         geometry::Vector3f Normal;
+        geometry::Vector3f BufColor;
     };
 
     class Shader;

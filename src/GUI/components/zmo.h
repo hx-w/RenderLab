@@ -1,6 +1,7 @@
 #pragma once
 
 #include "base.h"
+#include <string>
 
 namespace GUISpace {
     class Zmo: public GUIComponentBase {
@@ -8,5 +9,7 @@ namespace GUISpace {
         static void render(
             std::shared_ptr<RenderSpace::RenderWindowWidget>
         );
+
+        static void set_mouse_tooltip(const std::string&);
     };
 }

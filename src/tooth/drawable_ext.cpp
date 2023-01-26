@@ -1,0 +1,118 @@
+#include "drawable_ext.h"
+#include "toolkit.h"
+#include <geom_ext/drawable.h>
+#include <mesh.h>
+#include <pybind11/embed.h>
+#include <pybind11/numpy.h>
+#include <glm/glm.hpp>
+
+using namespace std;
+using namespace RenderSpace;
+namespace py = pybind11;
+
+namespace ToothSpace {
+	static map<uint32_t, shared_ptr<MeshDrawableExt>> st_mesh_exts;
+
+
+	/// @date 2023.01.25
+	/// use 1-dim cpp array to restore vector,
+	/// and convert to py::array_t<T> type
+	template<class T>
+	void vector_to_numpy(vector<glm::vec<3, T>>& vec, py::array& res) {
+		const auto shape_1 = vec.size();
+		const auto shape_2 = 3;
+		auto raw_vec = new T[shape_1 * shape_2];
+		for (auto _r = 0; _r < shape_1; ++_r) {
+			for (auto _c = 0; _c < shape_2; ++_c) {
+				raw_vec[_r * shape_2 + _c] = vec[_r][_c];
+			}
+		}
+		res = py::array_t<T>(shape_1 * shape_2, raw_vec);
+		delete[] raw_vec;
+	}
+
+	void MeshDrawableExtManager::cache_mesh_ext(
+		uint32_t id,
+		shared_ptr<DrawableBase> draw_ptr,
+		const string& type,
+		const string& heatmap_style
+	) {
+		static auto support_type = { "curvature_mean", "curvature_gaussian" };
+
+		if (draw_ptr == nullptr || draw_ptr->_type() != GeomTypeMesh) return;
+		if (std::find(support_type.begin(), support_type.end(), type) == support_type.end()) {
+			return;
+		}
+		auto msh_ptr = dynamic_pointer_cast<NewMeshDrawable>(draw_ptr);
+
+		auto ext = (
+			st_mesh_exts.find(id) == st_mesh_exts.end() ?
+			make_shared<MeshDrawableExt>() :
+			st_mesh_exts.at(id)
+		);
+
+		/// only for curvature
+		
+		auto _py_pkg = py::module_::import(PY_PALETTE_MODULE);
+
+		py::array py_verts, py_faces;
+		vector_to_numpy(msh_ptr->_raw()->vertices(), py_verts);
+		vector_to_numpy(msh_ptr->_raw()->faces(), py_faces);
+
+		auto py_curv = _py_pkg.attr("py_compute_mesh_curvature")(
+			py_verts, py_faces, (type == "curvature_mean" ? "mean" : "gaussian")
+		);
+
+		// change color ?
+		if (heatmap_style.length() > 0) {
+			auto py_clr = _py_pkg.attr("py_mesh_palette")(py_curv, "viridis");
+			/// convert numpy.ndarray to py::array_t<T>, and uncheck it
+			auto clrs = py_clr.cast<py::array_t<float>>().unchecked<2>();
+
+			auto vert_size = msh_ptr->_raw()->vertices().size();
+
+			auto& vert_prims = msh_ptr->_vertices();
+
+			for (auto ind = 0; ind < vert_size; ++ind) {
+				vert_prims[ind].Color = glm::vec3(clrs(ind, 0), clrs(ind, 1), clrs(ind, 2));
+			}
+			msh_ptr->get_ready();
+		}
+
+		auto _curv = py_curv.cast<py::array_t<float>>().unchecked<1>();
+
+		auto vec = vector<float>(msh_ptr->_vertices().size());
+		
+		for (auto ind = 0; ind < vec.size(); ++ind) {
+			vec[ind] = _curv(ind);
+		}
+
+		ext->m_buffers[type].clear();
+		ext->m_buffers[type].assign(vec.begin(), vec.end());
+
+		/// compute adj
+		const auto& vertices = msh_ptr->_raw()->get_vertices();
+		const auto& faces = msh_ptr->_raw()->get_faces();
+
+		ext->m_vert_adj.clear();
+		auto& adj = ext->m_vert_adj;
+
+		adj.resize(vertices.size());
+		for (auto& face : faces) {
+			for (auto i = 0; i < 3; ++i) {
+				if (std::find(adj[face[i]].begin(), adj[face[i]].end(), face[(i + 1) % 3]) == adj[face[i]].end())
+					adj[face[i]].emplace_back(face[(i + 1) % 3]);
+				if (std::find(adj[face[i]].begin(), adj[face[i]].end(), face[(i + 2) % 3]) == adj[face[i]].end())
+					adj[face[i]].emplace_back(face[(i + 2) % 3]);
+			}
+		}
+
+		st_mesh_exts[id] = ext;
+	}
+
+	shared_ptr<MeshDrawableExt>
+	MeshDrawableExtManager::get_mesh_ext(uint32_t id) {
+		if (st_mesh_exts.find(id) == st_mesh_exts.end()) return nullptr;
+		return st_mesh_exts.at(id);
+	}
+}

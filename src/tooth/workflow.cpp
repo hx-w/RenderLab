@@ -3,13 +3,17 @@
 #include <iostream>
 #include <cassert>
 #include <line.hpp>
+#include <mesh.h>
+#include <geom_ext/drawable.h>
 
 #include "toolkit.h"
 #include "engine.h"
 #include "service.h"
 #include "tooth_pack.h"
+#include "drawable_ext.h"
 
 using namespace std;
+using namespace RenderSpace;
 
 #define SERVICE_INST ToothEngine::get_instance()->get_service()
 #define TOOLKIT_EXEC(func, prefix, ...) \
@@ -98,10 +102,6 @@ namespace ToothSpace {
 		auto tpack = _find_tpack(flow_id);
 		auto node = static_cast<NodeId>(node_id);
 
-		/// DEBUG
-		vector<float> curv;
-		compute_mesh_curvature((*tpack->get_meshes().begin()).second, "mean", curv);
-
 		switch (node) {
 		case NodeId_1:
 			// preprocess
@@ -129,7 +129,7 @@ namespace ToothSpace {
 
 	}
 
-	void Workspace::pick_service_handler(
+	void Workspace::pick_points_handler(
 		vector<uint32_t>& picked_ids,
 		vector<geometry::Point3f>& picked_pnts,
 		vector<geometry::Vector3f>& picked_nmls
@@ -143,5 +143,64 @@ namespace ToothSpace {
 			auto ray = geometry::Ray(picked_pnts[i], picked_nmls[i]);
 			SERVICE_INST->slot_show_arrow(ray, 0.5f, geometry::Vector3f(1.0f, 0.0f, 1.0f));
 		}
+	}
+
+	void Workspace::pick_vertex_handler(uint32_t draw_id, uint32_t vertex_id) {
+		static pair<uint32_t, uint32_t> st_last_hover_picked(-1, -1);
+		// recover
+		if (st_last_hover_picked.first != -1) {
+			auto& [last_draw_id, last_vert_id] = st_last_hover_picked;
+
+			auto last_draw_inst = SERVICE_INST->slot_get_drawable_inst(last_draw_id);
+			auto last_mesh_inst = dynamic_pointer_cast<NewMeshDrawable>(last_draw_inst);
+			auto& last_vertices = last_mesh_inst->_vertices();
+
+			last_vertices[last_vert_id].Color = last_vertices[last_vert_id].BufColor;
+
+			auto& last_vert_adj = MeshDrawableExtManager::get_mesh_ext(last_draw_id)->m_vert_adj;
+			
+			for (auto& adj : last_vert_adj[last_vert_id]) {
+				last_vertices[adj].Color = last_vertices[adj].BufColor;
+			}
+			last_mesh_inst->get_ready();
+		}
+
+		st_last_hover_picked = make_pair(draw_id, vertex_id);
+		if (draw_id == -1) {
+			SERVICE_INST->slot_set_mouse_tooltip("");
+			return; // end hover pick ( release CONTROL )
+		}
+
+		// show tooltip
+		/// [TODO] only show curvature_mean
+		auto& mesh_ext = MeshDrawableExtManager::get_mesh_ext(draw_id);
+		if (mesh_ext->m_buffers.find("curvature_mean") == mesh_ext->m_buffers.end()) {
+			SERVICE_INST->slot_set_mouse_tooltip("");
+		}
+		else {
+			auto str_v = to_string(mesh_ext->m_buffers["curvature_mean"][vertex_id]);
+			SERVICE_INST->slot_set_mouse_tooltip(
+				"curv(mean): " + str_v
+			);
+		}
+
+		auto draw_inst = SERVICE_INST->slot_get_drawable_inst(draw_id);
+		auto mesh_inst = dynamic_pointer_cast<NewMeshDrawable>(draw_inst);
+		auto& adjs = mesh_ext->m_vert_adj[vertex_id];
+
+		auto& vertices = mesh_inst->_vertices();
+
+		auto change_color = [&](uint32_t vid, glm::vec3&& clr) {
+			vertices[vid].BufColor = vertices[vid].Color;
+			vertices[vid].Color = clr;
+		};
+		// change adjs color to red
+
+		change_color(vertex_id, glm::vec3(1.f, 0.5f, 0.f));
+		for (auto& adj : adjs) {
+			change_color(adj, glm::vec3(1.f, 0.f, 0.f));
+		}
+
+		mesh_inst->get_ready();
 	}
 }

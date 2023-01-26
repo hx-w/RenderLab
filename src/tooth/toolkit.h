@@ -52,8 +52,8 @@ namespace ToothSpace {
 	/// topological sort for nodeflow
 	void topological_sort(const std::vector<LinkPair>& /* links */, std::vector<NodeId>& /* node_order */);
 
-	void compute_mesh_curvature(
-		uint32_t /* id */, const std::string& /* type */, std::vector<float>& /* curv */
+	void show_mesh_curvature(
+		uint32_t /* id */, const std::string& /* type */, const std::string& = ""
 	);
 
 	/**

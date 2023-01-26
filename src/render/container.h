@@ -49,11 +49,20 @@ namespace RenderSpace {
 
         std::shared_ptr<DrawableBase> get_drawable_inst(DrawableID);
 
+        /// pick points on triangles
         bool pickcmd(
             geometry::Ray&&,
             std::vector<DrawableID>&, std::vector<geometry::Vector3f>&, std::vector<geometry::Vector3f>&,
             glm::mat4&,
             bool = false
+        );
+
+		/// pick vertex indices
+        bool pickcmd(
+            geometry::Ray&&,
+            DrawableID& /* drawable id */, uint32_t& /* vertices id */,
+            glm::mat4&,
+            float /* threhold */ = 1e-3
         );
 
     private:

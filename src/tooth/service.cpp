@@ -53,8 +53,10 @@ namespace ToothSpace {
 
         m_autobus->subscribe<void(vector<uint32_t>&, vector<geometry::Point3f>&, vector<geometry::Vector3f>&)>(
             SignalPolicy::Sync, "render/picked_points",
-            bind(&Workspace::pick_service_handler, m_workspace.get(),
+            bind(&Workspace::pick_points_handler, m_workspace.get(),
                 ::placeholders::_1, ::placeholders::_2, ::placeholders::_3));
+        m_autobus->subscribe<void(uint32_t, uint32_t)>(SignalPolicy::Sync, "render/picked_vertex",
+            bind(&Workspace::pick_vertex_handler, m_workspace.get(), ::placeholders::_1, ::placeholders::_2));
     }
 
     void ToothService::slot_add_log(string&& type, const string& msg) {
@@ -105,5 +107,10 @@ namespace ToothSpace {
     shared_ptr<DrawableBase> ToothService::slot_get_drawable_inst(uint32_t draw_id) {
         auto _service = ContextHub::getInstance()->getServiceTable<shared_ptr<DrawableBase>(uint32_t)>();
         return _service->sync_invoke("render/get_drawable_inst", draw_id);
+    }
+
+    void ToothService::slot_set_mouse_tooltip(const string& tooltip) {
+        auto _service = ContextHub::getInstance()->getServiceTable<void(const string&)>();
+        _service->sync_invoke("GUI/set_mouse_tooltip", tooltip);
     }
 }

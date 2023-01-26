@@ -103,15 +103,15 @@ namespace RenderSpace {
         return m_container->set_drawable_property(id, property, value);
     }
 
-    void RenderContext::ctx_pick_drawables(const Vector3f& origin, const Vector3f& direction, bool muti) {
-        Ray pick_ray(origin, direction);
-
+    void RenderContext::ctx_pick_points(const Vector3f& origin, const Vector3f& direction, bool muti) {
         vector<DrawableID> picked_ids;
         vector<Vector3f> picked_points;
         vector<Vector3f> picked_normals;
 
         auto success = m_container->pickcmd(
-            move(pick_ray), picked_ids, picked_points, picked_normals, m_window->gizmo.getTransform(), muti
+            Ray(origin, direction),
+            picked_ids, picked_points, picked_normals,
+            m_window->gizmo.getTransform(), muti
         );
 
         if (success) {
@@ -122,6 +122,23 @@ namespace RenderSpace {
         }
         else {
             // not picked
+        }
+    }
+
+    void RenderContext::ctx_pick_vertex(const Vector3f& origin, const Vector3f& direction) {
+        Ray pick_ray(origin, direction);
+        DrawableID draw_id = -1;
+        uint32_t vertex_id = -1;
+        
+        auto success = m_container->pickcmd(
+            Ray(origin, direction), draw_id, vertex_id, m_window->gizmo.getTransform(), 5e-2
+        );
+
+        if (success) {
+            /// [Notify] render/picked_vertex
+            ctx_notify<void(DrawableID, uint32_t)>(
+                "/picked_vertex", draw_id, vertex_id
+            );
         }
     }
 

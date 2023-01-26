@@ -5,6 +5,7 @@
 #include "components/modal_confirm.h"
 #include "components/node_flow.h"
 #include "components/project_panel.h"
+#include "components/zmo.h"
 
 #include <memory>
 #include <functional>
@@ -92,6 +93,11 @@ namespace GUISpace {
 			m_symbol + "/add_tooth_pack",
 			bind(&GUISpace::ProjectPanel::add_tooth_pack, ::placeholders::_1)
 		);
+
+		m_autobus->registerMethod<void(const std::string&)>(
+			m_symbol + "/set_mouse_tooltip",
+			bind(&GUISpace::Zmo::set_mouse_tooltip, ::placeholders::_1)
+			);
 	}
 
 	/// [sync invoke] -> render/load_mesh

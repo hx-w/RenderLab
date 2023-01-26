@@ -61,7 +61,9 @@ namespace RenderSpace {
         void ctx_change_interact_mode(int /* interact_mode */);
 
         /// pick from container
-        void ctx_pick_drawables(const geometry::Vector3f&, const geometry::Vector3f&, bool);
+        void ctx_pick_points(const geometry::Vector3f&, const geometry::Vector3f&, bool);
+
+        void ctx_pick_vertex(const geometry::Vector3f&, const geometry::Vector3f&);
 
         void ctx_update_transform_mat(const glm::mat4&);
 

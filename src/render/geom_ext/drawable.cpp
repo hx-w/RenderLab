@@ -111,7 +111,7 @@ namespace RenderSpace {
 
     void NewMeshDrawable::_draw() {
         m_shader->setBool("ignoreLight", false);
-        glLineWidth(1.0f);
+        glLineWidth(2.0f);
         if (m_ebo != 0 && !m_faces.empty()) {
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
             glDrawElements(GL_TRIANGLES, m_faces.size() * 3, GL_UNSIGNED_INT, 0);

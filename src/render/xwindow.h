@@ -13,8 +13,14 @@ struct GLFWwindow;
 namespace RenderSpace {
     typedef std::pair<glm::vec3, glm::vec3> AABB; // min, max
     enum InteractMode {
-        DefaultMode = 0x0,
-        PickMode    = 0x1
+        DefaultMode = 1 << 0,
+        ClickPickMode = 1 << 1,
+        HoverPickMode = 1 << 2
+    };
+
+    enum PickType {
+        PickPoints = 1 << 0,
+        PickVertex = 1 << 1
     };
 
     class RenderService;
@@ -83,7 +89,9 @@ namespace RenderSpace {
 
     private:
         std::map<int, time_t> m_key_last_active; // for click, only record GLFW_PRESS
-        InteractMode interact_mode = PickMode;
+        int interact_mode = ClickPickMode | HoverPickMode;
+        int pick_type = PickPoints | PickVertex;
+
         bool key_down_GTRL = false;
 
     private:

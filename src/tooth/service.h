@@ -40,6 +40,8 @@ namespace ToothSpace {
 
         std::shared_ptr<RenderSpace::DrawableBase> slot_get_drawable_inst(uint32_t);
 
+        void slot_set_mouse_tooltip(const std::string&);
+
     private:
         void _subscribe();
 

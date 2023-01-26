@@ -28,11 +28,14 @@ namespace ToothSpace {
 
 
 		/// handle picked points
-		void pick_service_handler(
+		void pick_points_handler(
 			std::vector<uint32_t>&,
 			std::vector<geometry::Point3f>&,
 			std::vector<geometry::Vector3f>&
 		);
+
+		/// handle picked vertex
+		void pick_vertex_handler(uint32_t, uint32_t);
 
 	private:
 		int _gen_wkflow_id();

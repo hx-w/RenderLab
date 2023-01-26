@@ -81,20 +81,27 @@ namespace RenderSpace {
 
     bool RenderContainer::set_drawable_property(DrawableID id, const string& property, const std::any& value) {
         lock_guard<mutex> lock(m_mutex);
-        if (m_drawables.find(id) != m_drawables.end()) {
-            if (property == "shader") {
-                m_drawables[id]->_shader() = any_cast<shared_ptr<Shader>>(value);
-                return true;
-            }
-            else if (property == "shade_mode") {
-                m_drawables[id]->_shade_mode() = any_cast<uint32_t>(value);
-                return true;
-            }
-            else {
-                return false;
-            }
-        }
-        return false;
+        if (m_drawables.find(id) == m_drawables.end())
+            return false;
+		if (property == "shader") {
+			m_drawables[id]->_shader() = any_cast<shared_ptr<Shader>>(value);
+		}
+		else if (property == "shade_mode") {
+			m_drawables[id]->_shade_mode() = any_cast<uint32_t>(value);
+		}
+		else if (property == "color") {
+			auto clr = any_cast<Vector3f>(value);
+			auto& verts = m_drawables[id]->_vertices();
+			for (auto& v : verts) {
+				v.Color = clr;
+			}
+		}
+		else {
+			return false;
+		}
+
+        m_drawables[id]->get_ready();
+        return true;
     }
 
     shared_ptr<DrawableBase> RenderContainer::get_drawable_inst(DrawableID id) {
@@ -102,6 +109,7 @@ namespace RenderSpace {
         return m_drawables.at(id);
     }
 
+    /// pick points on triangles
     bool RenderContainer::pickcmd(
         Ray&& pick_ray,
         vector<DrawableID>& picked_ids,
@@ -164,5 +172,55 @@ namespace RenderSpace {
         }
 
         return true;
+    }
+
+    /// pick vertex indices
+    bool RenderContainer::pickcmd(
+        Ray&& pick_ray, DrawableID& draw_id, uint32_t& vert_id, glm::mat4& transf, float thred
+    ) {
+        auto inv_transf = glm::inverse(transf);
+        auto n_ori = glm::vec3(inv_transf * glm::vec4(pick_ray.get_origin(), 1.0f));
+		auto n_end = glm::vec3(inv_transf * glm::vec4(pick_ray.get_point(1.0f), 1.0f));
+		auto n_ray = Ray(n_ori, n_end - n_ori);
+
+        bool picked = false;
+        float cloest_dist = numeric_limits<float>::max();
+
+        for (auto& [_id, draw_ptr] : m_drawables) {
+            if (!draw_ptr->_visible()) continue;
+            if (draw_ptr->_type() != GeomTypeMesh) continue;
+
+			float min_dist = numeric_limits<float>::max();
+            uint32_t min_vid = -1;
+
+            const auto& verts = draw_ptr->_vertices();
+
+            // stupid search
+            auto vert_size = verts.size();
+            for (auto vid = 0; vid < vert_size; ++vid) {
+                const auto& v = verts[vid];
+                auto dist = n_ray.get_distance(v.Position);
+                if (dist > thred) continue;
+                if (dist < min_dist &&
+					// make sure v.Position is forward of n_ray
+                    glm::angle(n_ray.get_direction(), v.Position - n_ori) < glm::pi<float>() / 2.f
+                ) {
+                    min_dist = dist;
+                    min_vid = vid;
+                }
+            }
+
+            // compute nearest
+            if (min_vid == -1) continue;
+            auto dist = glm::distance(n_ori, verts[min_vid].Position);
+            if (dist < cloest_dist) {
+                cloest_dist = dist;
+                vert_id = min_vid;
+                draw_id = _id;
+                picked = true;
+            }
+        }
+        
+        return picked;
     }
 }

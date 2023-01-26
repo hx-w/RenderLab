@@ -37,6 +37,12 @@ namespace RenderSpace {
                 return m_context->ctx_load_drawable(file_path);
             }
         );
+        m_autobus->registerMethod<bool(uint32_t)>(
+            m_symbol + "/remove_drawable",
+            [this](uint32_t draw_id) -> bool {
+                return m_context->ctx_remove_drawable(draw_id);
+            }
+        );
         /// @brief get drawble instance
         ///       THIS COULD BE DANGEROUS
         m_autobus->registerMethod<shared_ptr<DrawableBase>(DrawableID)>(

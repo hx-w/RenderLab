@@ -76,6 +76,8 @@ namespace RenderSpace {
             key_down_GTRL = true;
         }
         if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_RELEASE) {
+            if (key_down_GTRL)
+                m_context->ctx_notify<void(uint32_t, uint32_t)>("/picked_vertex", -1, -1);
             key_down_GTRL = false;
         }
     }
@@ -102,6 +104,14 @@ namespace RenderSpace {
         float ypos = static_cast<float>(yposIn);
         realX = xpos;
         realY = ypos;
+
+        /// hover pick
+        if ((interact_mode & HoverPickMode) && key_down_GTRL) {
+			glm::vec3 direction(0.0);
+			pickingRay(glm::vec2(realX, realY), direction);
+			m_context->ctx_pick_vertex(cameraPos, direction);
+        }
+
         if (!leftMousePressed)
             return;
 
@@ -158,7 +168,7 @@ namespace RenderSpace {
             return 0;
         };
 
-        gizmo.mouse((vgButtons)(button), get_modifier(window), action == GLFW_PRESS, realX, realY);
+        //gizmo.mouse((vgButtons)(button), get_modifier(window), action == GLFW_PRESS, realX, realY);
         
         /// [Notify] render/mouse_event
         m_service->notify<void(int, int)>("/mouse_event", button, action);
@@ -181,11 +191,11 @@ namespace RenderSpace {
             switch(button) {
 			case GLFW_MOUSE_BUTTON_LEFT:
                 leftMousePressed = false;
-                if (interact_mode == PickMode && key_down_GTRL) {
+                if ((interact_mode & ClickPickMode) && key_down_GTRL) {
                     glm::vec3 direction(0.0);
                     pickingRay(glm::vec2(realX, realY), direction);
                     /// [TODO] picking ray notify
-                    m_context->ctx_pick_drawables(cameraPos, direction, false);
+                    m_context->ctx_pick_points(cameraPos, direction, false);
                 }
 				break;
 			case GLFW_MOUSE_BUTTON_MIDDLE:

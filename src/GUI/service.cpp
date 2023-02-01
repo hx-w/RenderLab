@@ -121,4 +121,9 @@ namespace GUISpace {
 		auto _service = ContextHub::getInstance()->getServiceTable<bool(uint32_t)>();
 		return _service->sync_invoke("render/remove_drawable", drawable_id);
 	}
+
+    bool GUIService::slot_set_drawable_property(uint32_t msh_id, const string& prop, const any& val) {
+        auto _service = ContextHub::getInstance()->getServiceTable<bool(uint32_t, const string&, const any&)>();
+        return _service->sync_invoke("render/set_drawable_property", msh_id, prop, val);
+    }
 }

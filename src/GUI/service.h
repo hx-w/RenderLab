@@ -29,6 +29,9 @@ namespace GUISpace {
         /// [Slots]
         bool slot_remove_drawable(uint32_t);
 
+        /// [Slots]
+        bool slot_set_drawable_property(uint32_t, const std::string&, const std::any&);
+
         /// generic notify
         template <class Func, class ...Args>
         void notify(const std::string& addr, Args&& ...args) {

@@ -28,6 +28,8 @@ using ToothPackPtr = shared_ptr<ToothPack>;
 using DrawablePtr = shared_ptr<DrawableBase>;
 
 static int st_shown_flow_id = -1;
+const static auto st_arrow_color_default = geometry::Vector3f(0.1f, 0.1f, 0.1f); // from workspace.cpp
+const static auto st_arrow_color_selected = geometry::Vector3f(1.f, 0.3f, 0.f);
 
 struct ProjectInst {
 	ProjectInst(ToothPackPtr _tpack): tpack(_tpack) {
@@ -61,7 +63,9 @@ struct ProjectInst {
 			).swap(picked_nurbs_points);
 		}
 
-		if (ImGui::BeginTable("Sample points - Nurbs", max_col)) {
+		const static auto nurbs_table_flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg;
+
+		if (ImGui::BeginTable("Sample points - Nurbs", max_col, nurbs_table_flags)) {
 			int counter = 0;
 			for (int row = 0; row < max_row; ++row) {
 				ImGui::TableNextRow();
@@ -73,7 +77,39 @@ struct ProjectInst {
 					}
 					else {
 						auto& pnt = picked_nurbs_points[idx].second;
-						ImGui::TextColored(ImVec4(1., 1., 0., 1.), "%.03f, %.03f, %.03f", pnt.x, pnt.y, pnt.z);
+						char buf[48] = "";
+						snprintf(buf, sizeof(buf), "%.03f, %.03f, %.03f", pnt.x, pnt.y, pnt.z);
+						if (ImGui::Selectable(buf, selected_points_idx == idx, ImGuiSelectableFlags_AllowDoubleClick)) {
+							if (selected_points_idx >= 0) {
+								// recover old color
+								SERVICE_INST->slot_set_drawable_property(
+									picked_nurbs_points[selected_points_idx].first,
+									"color",
+									st_arrow_color_default
+								);
+							}
+							selected_points_idx = idx;
+							// hightlight arrow
+							SERVICE_INST->slot_set_drawable_property(
+								picked_nurbs_points[idx].first,
+								"color",
+								st_arrow_color_selected
+							);
+
+							if (ImGui::IsMouseDoubleClicked(0)) { 
+								// double click -> copy to clipboard
+								ImGui::SetClipboardText(buf);
+								// notice [TODO]
+
+							}
+						}
+						if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
+							ImGui::BeginTooltip();
+							ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+							ImGui::TextUnformatted("double click -> copy to clipboard");
+							ImGui::PopTextWrapPos();
+							ImGui::EndTooltip();
+						}
 						counter++;
 					}
 				}
@@ -98,6 +134,18 @@ struct ProjectInst {
 				SERVICE_INST->notify<void(vector<vector<Point3f>>&, const pair<int, int>&)>("/send_nurbs_points_pack", pack, sample_rate);
 			}
 		}
+
+		if (selected_points_idx < 0) return;
+		// handle delete event
+		if (ImGui::IsKeyPressed(ImGuiKey_Backspace, false) ||
+			ImGui::IsKeyPressed(ImGuiKey_Delete, false) ||
+			ImGui::IsKeyPressed(ImGuiKey_X, false)
+		) {
+			auto _id = picked_nurbs_points[selected_points_idx].first;
+			SERVICE_INST->slot_remove_drawable(_id);
+			// clear records
+			picked_nurbs_points[selected_points_idx].first = uint32_t(-1);
+		}
 	}
 
 	ToothPackPtr tpack; // mesh only has name to id
@@ -105,7 +153,7 @@ struct ProjectInst {
 
 	// nurbs picked points
 	vector<pair<uint32_t, geometry::Point3f>> picked_nurbs_points;
-
+	int selected_points_idx = -1;
 };
 
 static vector<ProjectInst> st_projects;

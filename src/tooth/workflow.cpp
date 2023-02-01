@@ -143,8 +143,7 @@ namespace ToothSpace {
 		auto picked_num = picked_ids.size();
 		for (auto i = 0; i < picked_num; ++i) {
 			auto ray = geometry::Ray(picked_pnts[i], picked_nmls[i]);
-			auto arrow_id = SERVICE_INST->slot_show_arrow(ray, 0.5f, geometry::Vector3f(1.0f, 0.0f, 1.0f));
-			
+			auto arrow_id = SERVICE_INST->slot_show_arrow(ray, 0.5f, geometry::Vector3f(0.1f, 0.1f, 0.1f));
 			SERVICE_INST->notify<void(uint32_t, geometry::Point3f&)>(
 				"/add_nurbs_point_record", arrow_id, picked_pnts[i]
 			);

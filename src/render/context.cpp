@@ -92,7 +92,10 @@ namespace RenderSpace {
     }
 
     bool RenderContext::ctx_remove_drawable(DrawableID id) {
-        return m_container->remove_drawable(id);
+        auto res = m_container->remove_drawable(id);
+        if (res) m_service->slot_add_log("info", string("delete drawable: ") + to_string(id) + " success");
+        else m_service->slot_add_log("warn", string("delete drawable: ") + to_string(id) + " failed");
+        return res;
     }
 
     shared_ptr<DrawableBase> RenderContext::ctx_get_drawable(DrawableID id) {

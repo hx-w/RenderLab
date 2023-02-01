@@ -114,12 +114,12 @@ void Node_Pmtr_Nurbs(NodeId node_id, WkflowCtxPtr wkflow_ctx) {
 
 		ImGui::SetNextItemWidth(60.f);
         ImGui::InputInt(
-            "Sample - row",
+            "Samples - U",
             (int*)(&wkflow_ctx->node_states[NodeId_2]["Sample row"])
         );
 		ImGui::SetNextItemWidth(60.f);
         ImGui::InputInt(
-            "Sample - col",
+            "Samples - V",
             (int*)(&wkflow_ctx->node_states[NodeId_2]["Sample col"])
         );
 
@@ -363,10 +363,10 @@ void NodeFlow::render() {
      * both are fine
      * !!!important
      */
-    if (ImGui::IsKeyDown(ImGuiKey_Backspace) ||
-        ImGui::IsKeyDown(ImGuiKey_Delete) ||
-        ImGui::IsKeyDown(ImGuiKey_X)
-    ) {
+	if (ImGui::IsKeyPressed(ImGuiKey_Backspace, false) ||
+		ImGui::IsKeyPressed(ImGuiKey_Delete, false) ||
+		ImGui::IsKeyPressed(ImGuiKey_X, false)
+	) {
         delete_links(0);
     }
     // add new link, render in next frame

@@ -5,7 +5,7 @@ add_subdirectory(GUI)
 
 list(APPEND LIBS INFRASTRUCTURE XTOOTH XRENDER XGUI GEOMETRY)
 
-list(APPEND DEPS glm imgui glad glfw)
+list(APPEND DEPS glm imgui glad glfw tinynurbs)
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR})
 

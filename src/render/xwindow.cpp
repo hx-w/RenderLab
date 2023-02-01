@@ -158,18 +158,6 @@ namespace RenderSpace {
     }
 
     void RenderWindowWidget::mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
-        auto get_modifier = [this](GLFWwindow* window) {
-            if ((glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS))
-                return GLFW_MOD_CONTROL;
-            else if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS))
-                return GLFW_MOD_SHIFT;
-            else if ((glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_RIGHT_ALT) == GLFW_PRESS))
-                return GLFW_MOD_ALT;
-            return 0;
-        };
-
-        //gizmo.mouse((vgButtons)(button), get_modifier(window), action == GLFW_PRESS, realX, realY);
-        
         /// [Notify] render/mouse_event
         m_service->notify<void(int, int)>("/mouse_event", button, action);
 
@@ -201,6 +189,7 @@ namespace RenderSpace {
 			case GLFW_MOUSE_BUTTON_MIDDLE:
 				break;
 			case GLFW_MOUSE_BUTTON_RIGHT:
+                
 				break;
 			default:
 				return;

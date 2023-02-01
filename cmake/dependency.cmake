@@ -66,6 +66,12 @@ CPMAddPackage(
   VERSION 3.0
 )
 
+CPMAddPackage(
+  NAME tinynurbs
+  GITHUB_REPOSITORY hx-w/tinynurbs
+  GIT_TAG v0.1.1
+)
+
 #-----------------------------------------------------------------------------#
 # define the asset path in c++
 set(ASSETS_DIR ${PROJECT_SOURCE_DIR}/resource)
@@ -102,3 +108,6 @@ target_link_libraries(imguizmo PUBLIC imgui glfw glm)
 ## !!!important
 target_compile_definitions(imguizmo PUBLIC -DIMGUIZMO_IMGUI_FOLDER=)
 target_compile_definitions(imguizmo PUBLIC -DVGIZMO_USES_GLM=)
+
+# add_library(tinynurbs STATIC ${tinynurbs_SOURCE_DIR}/tests/test_curve.cpp)
+target_link_libraries(tinynurbs INTERFACE glm)

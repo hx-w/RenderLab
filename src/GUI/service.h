@@ -26,6 +26,9 @@ namespace GUISpace {
         /// [Slots]
         std::shared_ptr<RenderSpace::DrawableBase> slot_get_drawable_inst(uint32_t);
 
+        /// [Slots]
+        bool slot_remove_drawable(uint32_t);
+
         /// generic notify
         template <class Func, class ...Args>
         void notify(const std::string& addr, Args&& ...args) {

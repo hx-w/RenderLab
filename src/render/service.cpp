@@ -65,7 +65,7 @@ namespace RenderSpace {
         );
         m_autobus->registerMethod<DrawableID(shared_ptr<GeometryBase>, Props&, int)>(
             m_symbol + "/add_geometry",
-            [this](shared_ptr<GeometryBase> geom, Props& props, int type) -> bool {
+            [this](shared_ptr<GeometryBase> geom, Props& props, int type) -> DrawableID {
                 return m_context->ctx_add_drawable(geom, props, type);
             }
 		);

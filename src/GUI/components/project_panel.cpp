@@ -3,6 +3,7 @@
 #include <tooth_pack.h>
 #include <geom_ext/drawable.h>
 #include <imgui.h>
+#include <tinynurbs/tinynurbs.h>
 
 #include <vector>
 
@@ -14,6 +15,7 @@
 using namespace std;
 using namespace ToothSpace;
 using namespace RenderSpace;
+using namespace geometry;
 
 #define SERVICE_INST GUISpace::GUIEngine::get_instance()->get_service()
 
@@ -24,6 +26,8 @@ using namespace RenderSpace;
 
 using ToothPackPtr = shared_ptr<ToothPack>;
 using DrawablePtr = shared_ptr<DrawableBase>;
+
+static int st_shown_flow_id = -1;
 
 struct ProjectInst {
 	ProjectInst(ToothPackPtr _tpack): tpack(_tpack) {
@@ -40,8 +44,68 @@ struct ProjectInst {
 		// notify xrender / xtooth to delete
 	}
 
+	void render_nurbs_table() {
+		auto& ctx = tpack->get_context();
+		if (ctx->stage_curr < 0 ||
+			ctx->stage_curr >= ctx->node_order.size() ||
+			ctx->node_order[ctx->stage_curr] != NodeId_2) {
+			return;
+		}
+
+		auto max_row = any_cast<int>(ctx->node_states[NodeId_2]["Sample row"]);
+		auto max_col = any_cast<int>(ctx->node_states[NodeId_2]["Sample col"]);
+		if (picked_nurbs_points.empty()) {
+			vector<pair<uint32_t, geometry::Point3f>>(
+				max_row * max_col,
+				make_pair(uint32_t(-1), geometry::Point3f(0.0f))
+			).swap(picked_nurbs_points);
+		}
+
+		if (ImGui::BeginTable("Sample points - Nurbs", max_col)) {
+			int counter = 0;
+			for (int row = 0; row < max_row; ++row) {
+				ImGui::TableNextRow();
+				for (int column = 0; column < max_col; ++column) {
+					ImGui::TableSetColumnIndex(column);
+					auto idx = row * max_col + column;
+					if (picked_nurbs_points[idx].first == uint32_t(-1)) {
+						ImGui::Text("-");
+					}
+					else {
+						auto& pnt = picked_nurbs_points[idx].second;
+						ImGui::TextColored(ImVec4(1., 1., 0., 1.), "%.03f, %.03f, %.03f", pnt.x, pnt.y, pnt.z);
+						counter++;
+					}
+				}
+			}
+			ImGui::EndTable();
+
+			// show compute button when points full
+			if (counter == max_row * max_col && ImGui::Button("Compute nurbs surface")) {
+				// preprocess
+				vector<vector<Point3f>> pack(max_row, vector<Point3f>(max_col, Point3f(0.0f)));
+				
+				for (auto row = 0; row < max_row; ++row) {
+					for (auto col = 0; col < max_col; ++col) {
+						pack[row][col] = picked_nurbs_points[row * max_col + col].second;
+					}
+				}
+				
+				auto sample_rate = std::make_pair(
+					any_cast<int>(ctx->node_states[NodeId_2]["Remesh U"]),
+					any_cast<int>(ctx->node_states[NodeId_2]["Remesh V"])
+				);
+				SERVICE_INST->notify<void(vector<vector<Point3f>>&, const pair<int, int>&)>("/send_nurbs_points_pack", pack, sample_rate);
+			}
+		}
+	}
+
 	ToothPackPtr tpack; // mesh only has name to id
 	map<uint32_t, DrawablePtr> meshes_inst;
+
+	// nurbs picked points
+	vector<pair<uint32_t, geometry::Point3f>> picked_nurbs_points;
+
 };
 
 static vector<ProjectInst> st_projects;
@@ -49,6 +113,7 @@ static vector<ProjectInst> st_projects;
 static bool show_import_modal = false; // import project
 
 static const char* st_shade_modes[] = { "Point", "Grid", "Flat" };
+
 
 static void HelpMarker(const char* desc) {
     ImGui::TextDisabled("(?)");
@@ -110,12 +175,12 @@ namespace GUISpace {
 		ImGui::Spacing();
 
 		if (ImGui::BeginTabBar("Confirmed_Workflows", ImGuiTabBarFlags_Reorderable)) {
-
 			for (auto& proj : st_projects) {
 				auto& proj_ctx = proj.tpack->get_context();
 				auto& proj_meshes = proj.tpack->get_meshes();
 
 				if (ImGui::BeginTabItem(proj_ctx->flow_name.c_str())) {
+					st_shown_flow_id = proj_ctx->flow_id;
 					if (ImGui::TreeNode("Meshes")) {
 						/// [TODO] Some methods here
 						ImGui::TextColored(ImVec4(255, 255, 100, 255), "[TODO] some methods here");
@@ -136,6 +201,10 @@ namespace GUISpace {
 					}
 
 					/// workflow stages
+
+					proj.render_nurbs_table();
+
+
 					if (proj_ctx->stage_curr == -1) {
 						/// active first stage wen added to project panel
 						next_workflow_stage(proj_ctx->flow_id);
@@ -169,7 +238,7 @@ namespace GUISpace {
 	}
 
 	/// active next workflow stage
-	void next_workflow_stage(int flow_id) {
+	void ProjectPanel::next_workflow_stage(int flow_id) {
 		auto idx = 0;
 		for (; idx < st_projects.size(); ++idx) {
 			if (st_projects[idx].tpack->get_context()->flow_id == flow_id) {
@@ -192,5 +261,36 @@ namespace GUISpace {
 
 		// notify to xtooth
 		SERVICE_INST->notify<void(int, int)>("/active_workflow_stage", flow_id, static_cast<int>(nd));
+	}
+
+	void ProjectPanel::add_picked_nurbs_points(uint32_t arrow_id, Vector3f& point) {
+		if (st_shown_flow_id == -1) {
+			SERVICE_INST->slot_remove_drawable(arrow_id); // remove
+		}
+		// check if full
+		for (auto& proj : st_projects) {
+			if (proj.tpack->get_context()->flow_id == st_shown_flow_id) {
+				for (auto& id_pnt : proj.picked_nurbs_points) {
+					if (id_pnt.first == uint32_t(-1)) {
+						id_pnt = make_pair(arrow_id, point);
+						return;
+					}
+				}
+			}
+		}
+
+		SERVICE_INST->slot_remove_drawable(arrow_id); // fulled, remove
+	}
+
+	void ProjectPanel::register_mesh(const string& mesh_name, uint32_t mesh_id) {
+		if (st_shown_flow_id == -1) return;
+
+		for (auto& proj : st_projects) {
+			if (proj.tpack->get_context()->flow_id == st_shown_flow_id) {
+
+				proj.tpack->get_meshes()[mesh_name] = mesh_id;
+				proj.meshes_inst[mesh_id] = SERVICE_INST->slot_get_drawable_inst(mesh_id);
+			}
+		}
 	}
 }

@@ -51,6 +51,12 @@ namespace GUISpace {
 					key == 259 /* GLFW_KEY_BACKSPACE */)
 					GUISpace::NodeFlowManager::delete_selected_links();
 			});
+		m_autobus->subscribe<void(uint32_t)>(SignalPolicy::Sync, "tooth/finish_current_stage",
+			bind(&GUISpace::ProjectPanel::next_workflow_stage, ::placeholders::_1));
+		m_autobus->subscribe<void(uint32_t, glm::vec3&)>(SignalPolicy::Sync, "tooth/add_nurbs_point_record",
+			bind(&GUISpace::ProjectPanel::add_picked_nurbs_points, ::placeholders::_1, ::placeholders::_2));
+		m_autobus->subscribe<void(const string&, uint32_t)>(SignalPolicy::Sync, "tooth/register_mesh_to_current_proj",
+			bind(&GUISpace::ProjectPanel::register_mesh, ::placeholders::_1, ::placeholders::_2));
 	}
 
 	void GUIService::_register_all() {
@@ -109,5 +115,10 @@ namespace GUISpace {
 	shared_ptr<DrawableBase> GUIService::slot_get_drawable_inst(uint32_t msh_id) {
 		auto _service = ContextHub::getInstance()->getServiceTable<shared_ptr<DrawableBase>(uint32_t)>();
 		return _service->sync_invoke("render/get_drawable_inst", msh_id);
+	}
+
+	bool GUIService::slot_remove_drawable(uint32_t drawable_id) {
+		auto _service = ContextHub::getInstance()->getServiceTable<bool(uint32_t)>();
+		return _service->sync_invoke("render/remove_drawable", drawable_id);
 	}
 }

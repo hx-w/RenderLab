@@ -37,14 +37,17 @@ namespace ToothSpace {
 				{"Auto fix position", true},
 			};
 			node_states[NodeId_2] = {
-				{"CtrPtr size", std::make_pair(3, 5)},
-				{"Assists", false},
-				{"CtrPtr weights", "auto"},
-				{"Remesh size", std::make_pair(100, 100)}
+				{"Sample row", 5},
+				{"Sample col", 3},
+				{"Assists", true},
+				{"Nurbs weights", "auto"},
+				{"Remesh U", 100},
+				{"Remesh V", 100}
 			};
 			node_states[NodeId_3] = {
 				{"Parameterize method", "Yenh 2019"},
-				{"Remesh size", std::make_pair(100, 100)}
+				{"Remesh U", 100},
+				{"Remesh V", 100}
 			};
 			node_states[NodeId_4] = {
 

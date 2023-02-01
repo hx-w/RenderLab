@@ -37,6 +37,10 @@ namespace ToothSpace {
 		/// handle picked vertex
 		void pick_vertex_handler(uint32_t, uint32_t);
 
+
+		/// compute nurbs reverse by recieved points
+		void compute_nurbs_reverse(std::vector<std::vector<geometry::Point3f>>&, const std::pair<int, int>&);
+
 	private:
 		int _gen_wkflow_id();
 

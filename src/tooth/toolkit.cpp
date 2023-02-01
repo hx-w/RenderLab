@@ -8,7 +8,6 @@
 #include <vector>
 #include <pybind11/embed.h>
 #include <pybind11/numpy.h>
-#include <geom_types.h>
 #include <mesh.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <geom_ext/drawable.h>
@@ -25,6 +24,20 @@ py::scoped_interpreter guard{};
 using AABB = pair<float, float>;
 
 namespace ToothSpace {
+	template<class T>
+	void vector_to_numpy(vector<glm::vec<3, T>>& vec, py::array& res) {
+		const auto shape_1 = vec.size();
+		const auto shape_2 = 3;
+		auto raw_vec = new T[shape_1 * shape_2];
+		for (auto _r = 0; _r < shape_1; ++_r) {
+			for (auto _c = 0; _c < shape_2; ++_c) {
+				raw_vec[_r * shape_2 + _c] = vec[_r][_c];
+			}
+		}
+		res = py::array_t<T>(shape_1 * shape_2, raw_vec);
+		delete[] raw_vec;
+	}
+
 	bool init_workenv(string& status) {
 		/// init in this thread
 		try {
@@ -209,6 +222,37 @@ namespace ToothSpace {
 		MeshDrawableExtManager::cache_mesh_ext(draw_id, inst, "curvature_mean", style);
 	}
 
+	void compute_nurbs_curve_info(
+		vector<geometry::Point3f>& points,
+		vector<geometry::Point3f>& control_points,
+		vector<float>& knots
+	) {
+		control_points.clear();
+		knots.clear();
+
+		py::array py_points;
+		vector_to_numpy(points, py_points);
+
+		auto _py_pkg = py::module_::import(PY_NURBS_MODULE);
+
+		auto k = 3;
+		auto ret = _py_pkg.attr("compute_nurbs_reverse")(py_points, k).cast<py::tuple>();
+		auto py_knots = ret[0].cast<py::array_t<float>>().unchecked<1>();
+		auto py_ctrl_pnts = ret[1].cast<py::array_t<float>>().unchecked<2>();
+
+		auto n = points.size();
+
+		for (auto ind = 0; ind < n + k + 3; ++ind) {
+			knots.emplace_back(py_knots(ind));
+		}
+
+		for (auto row = 0; row < n + 2; ++row) {
+			control_points.emplace_back(
+				geometry::Point3f(py_ctrl_pnts(row, 0), py_ctrl_pnts(row, 1), py_ctrl_pnts(row, 2))
+			);
+		}
+	}
+
 	void action_node_1(shared_ptr<ToothPack> tpack) {
 		auto& meshes_rec = tpack->get_meshes();
 		auto& basedir = tpack->get_basedir();
@@ -261,6 +305,7 @@ namespace ToothSpace {
 			showed = true;
 		}
 		
+		SERVICE_INST->notify<void(uint32_t)>("/finish_current_stage", tpack->get_context()->flow_id);
 	}
 }
 

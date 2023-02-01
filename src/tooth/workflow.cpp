@@ -12,6 +12,8 @@
 #include "tooth_pack.h"
 #include "drawable_ext.h"
 
+#include <tinynurbs/tinynurbs.h>
+
 using namespace std;
 using namespace RenderSpace;
 
@@ -141,7 +143,11 @@ namespace ToothSpace {
 		auto picked_num = picked_ids.size();
 		for (auto i = 0; i < picked_num; ++i) {
 			auto ray = geometry::Ray(picked_pnts[i], picked_nmls[i]);
-			SERVICE_INST->slot_show_arrow(ray, 0.5f, geometry::Vector3f(1.0f, 0.0f, 1.0f));
+			auto arrow_id = SERVICE_INST->slot_show_arrow(ray, 0.5f, geometry::Vector3f(1.0f, 0.0f, 1.0f));
+			
+			SERVICE_INST->notify<void(uint32_t, geometry::Point3f&)>(
+				"/add_nurbs_point_record", arrow_id, picked_pnts[i]
+			);
 		}
 	}
 
@@ -202,5 +208,109 @@ namespace ToothSpace {
 		}
 
 		mesh_inst->get_ready();
+	}
+
+	void Workspace::compute_nurbs_reverse(vector<vector<geometry::Point3f>>& points_pack, const pair<int, int>& sample_rate) {
+		if (points_pack.empty()) return;
+		auto max_row = points_pack.size();
+		auto max_col = (*points_pack.begin()).size();
+
+		vector<geometry::Point3f> control_points;
+		vector<vector<geometry::Point3f>> ctrl_matrix;
+		vector<float> knots_u, knots_v;
+		// u = row, v = col
+
+		// [1] for all U
+		for (auto row = 0; row < max_row; ++row) {
+			vector<geometry::Point3f> _ctrl_pnts;
+
+			compute_nurbs_curve_info(points_pack[row], _ctrl_pnts, knots_v);
+
+			// append 
+			ctrl_matrix.emplace_back(_ctrl_pnts);
+		}
+
+		// [2] for all V
+		// add empty header and tail
+		ctrl_matrix.insert(ctrl_matrix.begin(), vector<geometry::Vector3f>());
+		ctrl_matrix.emplace_back(vector<geometry::Vector3f>());
+		for (auto col = 0; col < max_col; ++col) {
+			vector<geometry::Point3f> _pnts(max_row);
+			for (auto row = 0; row < max_row; ++row) {
+				_pnts[row] = points_pack[row][col];
+			}
+
+			vector<geometry::Point3f> _ctrl_pnts;
+			compute_nurbs_curve_info(_pnts, _ctrl_pnts, knots_u);
+
+			// add header and tail
+			ctrl_matrix[0].emplace_back(_pnts[0]);
+			ctrl_matrix.back().emplace_back(_pnts.back());
+		}
+		ctrl_matrix[0].insert(ctrl_matrix[0].begin(), ctrl_matrix[0][0]);
+		ctrl_matrix[0].emplace_back(ctrl_matrix[0].back());
+		ctrl_matrix.back().insert(ctrl_matrix.back().begin(), ctrl_matrix.back()[0]);
+		ctrl_matrix.back().emplace_back(ctrl_matrix.back().back());
+
+		// [3] flatten ctrl_matrix to control_points
+		auto _ctrl_row = ctrl_matrix.size();
+		auto _ctrl_col = ctrl_matrix[0].size();
+		for (auto row = 0; row < _ctrl_row; ++row) {
+			for (auto col = 0; col < _ctrl_col; ++col) {
+				control_points.emplace_back(ctrl_matrix[row][col]);
+			}
+		}
+
+		/// construct nurbs mesh
+		tinynurbs::RationalSurface3f nurbs_surf;
+		nurbs_surf.degree_u = 3, nurbs_surf.degree_v = 3;
+		nurbs_surf.knots_u = knots_u;
+		nurbs_surf.knots_v = knots_v;
+		nurbs_surf.control_points = {
+			max_row + 2, max_col + 2, control_points
+		};
+		nurbs_surf.weights = {
+			max_row + 2, max_col + 2, vector<float>((max_row + 2) * (max_col + 2), 1.0f)
+		};
+
+		if (tinynurbs::surfaceIsValid(nurbs_surf)) {
+			const auto& [row_num, col_num] = sample_rate;
+			auto vertices = vector<geometry::Point3f>();
+			auto faces = vector<geometry::Vector3u>();
+
+			/**
+			 *    x ------- x + 1
+			 *    |     /     |
+			 *    x+col -- x+col+1
+			 */
+			
+			for (auto row = 0; row < row_num; ++row) {
+				for (auto col = 0; col < col_num; ++col) {
+					auto _u = static_cast<float>(row) / static_cast<float>(row_num);
+					auto _v = static_cast<float>(col) / static_cast<float>(col_num);
+
+					auto vert = tinynurbs::surfacePoint(nurbs_surf, _u, _v);
+					vertices.emplace_back(vert);
+
+					if (row != row_num - 1 && col != col_num - 1) {
+						// update faces
+						auto _x = row * col_num + col;
+						faces.emplace_back(geometry::Vector3u(_x, _x + col_num, _x + 1));
+						faces.emplace_back(geometry::Vector3u(_x + 1, _x + col_num, _x + col_num + 1));
+					}
+				}
+			}
+
+			auto mesh = geometry::Mesh(vertices, faces);
+
+			auto mesh_id = SERVICE_INST->slot_add_mesh(mesh);
+			// show in proj panel
+			SERVICE_INST->notify<void(const string&, uint32_t)>("/register_mesh_to_current_proj", "remeshed(nurbs)", mesh_id);
+		}
+		else {
+			// nurbs not valid
+			SERVICE_INST->slot_add_log("error", "nurbs surface is invalid");
+		}
+
 	}
 }

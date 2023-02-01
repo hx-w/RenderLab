@@ -88,12 +88,14 @@ def nurbs_curve(knots: np.ndarray, D: np.ndarray, k: int = 3, dt: float = 0.01) 
 
 
 def compute_nurbs_reverse(points: np.ndarray, k: int = 3) -> Tuple[np.ndarray, np.ndarray]:
+    points = points.reshape((-1, 3))
     knots = compute_knots(points, k)
     D = compute_control_points(points, knots, k)
     return knots, D
 
 
 def plot_curve(points: np.ndarray, k: int = 3):
+    points = points.reshape((-1, 3))
     from matplotlib import pyplot as plt
 
     knots, D = compute_nurbs_reverse(points, k)
@@ -104,6 +106,7 @@ def plot_curve(points: np.ndarray, k: int = 3):
     ax.plot(points[:, 0], points[:, 1], points[:, 2], c='b')
     ax.scatter(D[:, 0], D[:, 1], D[:, 2], c='g')
     plt.show()
+    return knots, D
 
 
 if __name__ == '__main__':
@@ -122,4 +125,6 @@ if __name__ == '__main__':
         [75, 35, 25]
     ])
 
-    plot_curve(points, 3)
+    knots, D = plot_curve(points, 3)
+
+    print(points.shape, knots.shape, D.shape)

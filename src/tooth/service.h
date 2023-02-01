@@ -35,6 +35,8 @@ namespace ToothSpace {
         // to renderer
         uint32_t slot_show_arrow(geometry::Ray&, float /* length */, geometry::Vector3f&& /* color */);
 
+        uint32_t slot_add_mesh(geometry::Mesh&);
+
         // to renderer
         void slot_update_transform(const glm::mat4&);
 
@@ -42,11 +44,17 @@ namespace ToothSpace {
 
         void slot_set_mouse_tooltip(const std::string&);
 
+        template <class Func, class ...Args>
+        void notify(const std::string& addr, Args&& ...args) {
+            auto _event = fundamental::ContextHub::getInstance()->getEventTable<Func>();
+            _event->notify(m_symbol + addr, std::forward<Args>(args)...);
+        }
+
     private:
         void _subscribe();
 
     private:
-        std::string m_name = "tooth"; // 名称
+        std::string m_symbol = "tooth"; // 名称
         ToothEngine& m_engine;
 
         std::unique_ptr<Workspace> m_workspace;

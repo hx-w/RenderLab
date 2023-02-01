@@ -12,6 +12,7 @@
 
 #include <string>
 #include "wkflow_context.h"
+#include <geom_types.h>
 
 namespace ToothSpace {
 	class ToothPack;
@@ -19,6 +20,7 @@ namespace ToothSpace {
 #define PY_INITENV_MODULE  "scripts.py_env_checker"
 #define PY_LOADPROJ_MODULE "scripts.py_load_project"
 #define PY_PALETTE_MODULE  "scripts.py_mesh_palette"
+#define PY_NURBS_MODULE    "scripts.py_nurbs_toolkit"
 
 #define PY_REQUIREMENTS ("trimesh", "toml", "matplotlib")
 
@@ -54,6 +56,13 @@ namespace ToothSpace {
 
 	void show_mesh_curvature(
 		uint32_t /* id */, const std::string& /* type */, const std::string& = ""
+	);
+
+
+	void compute_nurbs_curve_info(
+		std::vector<geometry::Point3f>& /* points */,
+		std::vector<geometry::Point3f>& /* control_points [out] */,
+		std::vector<float>& /* knots [out] */
 	);
 
 	/**

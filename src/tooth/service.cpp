@@ -8,6 +8,7 @@
 #include "wkflow_context.h"
 #include "tooth_pack.h"
 #include <geom_ext/drawable.h>
+#include <mesh.h>
 
 using namespace std;
 using namespace fundamental;
@@ -57,6 +58,8 @@ namespace ToothSpace {
                 ::placeholders::_1, ::placeholders::_2, ::placeholders::_3));
         m_autobus->subscribe<void(uint32_t, uint32_t)>(SignalPolicy::Sync, "render/picked_vertex",
             bind(&Workspace::pick_vertex_handler, m_workspace.get(), ::placeholders::_1, ::placeholders::_2));
+        m_autobus->subscribe<void(vector<vector<geometry::Point3f>>&, const std::pair<int, int>&)>(SignalPolicy::Sync, "GUI/send_nurbs_points_pack",
+            bind(&Workspace::compute_nurbs_reverse, m_workspace.get(), ::placeholders::_1, ::placeholders::_2));
     }
 
     void ToothService::slot_add_log(string&& type, const string& msg) {
@@ -97,6 +100,15 @@ namespace ToothSpace {
 
         auto _service = ContextHub::getInstance()->getServiceTable<uint32_t(shared_ptr<geometry::GeometryBase>, map<string, any>&, int)>();
         return _service->sync_invoke("render/add_geometry", geom_ptr, props, 1);
+    }
+
+    uint32_t ToothService::slot_add_mesh(geometry::Mesh& mesh) {
+        auto geom_ptr = make_shared<geometry::Mesh>(mesh);
+        auto props = map<string, any>{
+            {"color", geometry::Vector3f(0.5f)}
+        };
+        auto _service = ContextHub::getInstance()->getServiceTable<uint32_t(shared_ptr<geometry::GeometryBase>, map<string, any>&, int)>();
+        return _service->sync_invoke("render/add_geometry", geom_ptr, props, 2);
     }
 
     void ToothService::slot_update_transform(const glm::mat4& transf) {

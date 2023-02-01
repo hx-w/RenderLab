@@ -37,15 +37,15 @@ namespace ToothSpace {
 				{"Auto fix position", true},
 			};
 			node_states[NodeId_2] = {
-				{"Sample row", 5},
-				{"Sample col", 3},
+				{"Samples U", 5},
+				{"Samples V", 3},
 				{"Assists", true},
-				{"Nurbs weights", "auto"},
+				{"Weights", std::string("auto")},
 				{"Remesh U", 100},
 				{"Remesh V", 100}
 			};
 			node_states[NodeId_3] = {
-				{"Parameterize method", "Yenh 2019"},
+				{"Parameterize method", std::string("Yenh 2019")},
 				{"Remesh U", 100},
 				{"Remesh V", 100}
 			};

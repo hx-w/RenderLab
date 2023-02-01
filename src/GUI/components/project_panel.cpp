@@ -54,8 +54,8 @@ struct ProjectInst {
 			return;
 		}
 
-		auto max_row = any_cast<int>(ctx->node_states[NodeId_2]["Sample row"]);
-		auto max_col = any_cast<int>(ctx->node_states[NodeId_2]["Sample col"]);
+		auto max_row = any_cast<int>(ctx->node_states[NodeId_2]["Samples U"]);
+		auto max_col = any_cast<int>(ctx->node_states[NodeId_2]["Samples V"]);
 		if (picked_nurbs_points.empty()) {
 			vector<pair<uint32_t, geometry::Point3f>>(
 				max_row * max_col,

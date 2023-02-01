@@ -115,12 +115,12 @@ void Node_Pmtr_Nurbs(NodeId node_id, WkflowCtxPtr wkflow_ctx) {
 		ImGui::SetNextItemWidth(60.f);
         ImGui::InputInt(
             "Samples - U",
-            (int*)(&wkflow_ctx->node_states[NodeId_2]["Sample row"])
+            (int*)(&wkflow_ctx->node_states[NodeId_2]["Samples U"])
         );
 		ImGui::SetNextItemWidth(60.f);
         ImGui::InputInt(
             "Samples - V",
-            (int*)(&wkflow_ctx->node_states[NodeId_2]["Sample col"])
+            (int*)(&wkflow_ctx->node_states[NodeId_2]["Samples V"])
         );
 
         ImGui::Checkbox("Picking assists", (bool*)(&wkflow_ctx->node_states[NodeId_2]["Assists"]));

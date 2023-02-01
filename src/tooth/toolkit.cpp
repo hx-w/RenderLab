@@ -8,6 +8,7 @@
 #include <vector>
 #include <pybind11/embed.h>
 #include <pybind11/numpy.h>
+#include <pybind11/stl.h>
 #include <mesh.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <geom_ext/drawable.h>
@@ -115,6 +116,24 @@ namespace ToothSpace {
 			}
 			auto _ctx = cfg_inst["workflow"]["context"].cast<py::dict>();
 
+			auto& nd_states = context->node_states;
+
+			{
+				auto node_1 = to_string(NodeId_1);
+				nd_states[NodeId_1]["Ensure manifolds"] = _ctx[node_1.c_str()]["Ensure manifolds"].cast<bool>();
+				nd_states[NodeId_1]["Auto fix position"] = _ctx[node_1.c_str()]["Auto fix position"].cast<bool>();
+			}
+			{
+				auto node_2 = to_string(NodeId_2);
+				nd_states[NodeId_2]["Samples U"] = _ctx[node_2.c_str()]["Samples U"].cast<int>();
+				nd_states[NodeId_2]["Samples V"] = _ctx[node_2.c_str()]["Samples V"].cast<int>();
+				nd_states[NodeId_2]["Assists"] = _ctx[node_2.c_str()]["Assists"].cast<bool>();
+				nd_states[NodeId_2]["Remesh U"] = _ctx[node_2.c_str()]["Remesh U"].cast<int>();
+				nd_states[NodeId_2]["Remesh V"] = _ctx[node_2.c_str()]["Remesh V"].cast<int>();
+				nd_states[NodeId_2]["Weights"] = _ctx[node_2.c_str()]["Weights"].cast<string>();
+			}
+
+
 			/// [TODO] init context params
 		}
 		catch (exception& e) {
@@ -142,8 +161,30 @@ namespace ToothSpace {
 				ndorder.append(static_cast<int>(nd));
 			}
 			cfg_inst["workflow"]["node_order"] = ndorder;
-			/// [TODO] only save node_order for now
+			auto& nd_states = context->node_states;
 
+			auto cfg_dict = py::dict{};
+			// context saving
+			{
+				auto node_1 = to_string(NodeId_1);
+				cfg_dict[node_1.c_str()] = py::dict{};
+				cfg_dict[node_1.c_str()]["Ensure manifolds"] = any_cast<bool>(nd_states[NodeId_1]["Ensure manifolds"]);
+				cfg_dict[node_1.c_str()]["Auto fix position"] = any_cast<bool>(nd_states[NodeId_1]["Auto fix position"]);
+			}
+			{
+				auto node_2 = to_string(NodeId_2);
+				cfg_dict[node_2.c_str()] = py::dict{};
+				cfg_dict[node_2.c_str()]["Samples U"] = any_cast<int>(nd_states[NodeId_2]["Samples U"]);
+				cfg_dict[node_2.c_str()]["Samples V"] = any_cast<int>(nd_states[NodeId_2]["Samples V"]);
+				cfg_dict[node_2.c_str()]["Assists"] = any_cast<bool>(nd_states[NodeId_2]["Assists"]);
+				cfg_dict[node_2.c_str()]["Remesh U"] = any_cast<int>(nd_states[NodeId_2]["Remesh U"]);
+				cfg_dict[node_2.c_str()]["Remesh V"] = any_cast<int>(nd_states[NodeId_2]["Remesh V"]);
+				cfg_dict[node_2.c_str()]["Weights"] = any_cast<string>(nd_states[NodeId_2]["Weights"]);
+			}
+			/// [TODO] Other nodes
+
+
+			cfg_inst["workflow"]["context"] = cfg_dict;
 
 			/// save cfg_inst to cfg_full
 			auto _opened_file = py::module_::import("builtins").attr("open")(cfg_full, "w");

@@ -145,6 +145,7 @@ struct ProjectInst {
 			SERVICE_INST->slot_remove_drawable(_id);
 			// clear records
 			picked_nurbs_points[selected_points_idx].first = uint32_t(-1);
+			selected_points_idx = -1;
 		}
 	}
 

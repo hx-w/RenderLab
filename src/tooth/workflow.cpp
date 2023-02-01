@@ -138,7 +138,6 @@ namespace ToothSpace {
 	) {
 		/// handler 
 		
-
 		// [DEBUG] show arrow
 		auto picked_num = picked_ids.size();
 		for (auto i = 0; i < picked_num; ++i) {
@@ -153,21 +152,23 @@ namespace ToothSpace {
 	void Workspace::pick_vertex_handler(uint32_t draw_id, uint32_t vertex_id) {
 		static pair<uint32_t, uint32_t> st_last_hover_picked(-1, -1);
 		// recover
-		if (st_last_hover_picked.first != -1) {
+		if (st_last_hover_picked.first != uint32_t(-1)) {
 			auto& [last_draw_id, last_vert_id] = st_last_hover_picked;
 
 			auto last_draw_inst = SERVICE_INST->slot_get_drawable_inst(last_draw_id);
 			auto last_mesh_inst = dynamic_pointer_cast<NewMeshDrawable>(last_draw_inst);
 			auto& last_vertices = last_mesh_inst->_vertices();
 
-			last_vertices[last_vert_id].Color = last_vertices[last_vert_id].BufColor;
-
-			auto& last_vert_adj = MeshDrawableExtManager::get_mesh_ext(last_draw_id)->m_vert_adj;
-			
-			for (auto& adj : last_vert_adj[last_vert_id]) {
-				last_vertices[adj].Color = last_vertices[adj].BufColor;
+			auto& last_mesh_ext = MeshDrawableExtManager::get_mesh_ext(last_draw_id);
+			if (last_mesh_ext != nullptr) {
+				auto& last_vert_adj = last_mesh_ext->m_vert_adj;
+				last_vertices[last_vert_id].Color = last_vertices[last_vert_id].BufColor;
+				
+				for (auto& adj : last_vert_adj[last_vert_id]) {
+					last_vertices[adj].Color = last_vertices[adj].BufColor;
+				}
+				last_mesh_inst->get_ready();
 			}
-			last_mesh_inst->get_ready();
 		}
 
 		st_last_hover_picked = make_pair(draw_id, vertex_id);
@@ -179,8 +180,9 @@ namespace ToothSpace {
 		// show tooltip
 		/// [TODO] only show curvature_mean
 		auto& mesh_ext = MeshDrawableExtManager::get_mesh_ext(draw_id);
-		if (mesh_ext->m_buffers.find("curvature_mean") == mesh_ext->m_buffers.end()) {
+		if (mesh_ext == nullptr || mesh_ext->m_buffers.find("curvature_mean") == mesh_ext->m_buffers.end()) {
 			SERVICE_INST->slot_set_mouse_tooltip("");
+			return; // for new added mesh
 		}
 		else {
 			auto str_v = to_string(mesh_ext->m_buffers["curvature_mean"][vertex_id]);

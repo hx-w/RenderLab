@@ -134,7 +134,7 @@ namespace RenderSpace {
         uint32_t vertex_id = -1;
         
         auto success = m_container->pickcmd(
-            Ray(origin, direction), draw_id, vertex_id, m_window->gizmo.getTransform(), 5e-2
+            Ray(origin, direction), draw_id, vertex_id, m_window->gizmo.getTransform(), 1e-1
         );
 
         if (success) {

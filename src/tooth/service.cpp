@@ -60,6 +60,9 @@ namespace ToothSpace {
             bind(&Workspace::pick_vertex_handler, m_workspace.get(), ::placeholders::_1, ::placeholders::_2));
         m_autobus->subscribe<void(vector<vector<geometry::Point3f>>&, const std::pair<int, int>&)>(SignalPolicy::Sync, "GUI/send_nurbs_points_pack",
             bind(&Workspace::compute_nurbs_reverse, m_workspace.get(), ::placeholders::_1, ::placeholders::_2));
+
+        m_autobus->subscribe<void(const vector<uint32_t>&)>(SignalPolicy::Sync, "GUI/generate_depth",
+            bind(&Workspace::generate_depth, m_workspace.get(), ::placeholders::_1));
     }
 
     void ToothService::slot_add_log(string&& type, const string& msg) {
@@ -124,5 +127,10 @@ namespace ToothSpace {
     void ToothService::slot_set_mouse_tooltip(const string& tooltip) {
         auto _service = ContextHub::getInstance()->getServiceTable<void(const string&)>();
         _service->sync_invoke("GUI/set_mouse_tooltip", tooltip);
+    }
+
+    uint32_t ToothService::slot_get_current_flow_id() {
+        auto _service = ContextHub::getInstance()->getServiceTable<uint32_t()>();
+        return _service->sync_invoke("GUI/get_current_flow_id");
     }
 }

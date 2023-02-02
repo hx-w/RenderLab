@@ -17,10 +17,11 @@
 namespace ToothSpace {
 	class ToothPack;
 
-#define PY_INITENV_MODULE  "scripts.py_env_checker"
-#define PY_LOADPROJ_MODULE "scripts.py_load_project"
-#define PY_PALETTE_MODULE  "scripts.py_mesh_palette"
-#define PY_NURBS_MODULE    "scripts.py_nurbs_toolkit"
+#define PY_INITENV_MODULE    "scripts.py_env_checker"
+#define PY_LOADPROJ_MODULE   "scripts.py_load_project"
+#define PY_PALETTE_MODULE    "scripts.py_mesh_palette"
+#define PY_NURBS_MODULE      "scripts.py_nurbs_toolkit"
+#define PY_TOOTHDEPTH_MODULE "scripts.py_tooth_depth"
 
 #define PY_REQUIREMENTS ("trimesh", "toml", "matplotlib")
 
@@ -65,6 +66,18 @@ namespace ToothSpace {
 		std::vector<float>& /* knots [out] */
 	);
 
+	void compute_tooth_depth_GT(
+		const std::vector<uint32_t>& /* meshes_id */,
+		std::shared_ptr<ToothPack>,
+		std::vector<float>& /* depth value for face1 [out] */
+	);
+
+	void compute_tooth_depth_ML(
+		const std::vector<uint32_t>& /* meshes_id */,
+		std::shared_ptr<ToothPack>,
+		std::vector<float>& /* depth value for face1 [out] */
+	);
+
 	/**
 	 * Active stage for Nodes.
 	 * called in workspace, invoked from GUI actions
@@ -72,6 +85,21 @@ namespace ToothSpace {
 
 	/// [preprocess]
 	void action_node_1(std::shared_ptr<ToothPack> /* tpack */);
+
+	/// [pmtr_nurbs]
+	void action_node_2(std::shared_ptr<ToothPack> /* tpack */);
+
+	/// [pmtr_remesh]
+	void action_node_3(std::shared_ptr<ToothPack> /* tpack */);
+
+	/// [generator_GT]
+	void action_node_4(std::shared_ptr<ToothPack> /* tpack */);
+	
+	/// [generator_ML]
+	void action_node_5(std::shared_ptr<ToothPack> /* tpack */);
+	
+	/// [postprecess]
+	void action_node_6(std::shared_ptr<ToothPack> /* tpack */);
 }
 
 

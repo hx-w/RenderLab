@@ -96,6 +96,9 @@ namespace RenderSpace {
 				v.Color = clr;
 			}
 		}
+        else if (property == "topo_shape") {
+            m_drawables[id]->topo_shape = any_cast<pair<int, int>>(value);
+        }
 		else {
 			return false;
 		}

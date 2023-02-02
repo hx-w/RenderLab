@@ -104,6 +104,11 @@ namespace GUISpace {
 			m_symbol + "/set_mouse_tooltip",
 			bind(&GUISpace::Zmo::set_mouse_tooltip, ::placeholders::_1)
 			);
+		
+		m_autobus->registerMethod<uint32_t()>(
+			m_symbol + "/get_current_flow_id",
+			bind(&GUISpace::ProjectPanel::get_current_flow_id)
+		);
 	}
 
 	/// [sync invoke] -> render/load_mesh

@@ -294,6 +294,81 @@ namespace ToothSpace {
 		}
 	}
 
+	void compute_tooth_depth_GT(
+		const vector<uint32_t>& mshes_id,
+		shared_ptr<ToothPack> tpack,
+		vector<float>& depth
+	) {
+		auto id_to_mesh = [](uint32_t id) -> shared_ptr<NewMeshDrawable> {
+			auto draw_inst = SERVICE_INST->slot_get_drawable_inst(id);
+			return dynamic_pointer_cast<NewMeshDrawable>(draw_inst);
+		};
+
+		vector<shared_ptr<NewMeshDrawable>> mshes;
+		for (auto _id : mshes_id) {
+			mshes.emplace_back(id_to_mesh(_id));
+		}
+
+		// init depth to all zero
+		vector<float>(mshes[0]->_vertices().size(), 0.f).swap(depth);
+
+		// topo shape for remeshed
+		auto topo_shape = mshes[0]->topo_shape;
+
+		if (topo_shape.first == 0 || topo_shape.first * topo_shape.second != depth.size()) {
+			clog << "err!!! not a valid remeshed mesh" << endl;
+			return;
+		}
+
+		auto _py_pkg = py::module_::import(PY_TOOTHDEPTH_MODULE);
+
+		// construct params
+		auto _py_args_1 = py::list{};
+		for (auto msh : mshes) {
+			py::array verts, faces;
+			vector_to_numpy(msh->_raw()->get_vertices(), verts);
+			vector_to_numpy(msh->_raw()->get_faces(), faces);
+
+			_py_args_1.append(verts);
+			_py_args_1.append(faces);
+		}
+		auto _py_args_2 = py::make_tuple(topo_shape.first, topo_shape.second);
+
+		auto _py_depth = _py_pkg.attr("GeneratorGT").attr("generate_cmd")(
+			_py_args_1, _py_args_2
+		);
+
+		py::print(_py_depth);
+
+		auto _unchecked = _py_depth.cast<py::array_t<double>>().unchecked<1>();
+		auto vsize = depth.size();
+		for (auto ind = 0; ind < vsize; ++ind) {
+			depth[ind] = _unchecked(ind);
+		}
+	}
+
+	void compute_tooth_depth_ML(
+		const vector<uint32_t>& mshes_id,
+		shared_ptr<ToothPack> tpack,
+		vector<float>& depth
+	) {
+		auto id_to_mesh = [](uint32_t id) -> shared_ptr<NewMeshDrawable> {
+			auto draw_inst = SERVICE_INST->slot_get_drawable_inst(id);
+			return dynamic_pointer_cast<NewMeshDrawable>(draw_inst);
+		};
+
+		vector<shared_ptr<NewMeshDrawable>> mshes;
+		for (auto _id : mshes_id) {
+			mshes.emplace_back(id_to_mesh(_id));
+		}
+
+		// init depth to all zero
+		vector<float>(mshes[0]->_vertices().size(), 0.f).swap(depth);
+
+
+		/// [TODO]
+	}
+
 	void action_node_1(shared_ptr<ToothPack> tpack) {
 		auto& meshes_rec = tpack->get_meshes();
 		auto& basedir = tpack->get_basedir();
@@ -347,6 +422,21 @@ namespace ToothSpace {
 		}
 		
 		SERVICE_INST->notify<void(uint32_t)>("/finish_current_stage", tpack->get_context()->flow_id);
+	}
+
+	void action_node_2(shared_ptr<ToothPack> tpack) {
+	}
+
+	void action_node_3(shared_ptr<ToothPack> tpack) {
+	}
+
+	void action_node_4(shared_ptr<ToothPack> tpack) {
+	}
+
+	void action_node_5(shared_ptr<ToothPack> tpack) {
+	}
+
+	void action_node_6(shared_ptr<ToothPack> tpack) {
 	}
 }
 

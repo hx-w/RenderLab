@@ -104,7 +104,20 @@ def update_config(project_path: str, target_files: List[str], force: bool = Fals
             },
             'workflow': {
                 'node_order': [],
-                'context': {}
+                'context': {
+                    '8': {
+                        'Ensure manifolds': True,
+                        'Auto fix position': True
+                    },
+                    '32': {
+                        'Samples U': 5,
+                        'Samples V': 3,
+                        'Assists': True,
+                        'Remesh U': 100,
+                        'Remesh V': 100,
+                        'Weights': 'auto'
+                    }
+                }
             }
         }
     # write config file

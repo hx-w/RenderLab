@@ -24,5 +24,7 @@ namespace GUISpace {
 
 		// add nurbs surface
 		static void register_mesh(const std::string&, uint32_t);
+
+		static uint32_t get_current_flow_id();
 	};
 }

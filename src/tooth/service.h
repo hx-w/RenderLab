@@ -37,6 +37,8 @@ namespace ToothSpace {
 
         uint32_t slot_add_mesh(geometry::Mesh&);
 
+        uint32_t slot_get_current_flow_id();
+
         // to renderer
         void slot_update_transform(const glm::mat4&);
 

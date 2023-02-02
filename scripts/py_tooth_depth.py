@@ -29,7 +29,7 @@ class ToothDepthGenerator(object):
         cls._topo_shape = shape
         cls._thr = thr
 
-        return cls._process(_meshes)
+        return cls._process(_meshes).flatten()
 
     @classmethod
     def _process(cls, meshes: List[Trimesh]) -> np.array:
@@ -106,11 +106,13 @@ class GeneratorGT(ToothDepthGenerator):
 
 
 if __name__ == '__main__':
-    mshes = [trimesh.load(f'N3/face{i}.obj') for i in range(1, 5)]
+    mshes = [trimesh.load(f'test_N3/face{i}.obj') for i in range(1, 5)]
     args = [[msh.vertices, msh.faces] for msh in mshes]
     # flatten args
     args = [item for sublist in args for item in sublist]
     depth_map = GeneratorGT.generate_cmd(args, (100, 100), 0.3)
+
+    print(depth_map)
 
     import matplotlib.pyplot as plt
     plt.imshow(depth_map)

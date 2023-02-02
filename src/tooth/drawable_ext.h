@@ -25,7 +25,14 @@ namespace ToothSpace {
 			const std::string& /* heatmap style */ = ""
 		);
 
+		static void _cache_adj(uint32_t);
+
 		static std::shared_ptr<MeshDrawableExt> get_mesh_ext(uint32_t);
+
+		static void set_mesh_cache(uint32_t, const std::string&, std::vector<float>&);
+
+		// change color by cache
+		static void switch_color_cache(uint32_t, const std::string& /* type */, const std::string& /* style */);
 	};
 }
 

@@ -5,12 +5,17 @@
 #include <pybind11/embed.h>
 #include <pybind11/numpy.h>
 #include <glm/glm.hpp>
+#include "service.h"
+#include "engine.h"
 
 using namespace std;
 using namespace RenderSpace;
 namespace py = pybind11;
 
+
 namespace ToothSpace {
+	#define SERVICE_INST ToothEngine::get_instance()->get_service()
+
 	static map<uint32_t, shared_ptr<MeshDrawableExt>> st_mesh_exts;
 
 
@@ -29,6 +34,32 @@ namespace ToothSpace {
 		}
 		res = py::array_t<T>(shape_1 * shape_2, raw_vec);
 		delete[] raw_vec;
+	}
+
+	void MeshDrawableExtManager::_cache_adj(uint32_t id) {
+		if (st_mesh_exts.find(id) == st_mesh_exts.end()) {
+			st_mesh_exts[id] = make_shared<MeshDrawableExt>();
+		}
+		auto draw_ptr = SERVICE_INST->slot_get_drawable_inst(id);
+		auto msh_ptr = dynamic_pointer_cast<NewMeshDrawable>(draw_ptr);
+
+		/// compute adj
+		const auto& vertices = msh_ptr->_raw()->get_vertices();
+		const auto& faces = msh_ptr->_raw()->get_faces();
+
+		auto& ext = st_mesh_exts[id];
+		ext->m_vert_adj.clear();
+		auto& adj = ext->m_vert_adj;
+
+		adj.resize(vertices.size());
+		for (auto& face : faces) {
+			for (auto i = 0; i < 3; ++i) {
+				if (std::find(adj[face[i]].begin(), adj[face[i]].end(), face[(i + 1) % 3]) == adj[face[i]].end())
+					adj[face[i]].emplace_back(face[(i + 1) % 3]);
+				if (std::find(adj[face[i]].begin(), adj[face[i]].end(), face[(i + 2) % 3]) == adj[face[i]].end())
+					adj[face[i]].emplace_back(face[(i + 2) % 3]);
+			}
+		}
 	}
 
 	void MeshDrawableExtManager::cache_mesh_ext(
@@ -89,30 +120,49 @@ namespace ToothSpace {
 
 		ext->m_buffers[type].clear();
 		ext->m_buffers[type].assign(vec.begin(), vec.end());
-
-		/// compute adj
-		const auto& vertices = msh_ptr->_raw()->get_vertices();
-		const auto& faces = msh_ptr->_raw()->get_faces();
-
-		ext->m_vert_adj.clear();
-		auto& adj = ext->m_vert_adj;
-
-		adj.resize(vertices.size());
-		for (auto& face : faces) {
-			for (auto i = 0; i < 3; ++i) {
-				if (std::find(adj[face[i]].begin(), adj[face[i]].end(), face[(i + 1) % 3]) == adj[face[i]].end())
-					adj[face[i]].emplace_back(face[(i + 1) % 3]);
-				if (std::find(adj[face[i]].begin(), adj[face[i]].end(), face[(i + 2) % 3]) == adj[face[i]].end())
-					adj[face[i]].emplace_back(face[(i + 2) % 3]);
-			}
-		}
-
 		st_mesh_exts[id] = ext;
+
+		_cache_adj(id);
 	}
 
 	shared_ptr<MeshDrawableExt>
 	MeshDrawableExtManager::get_mesh_ext(uint32_t id) {
 		if (st_mesh_exts.find(id) == st_mesh_exts.end()) return nullptr;
 		return st_mesh_exts.at(id);
+	}
+
+	void MeshDrawableExtManager::set_mesh_cache(uint32_t id, const string& key, vector<float>& cache) {
+		if (st_mesh_exts.find(id) == st_mesh_exts.end()) {
+			st_mesh_exts[id] = make_shared<MeshDrawableExt>();
+			_cache_adj(id);
+		}
+		st_mesh_exts[id]->m_buffers[key].assign(cache.begin(), cache.end());
+	}
+
+	void MeshDrawableExtManager::switch_color_cache(uint32_t id, const string& type, const string& style) {
+		if (st_mesh_exts.find(id) == st_mesh_exts.end()) return;
+		if (st_mesh_exts[id]->m_buffers.find(type) == st_mesh_exts[id]->m_buffers.end()) return;
+
+		auto draw_ptr = SERVICE_INST->slot_get_drawable_inst(id);
+		if (draw_ptr == nullptr || draw_ptr->_type() != GeomTypeMesh) return;
+		auto msh_ptr = dynamic_pointer_cast<NewMeshDrawable>(draw_ptr);
+		
+		auto _py_pkg = py::module_::import(PY_PALETTE_MODULE);
+
+		auto& cache = st_mesh_exts[id]->m_buffers[type];
+		auto _py_cache = py::array_t<float>(cache.size(), cache.data());
+
+		auto py_clr = _py_pkg.attr("py_mesh_palette")(_py_cache, style);
+		/// convert numpy.ndarray to py::array_t<T>, and uncheck it
+		auto clrs = py_clr.cast<py::array_t<float>>().unchecked<2>();
+
+		auto vert_size = msh_ptr->_raw()->vertices().size();
+
+		auto& vert_prims = msh_ptr->_vertices();
+
+		for (auto ind = 0; ind < vert_size; ++ind) {
+			vert_prims[ind].Color = glm::vec3(clrs(ind, 0), clrs(ind, 1), clrs(ind, 2));
+		}
+		msh_ptr->get_ready();
 	}
 }

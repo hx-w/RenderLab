@@ -41,6 +41,9 @@ namespace ToothSpace {
 		/// compute nurbs reverse by recieved points
 		void compute_nurbs_reverse(std::vector<std::vector<geometry::Point3f>>&, const std::pair<int, int>&);
 
+		/// generate depth from recieved selected meshes id
+		void generate_depth(const std::vector<uint32_t>&);
+
 	private:
 		int _gen_wkflow_id();
 

@@ -110,18 +110,24 @@ namespace ToothSpace {
 			action_node_1(tpack);
 			break;
 		case NodeId_2:
+			/// pick mode change
+			action_node_2(tpack);
 			// pmtr_nurbs
 			break;
 		case NodeId_3:
+			action_node_3(tpack);
 			// pmtr_remesh
 			break;
 		case NodeId_4:
+			action_node_4(tpack);
 			// generate_GT
 			break;
 		case NodeId_5:
+			action_node_5(tpack);
 			// generate_ML
 			break;
 		case NodeId_6:
+			action_node_6(tpack);
 			// postprocess
 			break;
 		default:
@@ -180,15 +186,27 @@ namespace ToothSpace {
 		// show tooltip
 		/// [TODO] only show curvature_mean
 		auto& mesh_ext = MeshDrawableExtManager::get_mesh_ext(draw_id);
-		if (mesh_ext == nullptr || mesh_ext->m_buffers.find("curvature_mean") == mesh_ext->m_buffers.end()) {
+
+		// if has depth, show depth
+		if (mesh_ext == nullptr) {
 			SERVICE_INST->slot_set_mouse_tooltip("");
-			return; // for new added mesh
+			return;
 		}
-		else {
+		if (mesh_ext->m_buffers.find("depth_GT") != mesh_ext->m_buffers.end()) {
+			auto str_v = to_string(mesh_ext->m_buffers["depth_GT"][vertex_id]);
+			SERVICE_INST->slot_set_mouse_tooltip(
+				"depth: " + str_v
+			);
+		}
+		else if (mesh_ext->m_buffers.find("curvature_mean") != mesh_ext->m_buffers.end()) {
 			auto str_v = to_string(mesh_ext->m_buffers["curvature_mean"][vertex_id]);
 			SERVICE_INST->slot_set_mouse_tooltip(
 				"curv(mean): " + str_v
 			);
+		}
+		else {
+			SERVICE_INST->slot_set_mouse_tooltip("");
+			return;
 		}
 
 		auto draw_inst = SERVICE_INST->slot_get_drawable_inst(draw_id);
@@ -305,13 +323,46 @@ namespace ToothSpace {
 			auto mesh = geometry::Mesh(vertices, faces);
 
 			auto mesh_id = SERVICE_INST->slot_add_mesh(mesh);
+
+			// add topo shape
+			SERVICE_INST->slot_set_drawable_property(mesh_id, "topo_shape", sample_rate);
+
 			// show in proj panel
-			SERVICE_INST->notify<void(const string&, uint32_t)>("/register_mesh_to_current_proj", "remeshed(nurbs)", mesh_id);
+			SERVICE_INST->notify<void(const string&, uint32_t)>("/register_mesh_to_current_proj", string("remeshed(nurbs) - ") + to_string(mesh_id), mesh_id);
+
+
+			/// current state NodeId_2
+			/// go next state
+			auto flow_id = SERVICE_INST->slot_get_current_flow_id();
+			SERVICE_INST->notify<void(uint32_t)>("/finish_current_stage", flow_id);
 		}
 		else {
 			// nurbs not valid
 			SERVICE_INST->slot_add_log("error", "nurbs surface is invalid");
 		}
+	}
+
+	void Workspace::generate_depth(const vector<uint32_t>& mshes_id) {
+		auto flow_id = SERVICE_INST->slot_get_current_flow_id();
+		auto tpack = _find_tpack(flow_id);
+
+		vector<float> depth;
+		if (tpack->get_context()->proj_t == Proj_CBCT) {
+			if (mshes_id.size() != 4) return;
+			compute_tooth_depth_GT(mshes_id, tpack, depth);
+
+		}
+		else if (tpack->get_context()->proj_t == Proj_IOS){
+			if (mshes_id.size() != 2) return;
+			/// [TODO]
+		}
+		else {
+			assert(false);
+		}
+
+		/// [DEBUG] change color
+		MeshDrawableExtManager::set_mesh_cache(mshes_id[0], "depth_GT", depth);
+		MeshDrawableExtManager::switch_color_cache(mshes_id[0], "depth_GT", "viridis");
 
 	}
 }

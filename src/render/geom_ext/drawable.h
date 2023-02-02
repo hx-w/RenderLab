@@ -51,6 +51,8 @@ namespace RenderSpace {
 
         std::vector<VertexPrimitive>& _vertices() { return m_vertices; }
 
+        std::pair<int, int> topo_shape = std::make_pair(0, 0);
+
     protected:
         void _init_buffer();
         virtual void _draw() = 0;

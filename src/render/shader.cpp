@@ -5,6 +5,8 @@
 #include <iostream>
 #include <sstream>
 
+using namespace RenderSpace;
+
 void Shader::fromFile(const std::string& vertexPath,
                       const std::string& fragmentPath,
                       const std::string& geometryPath) {

@@ -1,22 +1,37 @@
 ﻿#include "xwindow.h"
 #include "service.h"
+#include "context.h"
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 #include <iostream>
+#include <chrono>
 
 using namespace std;
 
 namespace RenderSpace {
-    RenderWindowWidget::RenderWindowWidget(unsigned int width, unsigned int height, shared_ptr<RenderService> service) {
-        init(width, height, service);
+    time_t get_timestamp() {
+        auto tp = chrono::time_point_cast<chrono::milliseconds>(chrono::system_clock::now());
+        return tp.time_since_epoch().count();
     }
 
-    void RenderWindowWidget::init(unsigned int width, unsigned int height, shared_ptr<RenderService> service) {
-        m_scr_width = width;
-        m_scr_height = height;
-        m_service = service;
-        lastX = width * 1.0 / 2;
-        lastY = height * 1.0 / 2;
+    void RenderWindowWidget::init_context(std::shared_ptr <RenderContext> ctx) {
+        m_context = ctx;
+        init(m_context->service());
+    }
 
-        m_service->notify_window_resize(width, height);
+    void RenderWindowWidget::init(shared_ptr<RenderService> service) {
+        m_service = service;
+
+        auto _keys = {
+            GLFW_KEY_H, GLFW_KEY_T, GLFW_KEY_LEFT_CONTROL, GLFW_KEY_R,
+            GLFW_KEY_DELETE, GLFW_KEY_BACKSPACE
+        };
+
+        for (auto _k : _keys) {
+            m_key_last_active[_k] = 0;
+        }
+
+        imguiGizmo::setGizmoFeelingRot(1.2f);
     }
 
     RenderWindowWidget::~RenderWindowWidget() {
@@ -26,6 +41,20 @@ namespace RenderSpace {
     // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
     // ---------------------------------------------------------------------------------------------------------
     void RenderWindowWidget::processInput(GLFWwindow* window) {
+        for (auto& [_k, _tp] : m_key_last_active) {
+            if (glfwGetKey(window, _k) == GLFW_PRESS) {
+                _tp = get_timestamp();
+            }
+            if (glfwGetKey(window, _k) == GLFW_RELEASE) {
+                // check press duration time [ <= 700ms ]
+                if (get_timestamp() - _tp <= 700) {
+                    /// [Notify]
+                    m_service->notify<void(int)>("/keyboard_clicked", _k);
+                    _tp = 0;
+                }
+            }
+        }
+
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
         float cameraMove = cameraSpeed * deltaTime;
@@ -37,46 +66,19 @@ namespace RenderSpace {
             cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraMove;
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
             cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraMove;
-        if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS) {
-            if (!H_down) {
-                H_down = !H_down;
-                show_gui = !show_gui;
-            } 
-        }
-        if (glfwGetKey(window, GLFW_KEY_H) == GLFW_RELEASE) {
-            H_down = false;
-        }
-        if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) {
-            if (!T_down) {
-                T_down = !T_down;
-                T_EventHandler();
-            } 
-        }
-        if (glfwGetKey(window, GLFW_KEY_T) == GLFW_RELEASE) {
-            T_down = false;
-        }
-        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-            CTRL_down = true;
-        }
-        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_RELEASE) {
-            CTRL_down = false;
-        }
-        if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
-            if (!R_down) {
-                R_down = !R_down;
-                if (CTRL_down) {
-                    m_service->notify_clear_picking();
-                }
-            }
-        }
-        if (glfwGetKey(window, GLFW_KEY_R) == GLFW_RELEASE) {
-            R_down = false;
-        }
         if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
             cameraPos -= cameraMove * glm::vec3(0.0f, 1.0f, 0.0f);
         }
         if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
             cameraPos += cameraMove * glm::vec3(0.0f, 1.0f, 0.0f);
+        }
+        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+            key_down_GTRL = true;
+        }
+        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_RELEASE) {
+            if (key_down_GTRL)
+                m_context->ctx_notify<void(uint32_t, uint32_t)>("/picked_vertex", -1, -1);
+            key_down_GTRL = false;
         }
     }
 
@@ -87,7 +89,12 @@ namespace RenderSpace {
         // height will be significantly larger than specified on retina displays.
         m_scr_width = width;
         m_scr_height = height;
-        m_service->notify_window_resize(m_scr_width, m_scr_height);
+        glViewport(0, 0, m_scr_width, m_scr_height);
+        /// [TODO] window resize notify
+
+        gizmo.viewportSize(width, height);
+        gizmo.setDollyScale(1.0f / (width > height ? height : width));
+        gizmo.setPanScale(1.0f / (width > height ? height : width));
     }
 
     // glfw: whenever the mouse moves, this callback is called
@@ -97,6 +104,14 @@ namespace RenderSpace {
         float ypos = static_cast<float>(yposIn);
         realX = xpos;
         realY = ypos;
+
+        /// hover pick
+        if ((interact_mode & HoverPickMode) && key_down_GTRL) {
+			glm::vec3 direction(0.0);
+			pickingRay(glm::vec2(realX, realY), direction);
+			m_context->ctx_pick_vertex(cameraPos, direction);
+        }
+
         if (!leftMousePressed)
             return;
 
@@ -124,10 +139,11 @@ namespace RenderSpace {
         if (pitch < -89.0f)
             pitch = -89.0f;
 
-        glm::vec3 front;
-        front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-        front.y = sin(glm::radians(pitch));
-        front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+        glm::vec3 front(
+            cos(glm::radians(yaw)) * cos(glm::radians(pitch)),
+            sin(glm::radians(pitch)),
+            sin(glm::radians(yaw)) * cos(glm::radians(pitch))
+        );
         cameraFront = glm::normalize(front);
     }
 
@@ -142,6 +158,9 @@ namespace RenderSpace {
     }
 
     void RenderWindowWidget::mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+        /// [Notify] render/mouse_event
+        m_service->notify<void(int, int)>("/mouse_event", button, action);
+
 	    if (action == GLFW_PRESS) {
             switch(button) {
 			case GLFW_MOUSE_BUTTON_LEFT:
@@ -160,15 +179,17 @@ namespace RenderSpace {
             switch(button) {
 			case GLFW_MOUSE_BUTTON_LEFT:
                 leftMousePressed = false;
-                if (CTRL_down) {
+                if ((interact_mode & ClickPickMode) && key_down_GTRL) {
                     glm::vec3 direction(0.0);
                     pickingRay(glm::vec2(realX, realY), direction);
-                    m_service->ray_pick(cameraPos, direction);
+                    /// [TODO] picking ray notify
+                    m_context->ctx_pick_points(cameraPos, direction, false);
                 }
 				break;
 			case GLFW_MOUSE_BUTTON_MIDDLE:
 				break;
 			case GLFW_MOUSE_BUTTON_RIGHT:
+                
 				break;
 			default:
 				return;
@@ -176,8 +197,12 @@ namespace RenderSpace {
         }
     }
 
-    void RenderWindowWidget::T_EventHandler() {
-        // TODO
+    void RenderWindowWidget::dropfile_callback(GLFWwindow* window, int count, const char** paths) {
+        for (int i = 0; i < count; ++i) {
+            // recive files dropin
+            auto path = string(paths[i]);
+            m_service->notify<void(const string&)>("/filepath_dropin", path);
+        }
     }
 
     void RenderWindowWidget::pickingRay(glm::vec2 screen_pos, glm::vec3& direction) {
@@ -212,5 +237,16 @@ namespace RenderSpace {
         front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
         cameraPos = center - front * max_size * 1.5f;
         cameraFront = front;
+    }
+
+    void RenderWindowWidget::set_interact_mode(InteractMode mode) {
+        interact_mode = mode;
+    }
+
+    void RenderWindowWidget::update_transform_mat(const mat4& transf) {
+        auto transl = glm::vec3(transf[3]);
+        cameraPos = -transl + glm::vec3(0.f, 0.f, 15.f);
+        gizmo.setRotationCenter(transl);
+        lightPos = cameraPos - glm::vec3(3.f, 3.f, 0.f);
     }
 }

@@ -8,6 +8,7 @@
 
 
 #include <glm/glm.hpp>
+#include <numeric>
 
 namespace geometry {
     using Point3d = glm::dvec3;
@@ -20,6 +21,22 @@ namespace geometry {
     using Vector2d = glm::dvec2;
     using Vector2f = glm::vec2;
     using Vector2u = glm::uvec2;
+
+    using BBOX = std::pair<Vector3f, Vector3f>;
+
+    const static BBOX default_bbox{
+        Vector3f(std::numeric_limits<float>::max()),
+        Vector3f(-std::numeric_limits<float>::max())
+    };
+
+
+    using Mat4f = glm::mat4;
+
+    class GeometryBase {
+    public:
+        GeometryBase() = default;
+        virtual ~GeometryBase() = default;
+    };
 
     class Line;
     class Ray;

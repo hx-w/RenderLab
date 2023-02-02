@@ -6,7 +6,6 @@
 #include <set>
 #include "../glm_ext/curvature.hpp"
 #include "../glm_ext/ray.hpp"
-#include "../imgui_ext/logger.h"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -422,7 +421,7 @@ int Drawable::pick_cmd(const glm::vec3& pos, const glm::vec3& dir, float dist) {
     if (picked != -1) {
         m_picked_vertices.emplace_back(picked);
         m_vertices[picked].Color = glm::vec3(1.0f, 0.0f, 0.0f);
-        imgui_ext::Logger::log(string("picked vertex: ") + to_string(picked), imgui_ext::LOG_INFO);
+        // imgui_ext::Logger::log(string("picked vertex: ") + to_string(picked), imgui_ext::LOG_INFO);
         ready_to_update();
     }
     return picked;

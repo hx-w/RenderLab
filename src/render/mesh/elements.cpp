@@ -6,11 +6,10 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include "../imgui_ext/logger.h"
 #include "../executor.h"
 
+
 using namespace std;
-using namespace imgui_ext;
 
 #define _REMESH_COMMAND_FORMAT string("python3 scripts/remesh/run.py --input %s --output %s")
 
@@ -24,7 +23,7 @@ namespace RenderSpace {
         _ready_to_update = false;
         ifstream ifs(filename);
         if (!ifs.good()) {
-            Logger::log("Failed to open file: " + filename, imgui_ext::LOG_ERROR);
+            // Logger::log("Failed to open file: " + filename, imgui_ext::LOG_ERROR);
             return false;
         }
         m_filename = filename;
@@ -80,7 +79,7 @@ namespace RenderSpace {
     bool MeshDrawable::save_OBJ(const string& filename) {
         ofstream ofs(filename);
         if (!ofs.good()) {
-            Logger::log("Failed to open file: " + filename, imgui_ext::LOG_ERROR);
+            // Logger::log("Failed to open file: " + filename, imgui_ext::LOG_ERROR);
             return false;
         }
         for (int i = 0; i < m_vertices.size(); ++i) {
@@ -155,7 +154,7 @@ namespace RenderSpace {
 
     bool MeshDrawable::_remesh_check() const {
         if (m_picked_vertices.size() != 4) {
-            Logger::log("picked vertices size != 4", imgui_ext::LOG_ERROR);
+            // Logger::log("picked vertices size != 4", imgui_ext::LOG_ERROR);
             return false;
         }
         return true;

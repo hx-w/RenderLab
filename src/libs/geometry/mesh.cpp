@@ -1,34 +1,56 @@
 #include <iostream>
 #include <fstream>
 #include <functional>
+#include <fstream>
+#include <sstream>
+
 #include "mesh.h"
+
+using namespace std;
 
 namespace geometry {
 
-    Mesh Mesh::load_obj(const std::string& filename, bool& status) {
+    Mesh Mesh::load_obj(const std::string& filename, int& status) {
         std::ifstream file(filename);
         if (!file.is_open()) {
-            std::cout << "Error: cannot open file " << filename << std::endl;
+            std::cerr << "Error: cannot open file " << filename << std::endl;
             status = false;
             return Mesh();
         }
-        std::string line;
 
         std::vector<Point3f> vertices;  
-        std::vector<glm::uvec3> faces;
-    
-        while (std::getline(file, line)) {
-            if (line[0] == 'v') {
-                float x, y, z;
-                sscanf(line.c_str(), "v %f %f %f", &x, &y, &z);
-                vertices.emplace_back(Point3f(x, y, z));
-            } else if (line[0] == 'f') {
-                uint32_t a, b, c;
-                sscanf(line.c_str(), "f %d %d %d", &a, &b, &c);
-                faces.emplace_back(glm::uvec3(a - 1, b - 1, c - 1));
-            }
+        std::vector<Vector3u> faces;
+
+        string line;
+
+        status = 0;
+        try {
+			while (getline(file, line)) {
+				if (line.empty()) {
+					continue;
+				}
+				if (line[0] == '#') {
+					continue;
+				}
+				vector<string> words;
+				_split_words(line, words, ' ');
+
+				if (words[0] == "v") {
+					vertices.emplace_back(Point3f(stof(words[1]), stof(words[2]), stof(words[3])));
+				}
+				else if (words[0] == "f") {
+					faces.emplace_back(Vector3f(
+						stof(words[1]) - 1, stof(words[2]) - 1, stof(words[3]) - 1
+					));
+				}
+			}
+            status = 2;
         }
-        status = true;
+        catch (exception& e) {
+            clog << "load mesh err: " << e.what() << endl;
+        }
+
+        file.close();
         return Mesh(vertices, faces);
     }
 
@@ -41,6 +63,11 @@ namespace geometry {
         return _h;
     }
 
-
-
+    void Mesh::_split_words(const string& line, vector<string>& words, char delim) {
+        stringstream ss(line);
+        string word = "";
+        while (getline(ss, word, delim)) {
+            words.emplace_back(word);
+        }
+    }
 }

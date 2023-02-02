@@ -1,40 +1,19 @@
 ﻿#include "service.h"
 
-#include <iostream>
 #include <thread>
-
-#include <imgui.h>
-#include <imgui_impl_glfw.h>
-#include <imgui_impl_opengl3.h>
-#include "imgui_ext/logger.h"
-#include "imgui_ext/mesh_viewer.h"
-#include "imgui_ext/controller.h"
+#include <communication/ContextHub.h>
 
 #include "xwindow.h"
+#include "context.h"
 
 using namespace std;
+using namespace geometry;
 using namespace fundamental;
-using namespace imgui_ext;
 
 namespace RenderSpace {
     RenderService::RenderService():
         m_autobus(make_unique<AutoBus>()) {
-        setup();
-        // render background
-        m_background_mesh = make_shared<MeshDrawable>("_background", DrawableType::DRAWABLE_TRIANGLE);
-        m_background_mesh->set_shader(m_shaders[1]);
-        m_background_mesh->add_triangle_raw(
-            Vertex(glm::vec3(-1.0f, 0.0f, -1.0f), glm::vec3(0.0f), glm::vec3(0.0f)),
-            Vertex(glm::vec3(1.0f, 0.0f, -1.0f), glm::vec3(0.0f), glm::vec3(0.0f)),
-            Vertex(glm::vec3(-1.0f, 0.0f, 1.0f), glm::vec3(0.0f), glm::vec3(0.0f))
-        );
-        m_background_mesh->add_triangle_raw(
-            Vertex(glm::vec3(1.0f, 0.0f, 1.0f), glm::vec3(0.0f), glm::vec3(0.0f)),
-            Vertex(glm::vec3(-1.0f, 0.0f, 1.0f), glm::vec3(0.0f), glm::vec3(0.0f)),
-            Vertex(glm::vec3(1.0f, 0.0f, -1.0f), glm::vec3(0.0f), glm::vec3(0.0f))
-        );
-        m_background_mesh->set_shade_mode(GL_FILL);
-        m_background_mesh->ready_to_update();
+        _register_all();
     }
 
     RenderService::~RenderService() {
@@ -46,124 +25,56 @@ namespace RenderSpace {
         }
     }
 
-    void RenderService::setup() {
-        // 初始化 shader
-        string shader_dir = "./resource/shader/";
-#ifdef _WIN32
-        shader_dir = ".\\resource\\shader\\";
-#endif
-        m_shaders.emplace_back(shader_dir + "default.vs", shader_dir + "default.fs");
-        m_shaders.emplace_back(shader_dir + "background.vs", shader_dir + "background.fs");
-
-        // 如果逻辑线程计算太快，可能在下面方法注册前调用，会出错
-        // 模块间通讯
-        // m_autobus->registerMethod<int(const string&, int)>(
-        //     m_symbol + "/create_mesh",
-        //     [this](const string& name, int drawable_type)->int {
-        //         return create_mesh(name, static_cast<DrawableType>(drawable_type));
-        //     });
-
-        // m_autobus->registerMethod<void(int, array<Point, 3>&&)>(
-        //     m_symbol + "/add_vertex_raw",
-        //     [this](int mesh_id, array<Point, 3>&& coords) {
-        //         this->add_vertex_raw(mesh_id, std::move(coords));
-        //     });
-
-        // m_autobus->registerMethod<void(int, array<Point, 6>&&)>(
-        //     m_symbol + "/add_edge_raw",
-        //     [this](int mesh_id, array<Point, 6>&& coords) {
-        //         this->add_edge_raw(mesh_id, std::move(coords));
-        //     });
-
-        // // { Point1, Color1, Normal1, Point2, Color2, Normal2, Point3, Color3, Normal3 }
-        // m_autobus->registerMethod<void(int, array<Point, 9>&&)>(
-        //     m_symbol + "/add_triangle_raw",
-        //     [this](int mesh_id, array<Point, 9>&& coords) {
-        //         this->add_triangle_raw(mesh_id, std::move(coords));
-        //     });
-
-        // m_autobus->registerMethod<void(int)>(
-        //     m_symbol + "/refresh_mesh",
-        //     [this](int mesh_id) {
-        //         this->refresh(mesh_id);
-        //     });
-        
-        // m_autobus->registerMethod<void(int)>(
-        //     m_symbol + "/delete_mesh",
-        //     [this](int mesh_id) {
-        //         this->delete_mesh(mesh_id);
-        //     });
+    void RenderService::init_context(std::shared_ptr<RenderContext> ctx) {
+        m_context = ctx;
     }
 
-    void RenderService::register_methods() {
-    }
-
-    void RenderService::update_win(shared_ptr<RenderWindowWidget> win) {
-        m_win_widget = win;
-    }
-
-    void RenderService::ray_pick(const glm::vec3& ori, const glm::vec3& dir) {
-        for (auto& [id, ptr]: m_meshes_map) {
-            ptr->pick_cmd(ori, dir, 1e-1f);
-        }
-    }
-
-    void RenderService::notify_clear_picking() {
-        auto _event = ContextHub::getInstance()->getEventTable<void()>();
-        _event->notify(m_symbol + "/clear_picking");
-    }
-
-    void RenderService::notify_window_resize(uint32_t width, uint32_t height) {
-    }
-
-    void RenderService::draw_all() {
-        for (auto& [id, ptr]: m_meshes_map) {
-            ptr->draw();
-        }
-        m_background_mesh->draw();
-    }
-
-    void RenderService::update() {
-        // delete stack
-        std::lock_guard<std::mutex> lock(m_mutex);
-        while (!m_wait_deleted.empty()) {
-            int id = m_wait_deleted.top(); m_wait_deleted.pop();
-            m_meshes_map.erase(id);
-        }
-        for (auto& [id, ptr]: m_meshes_map) {
-            ptr->sync();
-        }
-        m_background_mesh->sync();
-    }
-
-    void RenderService::refresh(int mesh_id) {
-        if (m_meshes_map.find(mesh_id) == m_meshes_map.end()) {
-            return;
-        }
-        Logger::log("refresh mesh: " + m_meshes_map[mesh_id]->get_name() + "(" + to_string(mesh_id) + ")");
-        m_meshes_map[mesh_id]->ready_to_update();
-    }
-
-    void RenderService::delete_mesh(int mesh_id) {
-        if (m_meshes_map.find(mesh_id) == m_meshes_map.end()) {
-            return;
-        }
-        std::lock_guard<std::mutex> lock(m_mutex);
-        m_wait_deleted.push(mesh_id);
-    }
-
-    int RenderService::create_mesh(const string& name, DrawableType type) {
-        int _id = gen_id();
-        auto new_mesh = make_shared<MeshDrawable>(name + "-" + to_string(_id), type);
-        new_mesh->set_shader(m_shaders[0]);
-        m_meshes_map[_id] = new_mesh;
-        Logger::log("create mesh: " + name + "(" + to_string(_id) + ")");
-        return _id;
-    }
-
-    int RenderService::gen_id() {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        return m_id_gen++;
+    void RenderService::_register_all() {
+        /// @brief load_mesh
+        m_autobus->registerMethod<uint32_t(const string&)>(
+            m_symbol + "/load_mesh",
+            [this](const string& file_path) -> uint32_t {
+                return m_context->ctx_load_drawable(file_path);
+            }
+        );
+        m_autobus->registerMethod<bool(uint32_t)>(
+            m_symbol + "/remove_drawable",
+            [this](uint32_t draw_id) -> bool {
+                return m_context->ctx_remove_drawable(draw_id);
+            }
+        );
+        /// @brief get drawble instance
+        ///       THIS COULD BE DANGEROUS
+        m_autobus->registerMethod<shared_ptr<DrawableBase>(DrawableID)>(
+            m_symbol + "/get_drawable_inst",
+            [this](DrawableID msh_id) {
+                return m_context->ctx_get_drawable(msh_id);
+            }
+        );
+        m_autobus->registerMethod<bool(DrawableID, const string&, const std::any&)>(
+            m_symbol + "/set_drawable_property",
+            [this](DrawableID msh_id, const string& property, const std::any& value) {
+                return m_context->ctx_set_drawable_property(msh_id, property, value);
+            }
+        );
+        m_autobus->registerMethod<void(int)>(
+            m_symbol + "/set_interact_mode",
+            [this](int mode) {
+                m_context->ctx_change_interact_mode(mode);
+            }
+        );
+        m_autobus->registerMethod<DrawableID(shared_ptr<GeometryBase>, Props&, int)>(
+            m_symbol + "/add_geometry",
+            [this](shared_ptr<GeometryBase> geom, Props& props, int type) -> DrawableID {
+                return m_context->ctx_add_drawable(geom, props, type);
+            }
+		);
+        m_autobus->registerMethod<void(const glm::mat4&)>(
+            m_symbol + "/update_transform_mat",
+            [this](const glm::mat4& transf) {
+                m_context->ctx_update_transform_mat(transf);
+            }
+        );
     }
 
     void RenderService::start_thread(string tname, function<void()>&& func) {
@@ -173,38 +84,8 @@ namespace RenderSpace {
         std::cout << "[INFO] thread " << tname << " created" << std::endl;
     }
 
-    void RenderService::imGui_render() {
-        // Start the Dear ImGui frame
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-
-        if (!m_win_widget->show_gui) {
-            ImGui::Render();
-            return;
-        }
-
-        imgui_ext::Controller::render(this);
-        imgui_ext::MeshViewer::render(this, m_meshes_map);
-        imgui_ext::Logger::render();
-
-        // Rendering
-        ImGui::Render();
-    }
-
-    void RenderService::viewfit_mesh(const shared_ptr<Drawable> mesh) {
-        Logger::log("fit view to mesh: " + mesh->get_name());
-        mesh->compute_BBOX();
-        m_win_widget->viewfit_BBOX(mesh->get_BBOX());
-    }
-
-    int RenderService::load_mesh(const string& name, const string& path) {
-        if (path.substr(path.size() - 4, 4) == ".obj") {
-            auto _id = create_mesh(name, DrawableType::DRAWABLE_TRIANGLE);
-            if (m_meshes_map.at(_id)->load_OBJ(path)) {
-                return _id;
-            }
-        }
-        return false;
+    void RenderService::slot_add_log(string&& type, const string& msg) {
+        auto _service = ContextHub::getInstance()->getServiceTable<void(string&&, const string&)>();
+        _service->sync_invoke("GUI/add_log", forward<string&&>(type), msg);
     }
 }

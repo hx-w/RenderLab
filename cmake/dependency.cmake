@@ -1,5 +1,6 @@
 # add dependencies via CPM
 include(${PROJECT_SOURCE_DIR}/cmake/CPM.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/OpenMP.cmake)
 
 # GLAD
 CPMAddPackage(
@@ -28,9 +29,9 @@ CPMAddPackage(
   GITHUB_REPOSITORY glfw/glfw
   GIT_TAG 3.3.8
   OPTIONS
-	"GLFW_BUILD_TESTS Off"
-	"GLFW_BUILD_EXAMPLES Off"
-	"GLFW_BUILD_DOCS Off"
+  "GLFW_BUILD_TESTS Off"
+  "GLFW_BUILD_EXAMPLES Off"
+  "GLFW_BUILD_DOCS Off"
   "GLFW_INSTALL Off"
   "GLFW_USE_HYBRID_HPG On"
 )
@@ -50,6 +51,25 @@ CPMAddPackage(
   NAME GroupSourcesByFolder.cmake
   GITHUB_REPOSITORY TheLartians/GroupSourcesByFolder.cmake
   VERSION 1.0
+)
+
+# get imnodes and build
+CPMAddPackage(
+  NAME imnodes
+  GITHUB_REPOSITORY Nelarius/imnodes
+  VERSION 0.5
+)
+
+CPMAddPackage(
+  NAME imguizmo
+  GITHUB_REPOSITORY BrutPitt/imGuIZMO.quat
+  VERSION 3.0
+)
+
+CPMAddPackage(
+  NAME tinynurbs
+  GITHUB_REPOSITORY hx-w/tinynurbs
+  GIT_TAG v0.1.1
 )
 
 #-----------------------------------------------------------------------------#
@@ -80,7 +100,14 @@ target_include_directories(imgui INTERFACE ${imgui_SOURCE_DIR} ${imgui_SOURCE_DI
 target_compile_definitions(imgui PUBLIC -DIMGUI_DISABLE_OBSOLETE_FUNCTIONS) # optional imgui setting
 set_target_properties(imgui PROPERTIES CXX_STANDARD 17) # use c++17
 
-# set pybind11 include path
-if (APPLE)
-  set(PYTHON_INCLUDE_DIRS "~/opt/anaconda3/include/python3.9")
-endif()
+add_library(imnodes STATIC ${imnodes_SOURCE_DIR}/imnodes.cpp)
+target_link_libraries(imnodes PUBLIC imgui glfw)
+
+add_library(imguizmo STATIC ${imguizmo_SOURCE_DIR}/imGuIZMO.quat/imGuIZMOquat.cpp)
+target_link_libraries(imguizmo PUBLIC imgui glfw glm)
+## !!!important
+target_compile_definitions(imguizmo PUBLIC -DIMGUIZMO_IMGUI_FOLDER=)
+target_compile_definitions(imguizmo PUBLIC -DVGIZMO_USES_GLM=)
+
+# add_library(tinynurbs STATIC ${tinynurbs_SOURCE_DIR}/tests/test_curve.cpp)
+target_link_libraries(tinynurbs INTERFACE glm)

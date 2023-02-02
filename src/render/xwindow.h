@@ -2,29 +2,44 @@
 #define RENDER_WINDOW_H
 
 #include <memory>
+#include <map>
+#include <time.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <GLFW/glfw3.h>
+#include <imGuIZMOquat.h>
 
+struct GLFWwindow;
 namespace RenderSpace {
     typedef std::pair<glm::vec3, glm::vec3> AABB; // min, max
+    enum InteractMode {
+        DefaultMode = 1 << 0,
+        ClickPickMode = 1 << 1,
+        HoverPickMode = 1 << 2
+    };
+
+    enum PickType {
+        PickPoints = 1 << 0,
+        PickVertex = 1 << 1
+    };
 
     class RenderService;
+    class RenderContext;
     class RenderWindowWidget {
     public:
         RenderWindowWidget() = default;
-        RenderWindowWidget(unsigned int width, unsigned int height, std::shared_ptr<RenderService> service);
         ~RenderWindowWidget();
         RenderWindowWidget(const RenderWindowWidget&) = delete;
 
-        void init(unsigned int width, unsigned int height, std::shared_ptr<RenderService> service);
+        void init_context(std::shared_ptr<RenderContext> ctx);
+        void init(std::shared_ptr<RenderService> service);
 
     public:
         void framebuffer_size_callback(GLFWwindow* window, int width, int height);
         void mouse_callback(GLFWwindow* window, double xpos, double ypos);
         void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
         void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+        void dropfile_callback(GLFWwindow* window, int count, const char** paths);
         void processInput(GLFWwindow* window);
 
         void pickingRay(glm::vec2 screen_pos, glm::vec3& direction);
@@ -32,6 +47,10 @@ namespace RenderSpace {
 
         // view control
         void viewfit_BBOX(const AABB& aabb);
+
+        void set_interact_mode(InteractMode);
+
+        void update_transform_mat(const mat4&);
 
     public:
         unsigned int m_scr_width = 800;
@@ -64,18 +83,19 @@ namespace RenderSpace {
         // light
         glm::vec3 lightPos = glm::vec3(0.0f, 0.0f, 0.0f);
         glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
-        
-        // gui
-        bool show_gui = true;
+   
+        // zmo inst
+        vg::vGizmo3D gizmo;
 
     private:
-        bool T_down = false;
-        bool R_down = false;
-        bool H_down = false;
-        bool CTRL_down = false;
-    
+        std::map<int, time_t> m_key_last_active; // for click, only record GLFW_PRESS
+        int interact_mode = ClickPickMode | HoverPickMode;
+        int pick_type = PickPoints | PickVertex;
+
+        bool key_down_GTRL = false;
+
     private:
-        void T_EventHandler();
+        std::shared_ptr<RenderContext> m_context;
     };
 }
 

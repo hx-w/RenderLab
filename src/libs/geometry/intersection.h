@@ -23,4 +23,12 @@ namespace geometry {
         bool
     );
 
+
+    bool intersect_triangle(
+        const Ray&,
+        const geometry::Point3f& v0,
+        const geometry::Point3f& v1,
+        const geometry::Point3f& v2,
+        float* t, float* u, float* v
+    );
 }

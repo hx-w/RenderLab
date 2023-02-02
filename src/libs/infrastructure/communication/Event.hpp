@@ -40,7 +40,9 @@ namespace fundamental {
 
         template<typename... Args>
         std::vector<std::future<void>> notify(const std::string& signal, Args&&... args) {
+#ifdef _DEBUG_
             std::clog << "broadcast signal: " << signal << std::endl;
+#endif
             auto vtrFunc = getFuncs(signal);
             std::vector<std::future<void>> rets;
 

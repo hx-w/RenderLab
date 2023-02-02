@@ -1,11 +1,23 @@
 #include "drawable.h"
+#include "../shader.h"
 
 #include <mesh.h>
-
 #include <glm/glm.hpp>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+
+#include <line.hpp>
+#include <cmath>
+
+#include <imGuIZMOquat.h>
+
+#ifndef __PI__
+#define __PI__ 3.1415926535f
+#endif
+
+using namespace std;
+using namespace geometry;
 
 namespace RenderSpace {
     DrawableBase::~DrawableBase() {
@@ -21,25 +33,27 @@ namespace RenderSpace {
         glGenVertexArrays(1, &m_vao);
         glGenBuffers(1, &m_vbo);
         glGenBuffers(1, &m_ebo);
+
+        m_shade_mode = GL_FILL;
     }
 
     void DrawableBase::draw() {
         std::lock_guard<std::mutex> lock(m_mutex);
-        if (!_ready_to_draw) {
+        if (!m_visible || !_ready_to_draw) {
             return;
         }
-        m_shader.use();
+        m_shader->use();
         glBindVertexArray(m_vao);
 
+		glPointSize(2.0f);
+
         // shader configure
-        ///1. local transform = identity
-        m_shader.setMat4("model", glm::mat4(1.0f));
-        ///2. model offset
-        m_shader.setVec3("offset", m_offset);
-        ///3. shade mode
+        ///1. local transform = identit
+        //m_shader->setMat4("model", mat4_cast(*m_rot) * m_model_transf);
+        ///2. shade mode
         glPolygonMode(GL_FRONT_AND_BACK, m_shade_mode);
-        ///4. randomColor
-        m_shader.setBool("randomColor", false);
+        ///3. randomColor
+        //m_shader->setBool("randomColor", false);
 
         _draw(); // custom draw
 
@@ -90,11 +104,14 @@ namespace RenderSpace {
             m_vertices[i].Normal = glm::normalize(m_vertices[i].Normal);
         }
         m_faces = mesh.get_faces();
+        m_type = GeomType::GeomTypeMesh;
+
+        m_raw = std::make_shared<geometry::Mesh>(mesh);
     }
 
     void NewMeshDrawable::_draw() {
-        m_shader.setBool("ignoreLight", false);
-        glLineWidth(1.0f);
+        m_shader->setBool("ignoreLight", false);
+        glLineWidth(2.0f);
         if (m_ebo != 0 && !m_faces.empty()) {
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
             glDrawElements(GL_TRIANGLES, m_faces.size() * 3, GL_UNSIGNED_INT, 0);
@@ -110,7 +127,7 @@ namespace RenderSpace {
         glBindVertexArray(m_vao);
 
         glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-        glBufferData(GL_ARRAY_BUFFER, m_vertices.size() * vpsize, &m_vertices[0], GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, m_vertices.size() * vpsize, &m_vertices[0], GL_STATIC_DRAW);
         // position attribute
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vpsize, (void*)0);
         glEnableVertexAttribArray(0);
@@ -122,7 +139,100 @@ namespace RenderSpace {
         glEnableVertexAttribArray(2);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_faces.size() * sizeof(geometry::Vector3u), &m_faces[0], GL_DYNAMIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_faces.size() * sizeof(geometry::Vector3u), &m_faces[0], GL_STATIC_DRAW);
     }
 
+    void NewMeshDrawable::_compute_aabb() {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_aabb = geometry::default_bbox;
+
+        const auto& verts = m_raw->get_vertices();
+        for (auto& pnt : verts) {
+            if (pnt.x < m_aabb.first.x) m_aabb.first.x = pnt.x;
+            if (pnt.y < m_aabb.first.y) m_aabb.first.y = pnt.y;
+            if (pnt.z < m_aabb.first.z) m_aabb.first.z = pnt.z;
+            if (pnt.x > m_aabb.second.x) m_aabb.second.x = pnt.x;
+            if (pnt.y > m_aabb.second.y) m_aabb.second.y = pnt.y;
+            if (pnt.z > m_aabb.second.z) m_aabb.second.z = pnt.z;
+        }
+        aabb_valid = true;
+    }
+
+    ArrowDrawable::ArrowDrawable(Ray& ray, float length, Vector3f clr) {
+        auto dir = glm::normalize(ray.get_direction());
+        auto ori = ray.get_origin();
+
+        // https://blog.sina.com.cn/s/blog_6496e38e0102vi7e.html
+
+        // head of the length: 20%
+        auto circle_center = ori + dir * (length * 0.8f);
+        auto ijk = { Vector3f(1.0f, 0.0f, 0.0f), Vector3f(0.0f, 1.0f, 0.0f), Vector3f(0.0f, 0.0f, 1.0f) };
+
+        auto a = Vector3f(0.0f), b = Vector3f(0.0f);
+        // find a valid a, b
+        for (auto& t : ijk) {
+            auto _a = glm::cross(dir, t);
+            if (glm::length(_a) >= 1e-6) {
+				a = glm::normalize(_a);
+				b = glm::normalize(glm::cross(dir, a));
+				break;
+            }
+        }
+
+        // param function
+        auto circle_radius = tanf(30.0f * __PI__ / 180.0f) * (length * 0.2f);
+
+        auto angles = { 0.0f, __PI__ / 2.0f, __PI__, __PI__ * 3.0f / 2.0f };
+        
+        m_vertices.clear();
+        m_vertices.emplace_back(VertexPrimitive(ori, clr, Vector3f(1.0)));
+        m_vertices.emplace_back(VertexPrimitive(ori + dir * length, clr, Vector3f(1.0)));
+
+        for (auto& ang : angles) {
+            auto v = Vector3f(
+                circle_center.x + circle_radius * cosf(ang) * a.x + circle_radius * sinf(ang) * b.x,
+                circle_center.y + circle_radius * cosf(ang) * a.y + circle_radius * sinf(ang) * b.y,
+                circle_center.z + circle_radius * cosf(ang) * a.z + circle_radius * sinf(ang) * b.z
+            );
+            m_vertices.emplace_back(VertexPrimitive(v, clr, Vector3f(0.0)));
+        }
+
+        vector<unsigned int>{0, 1, 2, 1, 3, 1, 4, 1, 5, 1}.swap(m_lines);
+        
+        m_type = GeomTypeArrow;
+        m_raw = std::make_shared<geometry::Ray>(ray);
+    }
+
+    void ArrowDrawable::_update() {
+        if (m_vertices.empty()) return;
+        const auto vpsize = sizeof(VertexPrimitive);
+
+        glBindVertexArray(m_vao);
+
+        glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+        glBufferData(GL_ARRAY_BUFFER, m_vertices.size() * vpsize, m_vertices.data(), GL_STATIC_DRAW);
+        // position attribute
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vpsize, (void*)0);
+        glEnableVertexAttribArray(0);
+        // color
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, vpsize, (void*)offsetof(VertexPrimitive, Color));
+        glEnableVertexAttribArray(1);
+        // normal
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, vpsize, (void*)offsetof(VertexPrimitive, Normal));
+        glEnableVertexAttribArray(2);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_lines.size() * sizeof(unsigned int), m_lines.data(), GL_STATIC_DRAW);
+    }
+
+    void ArrowDrawable::_draw() {
+        m_shader->setBool("ignoreLight", true);
+        glLineWidth(2.0f);
+        if (m_ebo != 0 && !m_lines.empty()) {
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
+            glDrawElements(GL_LINES, m_lines.size(), GL_UNSIGNED_INT, 0);
+        } else {
+            glDrawArrays(GL_LINES, 0, m_vertices.size());
+        }
+    }
 }

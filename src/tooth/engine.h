@@ -3,9 +3,9 @@
 
 #include <mutex>
 #include <set>
-#include "service.h"
 
 namespace ToothSpace {
+    class ToothService;
     // singleton
     // 包括所有service的资源管理
     class ToothEngine {
@@ -16,7 +16,8 @@ namespace ToothSpace {
         ToothEngine& operator=(const ToothEngine&) = delete;
         ~ToothEngine() { terminate(); };
 
-        ToothService* create_service(const std::string& dir, int scale=100);
+        ToothService* create_service();
+        ToothService* get_service(int = 0);
         void destroy_service(ToothService*);
 
     private:
@@ -31,7 +32,7 @@ namespace ToothSpace {
         static std::once_flag m_inited;
     };
 
-    ToothService* make_service(const std::string& dir, int scale=100);
+    ToothService* make_service();
 }
 
 #endif

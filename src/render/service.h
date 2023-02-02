@@ -7,13 +7,13 @@
 #include <unordered_map>
 #include <functional>
 #include <stack>
-#include "xwindow.h"
-#include "shader.h"
-#include "mesh/elements.h"
 #include <communication/AutoBus.hpp>
+#include <communication/ContextHub.h>
+
 
 namespace RenderSpace {
     class RenderWindowWidget;
+    class RenderContext;
 #if defined(_WIN32)
     typedef std::unordered_map<std::string, std::thread::native_handle_type> ThreadMap;
 #else
@@ -25,58 +25,31 @@ namespace RenderSpace {
         RenderService();
         ~RenderService();
 
-        void register_methods();
+        void init_context(std::shared_ptr<RenderContext>);
 
-        void update_win(std::shared_ptr<RenderWindowWidget> win);
-        std::shared_ptr<RenderWindowWidget> get_win() { return m_win_widget; }
+        template <class Func, class ...Args>
+        void notify(const std::string& addr, Args&& ...args) {
+            auto _event = fundamental::ContextHub::getInstance()->getEventTable<Func>();
+            _event->notify(m_symbol + addr, std::forward<Args>(args)...);
+        }
 
-        std::vector<Shader>& get_shaders() { return m_shaders; }
-
-        void draw_all();
-
-        void update();
-
-        void imGui_render();
-
-        void viewfit_mesh(const std::shared_ptr<Drawable> mesh);
-
-        void ray_pick(const glm::vec3& origin, const glm::vec3& direction);
-        void notify_clear_picking(); // refresh all picking ray
-        void notify_window_resize(uint32_t width, uint32_t height);
-
-        // return -1 if failed, *.obj supported
-        int load_mesh(const std::string& name, const std::string& path);
-
-        int create_mesh(const std::string& name, DrawableType type);
-        void delete_mesh(int mesh_id);
-        void refresh(int mesh_id);
+    public:
+        /// [Slots]
+        void slot_add_log(std::string&&, const std::string&);
 
     private:
-        void setup();
-
-        int gen_id();
-
         void start_thread(std::string tname, std::function<void()>&& func);
+        void _register_all();
 
     private:
-        // 网格列表
-        std::unordered_map<int, std::shared_ptr<MeshDrawable>> m_meshes_map;
 
-        // background mesh
-        std::shared_ptr<MeshDrawable> m_background_mesh;
-
-        std::vector<Shader> m_shaders; // [default, background]
-
-        // 交互
-        std::shared_ptr<RenderWindowWidget> m_win_widget;
+        // context
+        std::shared_ptr<RenderContext> m_context;
 
         std::string m_symbol = "render";
         std::unique_ptr<fundamental::AutoBus> m_autobus;
 
-        int m_id_gen = 0;
         std::mutex m_mutex;
-
-        std::stack<int> m_wait_deleted;
 
         // thread manage
         ThreadMap m_thread_map;

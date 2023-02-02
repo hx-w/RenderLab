@@ -34,3 +34,5 @@ jobs:
           path: |
             main.exe
             resource
+            scripts
+            imgui.ini

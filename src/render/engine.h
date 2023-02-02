@@ -1,8 +1,9 @@
 ﻿#ifndef RENDER_ENGINE_H
 #define RENDER_ENGINE_H
 
-#include <mutex>
 #include "renderer.h"
+#include <mutex>
+#include <set>
 
 namespace RenderSpace {
     // singleton

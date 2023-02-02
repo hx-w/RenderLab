@@ -1,3 +1,7 @@
+*.exp
+*.lib
+Debug/
+Release/
 *egg-info/
 dist/
 .idea/
@@ -9,7 +13,7 @@ test*
 freetype/
 freetype_back/
 cmake-build-debug/
-imgui.ini
+# imgui.ini
 *.pdf
 models/
 *.pkl
@@ -66,3 +70,4 @@ __pycache__/
 *.app
 .DS_Store
 build/
+imgui.ini

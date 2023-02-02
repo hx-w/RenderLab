@@ -1,12 +1,12 @@
 ﻿#ifndef RENDERER_H
 #define RENDERER_H
 
-#include "service.h"
-#include "xwindow.h"
-#include "container.h"
+#include <memory>
+#include <GLFW/glfw3.h>
 
 namespace RenderSpace {
     class RenderEngine;
+    class RenderContext;
 
     class Renderer {
     public:
@@ -15,22 +15,22 @@ namespace RenderSpace {
 
         int exec();
     
-        std::shared_ptr<RenderService> get_service();
-
     private:
-        void setup(unsigned int w, unsigned int h);
+        // setup_pre -> init context -> setup_post
+        void setup_pre(unsigned int w, unsigned int h);
+        void setup_post();
         void update_transform();
         void draw();
 
     private:
-        std::shared_ptr<RenderWindowWidget> m_win_widget;
         GLFWwindow* m_window;
     
+        GLuint m_background_vao;
+
     private:
         RenderEngine& m_engine;
-        std::shared_ptr<RenderService> m_service;
 
-        std::shared_ptr<RenderContainer> m_container;
+        std::shared_ptr<RenderContext> m_context;
     };
 }
 

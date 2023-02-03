@@ -90,7 +90,7 @@ namespace RenderSpace {
         m_scr_width = width;
         m_scr_height = height;
         glViewport(0, 0, m_scr_width, m_scr_height);
-        /// [TODO] window resize notify
+        m_context->ctx_notify<void(int, int)>("/window_resized", width, height);
 
         gizmo.viewportSize(width, height);
         gizmo.setDollyScale(1.0f / (width > height ? height : width));

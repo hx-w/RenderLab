@@ -57,6 +57,8 @@ namespace GUISpace {
 			bind(&GUISpace::ProjectPanel::add_picked_nurbs_points, ::placeholders::_1, ::placeholders::_2));
 		m_autobus->subscribe<void(const string&, uint32_t)>(SignalPolicy::Sync, "tooth/register_mesh_to_current_proj",
 			bind(&GUISpace::ProjectPanel::register_mesh, ::placeholders::_1, ::placeholders::_2));
+		m_autobus->subscribe<void(int, int)>(SignalPolicy::Sync, "render/window_resized",
+			bind(&GUISpace::Zmo::set_big_window_size, ::placeholders::_1, ::placeholders::_2));
 	}
 
 	void GUIService::_register_all() {

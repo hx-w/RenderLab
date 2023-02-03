@@ -44,6 +44,8 @@ namespace ToothSpace {
 		/// generate depth from recieved selected meshes id
 		void generate_depth(const std::vector<uint32_t>&);
 
+		void set_heatmap_style(const std::string&);
+
 	private:
 		int _gen_wkflow_id();
 
@@ -54,6 +56,8 @@ namespace ToothSpace {
 
 		// stacked tooth packs
 		std::vector<std::shared_ptr<ToothPack>> _tooth_packs;
+
+		std::string _heatmap_style = "jet";
 	};
 }
 

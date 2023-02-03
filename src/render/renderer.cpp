@@ -27,6 +27,7 @@ namespace RenderSpace {
 		);
 		m_context->window()->m_scr_height = _height;
 		m_context->window()->m_scr_width = _width;
+        m_context->ctx_notify<void(int, int)>("/window_resized", _width, _height);
 		setup_post();
 	}
 

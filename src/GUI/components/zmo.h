@@ -11,5 +11,7 @@ namespace GUISpace {
         );
 
         static void set_mouse_tooltip(const std::string&);
+
+        static void set_big_window_size(int, int);
     };
 }

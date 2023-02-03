@@ -63,6 +63,8 @@ namespace ToothSpace {
 
         m_autobus->subscribe<void(const vector<uint32_t>&)>(SignalPolicy::Sync, "GUI/generate_depth",
             bind(&Workspace::generate_depth, m_workspace.get(), ::placeholders::_1));
+        m_autobus->subscribe<void(const string&)>(SignalPolicy::Sync, "GUI/set_heatmap_style",
+            bind(&Workspace::set_heatmap_style, m_workspace.get(), ::placeholders::_1));
     }
 
     void ToothService::slot_add_log(string&& type, const string& msg) {

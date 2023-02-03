@@ -84,7 +84,7 @@ namespace ToothSpace {
 	 */
 
 	/// [preprocess]
-	void action_node_1(std::shared_ptr<ToothPack> /* tpack */);
+	void action_node_1(std::shared_ptr<ToothPack> /* tpack */, const std::string& /* heatmap style */);
 
 	/// [pmtr_nurbs]
 	void action_node_2(std::shared_ptr<ToothPack> /* tpack */);

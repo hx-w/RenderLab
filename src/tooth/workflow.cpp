@@ -107,7 +107,7 @@ namespace ToothSpace {
 		switch (node) {
 		case NodeId_1:
 			// preprocess
-			action_node_1(tpack);
+			action_node_1(tpack, _heatmap_style);
 			break;
 		case NodeId_2:
 			/// pick mode change
@@ -362,6 +362,13 @@ namespace ToothSpace {
 
 		/// [DEBUG] change color
 		MeshDrawableExtManager::set_mesh_cache(mshes_id[0], "depth_GT", depth);
-		MeshDrawableExtManager::switch_color_cache(mshes_id[0], "depth_GT", "viridis");
+		MeshDrawableExtManager::switch_color_cache(mshes_id[0], "depth_GT", _heatmap_style);
+	}
+
+	void Workspace::set_heatmap_style(const string& _stl) {
+		_heatmap_style = _stl;
+
+		// change exist
+		MeshDrawableExtManager::set_main_color(_stl);
 	}
 }

@@ -33,6 +33,8 @@ namespace ToothSpace {
 
 		// change color by cache
 		static void switch_color_cache(uint32_t, const std::string& /* type */, const std::string& /* style */);
+
+		static void set_main_color(const std::string&);
 	};
 }
 

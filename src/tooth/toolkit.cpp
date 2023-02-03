@@ -373,7 +373,7 @@ namespace ToothSpace {
 		/// [TODO]
 	}
 
-	void action_node_1(shared_ptr<ToothPack> tpack) {
+	void action_node_1(shared_ptr<ToothPack> tpack, const string& style) {
 		auto& meshes_rec = tpack->get_meshes();
 		auto& basedir = tpack->get_basedir();
 		auto& ctx = tpack->get_context();
@@ -419,7 +419,7 @@ namespace ToothSpace {
 		auto showed = false;
 		for (auto& [_, msh_id] : meshes_rec) {
 			if (!showed)
-				show_mesh_curvature(msh_id, "mean", "viridis");
+				show_mesh_curvature(msh_id, "mean", style);
 			else
 				show_mesh_curvature(msh_id, "mean");
 			showed = true;

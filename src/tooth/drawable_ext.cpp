@@ -18,6 +18,8 @@ namespace ToothSpace {
 
 	static map<uint32_t, shared_ptr<MeshDrawableExt>> st_mesh_exts;
 
+	static map<uint32_t, pair<string /* type */, string /* style */>> st_visible_buffer; // each mesh has one visible buffer
+
 
 	/// @date 2023.01.25
 	/// use 1-dim cpp array to restore vector,
@@ -94,22 +96,6 @@ namespace ToothSpace {
 			py_verts, py_faces, (type == "curvature_mean" ? "mean" : "gaussian")
 		);
 
-		// change color ?
-		if (heatmap_style.length() > 0) {
-			auto py_clr = _py_pkg.attr("py_mesh_palette")(py_curv, "viridis");
-			/// convert numpy.ndarray to py::array_t<T>, and uncheck it
-			auto clrs = py_clr.cast<py::array_t<float>>().unchecked<2>();
-
-			auto vert_size = msh_ptr->_raw()->vertices().size();
-
-			auto& vert_prims = msh_ptr->_vertices();
-
-			for (auto ind = 0; ind < vert_size; ++ind) {
-				vert_prims[ind].Color = glm::vec3(clrs(ind, 0), clrs(ind, 1), clrs(ind, 2));
-			}
-			msh_ptr->get_ready();
-		}
-
 		auto _curv = py_curv.cast<py::array_t<float>>().unchecked<1>();
 
 		auto vec = vector<float>(msh_ptr->_vertices().size());
@@ -123,6 +109,24 @@ namespace ToothSpace {
 		st_mesh_exts[id] = ext;
 
 		_cache_adj(id);
+
+		// change color ?
+		switch_color_cache(id, "curvature_mean", heatmap_style);
+		//if (heatmap_style.length() > 0) {
+		//	auto py_clr = _py_pkg.attr("py_mesh_palette")(py_curv, "viridis");
+		//	/// convert numpy.ndarray to py::array_t<T>, and uncheck it
+		//	auto clrs = py_clr.cast<py::array_t<float>>().unchecked<2>();
+
+		//	auto vert_size = msh_ptr->_raw()->vertices().size();
+
+		//	auto& vert_prims = msh_ptr->_vertices();
+
+		//	for (auto ind = 0; ind < vert_size; ++ind) {
+		//		vert_prims[ind].Color = glm::vec3(clrs(ind, 0), clrs(ind, 1), clrs(ind, 2));
+		//	}
+		//	msh_ptr->get_ready();
+		//}
+
 	}
 
 	shared_ptr<MeshDrawableExt>
@@ -164,5 +168,17 @@ namespace ToothSpace {
 			vert_prims[ind].Color = glm::vec3(clrs(ind, 0), clrs(ind, 1), clrs(ind, 2));
 		}
 		msh_ptr->get_ready();
+
+		st_visible_buffer[id] = make_pair(type, style);
+	}
+
+	void MeshDrawableExtManager::set_main_color(const string& style) {
+		// change all visible buffer to style
+		for (auto& [_id, _pair] : st_visible_buffer) {
+			auto& [_type, _stl] = _pair;
+			if (style == _stl) continue;
+
+			switch_color_cache(_id, _type, style);
+		}
 	}
 }

@@ -8,10 +8,11 @@
 #include <vector>
 #include <pybind11/embed.h>
 #include <pybind11/numpy.h>
-#include <pybind11/stl.h>
 #include <mesh.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <geom_ext/drawable.h>
+
+#include <thread>
 
 
 using namespace std;
@@ -20,11 +21,11 @@ namespace py = pybind11;
 
 #define SERVICE_INST ToothEngine::get_instance()->get_service()
 
-py::scoped_interpreter guard{};
-
 using AABB = pair<float, float>;
 
 namespace ToothSpace {
+	py::scoped_interpreter guard{};
+
 	template<class T>
 	void vector_to_numpy(vector<glm::vec<3, T>>& vec, py::array& res) {
 		const auto shape_1 = vec.size();
@@ -42,13 +43,12 @@ namespace ToothSpace {
 	bool init_workenv(string& status) {
 		/// init in this thread
 		try {
-			// init interpreter for current thread
-			py::scoped_interpreter guard{};
 			auto _py_pkg = py::module_::import(PY_INITENV_MODULE);
 			auto reqs = py::make_tuple(PY_REQUIREMENTS);
 			_py_pkg.attr("make_requirements_installed")(
 				reqs, "https://pypi.tuna.tsinghua.edu.cn/simple"
 			);
+
 			status = "package loaded";
 			return true;
 		}

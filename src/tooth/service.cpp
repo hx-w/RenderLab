@@ -28,6 +28,8 @@ namespace ToothSpace {
     }
 
     void ToothService::_subscribe() {
+        m_autobus->subscribe<void()>(SignalPolicy::Sync, "render/render_setup",
+            bind(&Workspace::init_workspace, m_workspace.get()));
         m_autobus->subscribe<void(const string&)>(SignalPolicy::Sync, "GUI/filepath_selected",
             bind(&Workspace::fetch_filepath, m_workspace.get(), ::placeholders::_1, false));
         m_autobus->subscribe<void(const string&)>(SignalPolicy::Sync, "render/filepath_dropin",

@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 #include <atomic>
+#include <mutex>
 #include <vector>
 #include <geom_types.h>
 
@@ -14,6 +15,8 @@ namespace ToothSpace {
 		Workspace();
 	
 	public:
+		void init_workspace();
+
 		/// STEP-1
 		void fetch_filepath(const std::string& /* filepath */, bool = false);
 
@@ -58,6 +61,8 @@ namespace ToothSpace {
 		std::vector<std::shared_ptr<ToothPack>> _tooth_packs;
 
 		std::string _heatmap_style = "jet";
+
+		std::once_flag _inited;
 	};
 }
 

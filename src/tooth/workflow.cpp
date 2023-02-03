@@ -31,12 +31,16 @@ using namespace RenderSpace;
 
 namespace ToothSpace {
 	Workspace::Workspace() {
-		TOOLKIT_EXEC(init_workenv, "init workspace", )
 		atomic_init(&_curr_wkflow_id, 1);
 	}
 
+	void Workspace::init_workspace() {
+		call_once(_inited, []() {
+			TOOLKIT_EXEC(init_workenv, "init workspace", )
+		});
+	}
+
 	void Workspace::fetch_filepath(const string& filepath, bool force) {
-		cout << filepath.c_str() << endl;
 		TOOLKIT_EXEC(preprocess_tooth_path, "project load", filepath, force,)
 		if (_code == 2) {
 			SERVICE_INST->slot_add_notice(

@@ -96,7 +96,7 @@ namespace ToothSpace {
 			py_verts, py_faces, (type == "curvature_mean" ? "mean" : "gaussian")
 		);
 
-		auto _curv = py_curv.cast<py::array_t<float>>().unchecked<1>();
+		auto _curv = py_curv.cast<py::array_t<double>>().unchecked<1>();
 
 		auto vec = vector<float>(msh_ptr->_vertices().size());
 		
@@ -111,22 +111,9 @@ namespace ToothSpace {
 		_cache_adj(id);
 
 		// change color ?
-		switch_color_cache(id, "curvature_mean", heatmap_style);
-		//if (heatmap_style.length() > 0) {
-		//	auto py_clr = _py_pkg.attr("py_mesh_palette")(py_curv, "viridis");
-		//	/// convert numpy.ndarray to py::array_t<T>, and uncheck it
-		//	auto clrs = py_clr.cast<py::array_t<float>>().unchecked<2>();
-
-		//	auto vert_size = msh_ptr->_raw()->vertices().size();
-
-		//	auto& vert_prims = msh_ptr->_vertices();
-
-		//	for (auto ind = 0; ind < vert_size; ++ind) {
-		//		vert_prims[ind].Color = glm::vec3(clrs(ind, 0), clrs(ind, 1), clrs(ind, 2));
-		//	}
-		//	msh_ptr->get_ready();
-		//}
-
+		if (!heatmap_style.empty()) {
+			switch_color_cache(id, "curvature_mean", heatmap_style);
+		}
 	}
 
 	shared_ptr<MeshDrawableExt>

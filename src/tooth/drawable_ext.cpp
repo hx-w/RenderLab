@@ -112,7 +112,7 @@ namespace ToothSpace {
 
 		// change color ?
 		if (!heatmap_style.empty()) {
-			switch_color_cache(id, "curvature_mean", heatmap_style);
+		    switch_color_cache(id, "curvature_mean", heatmap_style);
 		}
 	}
 

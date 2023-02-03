@@ -23,7 +23,7 @@ namespace ToothSpace {
 #define PY_NURBS_MODULE      "scripts.py_nurbs_toolkit"
 #define PY_TOOTHDEPTH_MODULE "scripts.py_tooth_depth"
 
-#define PY_REQUIREMENTS ("trimesh", "toml", "matplotlib")
+#define PY_REQUIREMENTS ("trimesh", "toml", "matplotlib", "rtree")
 
 	/// call py scripts: 'scripts/py_env_checker.py'
 	bool init_workenv(std::string& /* status */);

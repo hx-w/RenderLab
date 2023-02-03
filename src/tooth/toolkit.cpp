@@ -278,13 +278,17 @@ namespace ToothSpace {
 
 		auto k = 3;
 		auto ret = _py_pkg.attr("compute_nurbs_reverse")(py_points, k).cast<py::tuple>();
-		auto py_knots = ret[0].cast<py::array_t<float>>().unchecked<1>();
-		auto py_ctrl_pnts = ret[1].cast<py::array_t<float>>().unchecked<2>();
+		auto py_knots = ret[0].cast<py::array_t<double>>().unchecked<1>();
+		auto py_ctrl_pnts = ret[1].cast<py::array_t<double>>().unchecked<2>();
 
 		auto n = points.size();
 
 		for (auto ind = 0; ind < n + k + 3; ++ind) {
-			knots.emplace_back(py_knots(ind));
+			// ensure knots asc
+			auto v = py_knots(ind);
+			if (ind < n + k + 2 && v > py_knots(ind + 1))
+				v = py_knots(ind + 1);
+			knots.emplace_back(v);
 		}
 
 		for (auto row = 0; row < n + 2; ++row) {

@@ -328,7 +328,7 @@ namespace ToothSpace {
 			SERVICE_INST->slot_set_drawable_property(mesh_id, "topo_shape", sample_rate);
 
 			// show in proj panel
-			SERVICE_INST->notify<void(const string&, uint32_t)>("/register_mesh_to_current_proj", string("remeshed(nurbs) - ") + to_string(mesh_id), mesh_id);
+			SERVICE_INST->notify<void(const string&, uint32_t)>("/register_mesh_to_current_proj", string("remeshed(nurbs)-") + to_string(mesh_id) + ".obj", mesh_id);
 
 
 			/// current state NodeId_2
@@ -363,6 +363,5 @@ namespace ToothSpace {
 		/// [DEBUG] change color
 		MeshDrawableExtManager::set_mesh_cache(mshes_id[0], "depth_GT", depth);
 		MeshDrawableExtManager::switch_color_cache(mshes_id[0], "depth_GT", "viridis");
-
 	}
 }

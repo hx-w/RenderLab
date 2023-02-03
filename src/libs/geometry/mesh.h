@@ -15,7 +15,9 @@ namespace geometry {
             : m_vertices(vertices), m_faces(faces) {}
         Mesh(const Mesh& mesh): m_vertices(mesh.m_vertices), m_faces(mesh.m_faces) {}
 
-        static Mesh load_obj(const std::string& filename, int& status);   
+        static Mesh load_obj(const std::string& filename, int& status);
+
+        static void save_obj(const std::string& filename, Mesh&, int& status);
 
         std::vector<Point3f> get_vertices() const { return m_vertices; }
         std::vector<Vector3u> get_faces() const { return m_faces; }

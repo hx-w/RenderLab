@@ -6,10 +6,12 @@
 #include <tinynurbs/tinynurbs.h>
 
 #include <vector>
+#include <mesh.h>
 
 #include "file_browser.h"
 #include "../engine.h"
 #include "../service.h"
+#include "logger.h"
 
 
 using namespace std;
@@ -254,6 +256,8 @@ struct ProjectInst {
 static vector<ProjectInst> st_projects;
 static vector<uint32_t> st_wait_deleted;
 
+static map<uint32_t, string> st_mesh_saving_path;
+
 static bool show_import_modal = false; // import project
 
 static const char* st_shade_modes[] = { "Point", "Grid", "Flat" };
@@ -288,8 +292,9 @@ static void HelpMarker(const char* desc) {
     }
 }
 
-void mesh_property_render(DrawablePtr msh, const string& msh_name, uint32_t msh_id) {
+void mesh_property_render(DrawablePtr msh, const string& msh_name, uint32_t msh_id, const string& basedir) {
 	/// P01 shade mode
+	auto str_msh_id = to_string(msh_id);
 	{
 		int _curr = 0;
 		switch (msh->_shade_mode()) {
@@ -300,18 +305,45 @@ void mesh_property_render(DrawablePtr msh, const string& msh_name, uint32_t msh_
 		const float width = ImGui::GetWindowWidth();
 		const float combo_width = width * 0.25f;
 		ImGui::SetNextItemWidth(combo_width);
-		ImGui::Combo(imgui_name("shade mode", msh_name).c_str(), &_curr, st_shade_modes, IM_ARRAYSIZE(st_shade_modes));
+		ImGui::Combo(imgui_name("shade mode", str_msh_id).c_str(), &_curr, st_shade_modes, IM_ARRAYSIZE(st_shade_modes));
 		switch (_curr) {
 		case 0: msh->_shade_mode() = GL_POINT; break;
 		case 1: msh->_shade_mode() = GL_LINE; break;
 		case 2: msh->_shade_mode() = GL_FILL; break;
 		}
 	}
-	/// P02 delete
+	/// P02 save
+	{
+		ImGui::Spacing();
+		if (st_mesh_saving_path.find(msh_id) == st_mesh_saving_path.end()) {
+			if (basedir.find("\\") != string::npos) {
+				st_mesh_saving_path[msh_id] = basedir + "\\static\\" + msh_name;
+			}
+			else {
+				st_mesh_saving_path[msh_id] = basedir + "/static/" + msh_name;
+			}
+		}
+		ImGui::InputText(imgui_name("##save_path", str_msh_id).c_str(), st_mesh_saving_path[msh_id].data(), 64);
+		ImGui::SameLine();
+		if (ImGui::Button(imgui_name("save", str_msh_id).c_str())) {
+			// file check
+			auto& save_path = st_mesh_saving_path[msh_id];
+			int status = 0;
+			auto msh_ptr = dynamic_pointer_cast<NewMeshDrawable>(msh);
+			geometry::Mesh::save_obj(save_path, *msh_ptr->_raw(), status);
+			if (status) {
+				GUISpace::Logger::log(string("file: ") + save_path + " saved success");
+			}
+			else {
+				GUISpace::Logger::log(string("file: ") + save_path + " saved failed", GUISpace::LOG_ERROR);
+			}
+		}
+	}
+	/// P03 delete
 	{
 		ImGui::Spacing();
 		ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0 / 7.0f, 0.6f, 0.6f));
-		if (ImGui::Button(imgui_name("delete", msh_name).c_str())) {
+		if (ImGui::Button(imgui_name("delete", str_msh_id).c_str())) {
 			/// [TODO] carefully delete
 			st_wait_deleted.emplace_back(msh_id);
 		}
@@ -359,7 +391,7 @@ namespace GUISpace {
 
 							if (ImGui::TreeNode((void*)(intptr_t)msh_id, msh_name.c_str())) {
 
-								mesh_property_render(msh, msh_name, msh_id);
+								mesh_property_render(msh, msh_name, msh_id, proj.tpack->get_basedir());
 
 								ImGui::TreePop();
 							}

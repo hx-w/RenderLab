@@ -147,19 +147,31 @@ namespace ToothSpace {
 		vector<geometry::Vector3f>& picked_nmls
 	) {
 		/// handler 
-		
-		// [DEBUG] show arrow
-		auto picked_num = picked_ids.size();
-		for (auto i = 0; i < picked_num; ++i) {
-			auto ray = geometry::Ray(picked_pnts[i], picked_nmls[i]);
-			auto arrow_id = SERVICE_INST->slot_show_arrow(ray, 0.5f, geometry::Vector3f(0.1f, 0.1f, 0.1f));
-			SERVICE_INST->notify<void(uint32_t, geometry::Point3f&)>(
-				"/add_nurbs_point_record", arrow_id, picked_pnts[i]
-			);
+		auto flow_id = SERVICE_INST->slot_get_current_flow_id();
+		auto tpack = _find_tpack(flow_id);
+
+		auto& nd_order = tpack->get_context()->node_order;
+		// nurbs case
+		if (find(nd_order.begin(), nd_order.end(), NodeId_2) != nd_order.end()) {
+			// [DEBUG] show arrow
+			auto picked_num = picked_ids.size();
+			for (auto i = 0; i < picked_num; ++i) {
+				auto ray = geometry::Ray(picked_pnts[i], picked_nmls[i]);
+				auto arrow_id = SERVICE_INST->slot_show_arrow(ray, 0.5f, geometry::Vector3f(0.1f, 0.1f, 0.1f));
+				SERVICE_INST->notify<void(uint32_t, geometry::Point3f&)>(
+					"/add_nurbs_point_record", arrow_id, picked_pnts[i]
+				);
+			}
 		}
 	}
 
-	void Workspace::pick_vertex_handler(uint32_t draw_id, uint32_t vertex_id) {
+	void Workspace::pick_vertex_handler(uint32_t draw_id, uint32_t vertex_id, bool hover) {
+		if (!hover) {
+			// remesh case
+			return;
+		}
+
+		// info shown case
 		static pair<uint32_t, uint32_t> st_last_hover_picked(-1, -1);
 		// recover
 		if (st_last_hover_picked.first != uint32_t(-1)) {

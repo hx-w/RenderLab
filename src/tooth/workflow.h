@@ -38,7 +38,7 @@ namespace ToothSpace {
 		);
 
 		/// handle picked vertex
-		void pick_vertex_handler(uint32_t, uint32_t);
+		void pick_vertex_handler(uint32_t, uint32_t, bool /* hover pick */ = true);
 
 
 		/// compute nurbs reverse by recieved points

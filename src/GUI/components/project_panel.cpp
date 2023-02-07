@@ -418,7 +418,7 @@ namespace GUISpace {
 					switch_workflow(st_shown_flow_id, proj_ctx->flow_id);
 					if (ImGui::TreeNode("Meshes")) {
 						/// [TODO] Some methods here
-						ImGui::TextColored(ImVec4(255, 255, 100, 255), "[TODO] some methods here");
+						//ImGui::TextColored(ImVec4(255, 255, 100, 255), "[TODO] some methods here");
 						for (auto& [msh_name, msh_id] : proj_meshes) {
 							auto msh = proj.meshes_inst.at(msh_id);
 							ImGui::Checkbox(imgui_name("##", msh_name).c_str(), &msh->_visible());

@@ -125,7 +125,7 @@ namespace GUISpace {
 		/// tooltip (mouse hover)
 		if (!st_tooltip_buf.empty()) {
 			ImGui::BeginTooltip();
-			ImGui::TextColored(ImVec4(0.f, 0.f, 0.f, 1.f), st_tooltip_buf.c_str());
+			ImGui::TextColored(ImVec4(0.8f, 0.1f, 0.f, 1.f), st_tooltip_buf.c_str());
 			ImGui::EndTooltip();
 		}
 

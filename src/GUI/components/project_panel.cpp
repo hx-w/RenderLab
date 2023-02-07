@@ -262,6 +262,35 @@ static bool show_import_modal = false; // import project
 
 static const char* st_shade_modes[] = { "Point", "Grid", "Flat" };
 
+
+void switch_workflow(int& old_id, int& new_id) {
+	if (old_id != -1 && old_id != new_id) {
+		// change context in workflow
+
+		/// 1. change visible (picked_nurbs_points, meshes)
+		auto set_visible_patch = [](ProjectInst& rec, bool visible) {
+			for (auto& _pair : rec.picked_nurbs_points) {
+				SERVICE_INST->slot_set_drawable_property(_pair.first, "visible", visible);
+			}
+			for (auto& [_id, _inst] : rec.meshes_inst) {
+				_inst->_visible() = visible; // unsafe
+			}
+		};
+
+		for (auto& proj : st_projects) {
+			if (proj.tpack->get_context()->flow_id == old_id) {
+				set_visible_patch(proj, false);
+			}
+			if (proj.tpack->get_context()->flow_id == new_id) {
+				set_visible_patch(proj, true);
+			}
+		}
+
+	}
+	old_id = new_id;
+}
+
+
 void delete_mesh(uint32_t msh_id) {
 	auto fnd = [](map<string, uint32_t>& ctn, uint32_t v) -> string {
 		for (auto& [_k, _v] : ctn) {
@@ -360,6 +389,8 @@ namespace GUISpace {
 			}
 		}
 		st_projects.emplace_back(ProjectInst(tpack_ptr));
+		// switch to new workflow
+		switch_workflow(st_shown_flow_id, tpack_ptr->get_context()->flow_id);
 	}
 
 
@@ -374,13 +405,17 @@ namespace GUISpace {
 
 		ImGui::Spacing();
 
-		if (ImGui::BeginTabBar("Confirmed_Workflows", ImGuiTabBarFlags_Reorderable)) {
+		if (ImGui::BeginTabBar(
+				"Confirmed_Workflows",
+				ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_AutoSelectNewTabs
+			)
+		) {
 			for (auto& proj : st_projects) {
 				auto& proj_ctx = proj.tpack->get_context();
 				auto& proj_meshes = proj.tpack->get_meshes();
 
 				if (ImGui::BeginTabItem(proj_ctx->flow_name.c_str())) {
-					st_shown_flow_id = proj_ctx->flow_id;
+					switch_workflow(st_shown_flow_id, proj_ctx->flow_id);
 					if (ImGui::TreeNode("Meshes")) {
 						/// [TODO] Some methods here
 						ImGui::TextColored(ImVec4(255, 255, 100, 255), "[TODO] some methods here");

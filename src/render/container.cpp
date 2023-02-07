@@ -86,6 +86,9 @@ namespace RenderSpace {
 		if (property == "shader") {
 			m_drawables[id]->_shader() = any_cast<shared_ptr<Shader>>(value);
 		}
+        else if (property == "visible") {
+            m_drawables[id]->_visible() = any_cast<bool>(value);
+        }
 		else if (property == "shade_mode") {
 			m_drawables[id]->_shade_mode() = any_cast<uint32_t>(value);
 		}

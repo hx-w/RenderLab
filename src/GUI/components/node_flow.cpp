@@ -152,6 +152,21 @@ void Node_Pmtr_Remesh(NodeId node_id, WkflowCtxPtr wkflow_ctx) {
         /* custom scripts */
         ImNodes::BeginInputAttribute(SUBNODE(node_id, 1));
         ImNodes::EndInputAttribute();
+
+		ImGui::SetNextItemWidth(60.f);
+        ImGui::DragInt(
+            "Remesh - U",
+            (int*)(&wkflow_ctx->node_states[NodeId_3]["Remesh U"]),
+            1.0f, 1, 1000
+        );
+
+		ImGui::SetNextItemWidth(60.f);
+        ImGui::DragInt(
+            "Remesh - V",
+            (int*)(&wkflow_ctx->node_states[NodeId_3]["Remesh V"]),
+            1.0f, 1, 1000
+        );
+
         ImGui::SameLine();
         ImNodes::BeginOutputAttribute(SUBNODE(node_id, 2));
         ImNodes::EndOutputAttribute();

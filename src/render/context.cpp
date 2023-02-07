@@ -128,7 +128,7 @@ namespace RenderSpace {
         }
     }
 
-    void RenderContext::ctx_pick_vertex(const Vector3f& origin, const Vector3f& direction) {
+    void RenderContext::ctx_pick_vertex(const Vector3f& origin, const Vector3f& direction, bool is_hover) {
         Ray pick_ray(origin, direction);
         DrawableID draw_id = -1;
         uint32_t vertex_id = -1;
@@ -139,8 +139,8 @@ namespace RenderSpace {
 
         if (success) {
             /// [Notify] render/picked_vertex
-            ctx_notify<void(DrawableID, uint32_t)>(
-                "/picked_vertex", draw_id, vertex_id
+            ctx_notify<void(DrawableID, uint32_t, bool)>(
+                "/picked_vertex", draw_id, vertex_id, is_hover
             );
         }
     }

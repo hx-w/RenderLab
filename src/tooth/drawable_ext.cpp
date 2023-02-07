@@ -38,13 +38,10 @@ namespace ToothSpace {
 		delete[] raw_vec;
 	}
 
-	void MeshDrawableExtManager::_cache_adj(uint32_t id) {
+	void MeshDrawableExtManager::_cache_adj(uint32_t id, shared_ptr<NewMeshDrawable> msh_ptr) {
 		if (st_mesh_exts.find(id) == st_mesh_exts.end()) {
 			st_mesh_exts[id] = make_shared<MeshDrawableExt>();
 		}
-		auto draw_ptr = SERVICE_INST->slot_get_drawable_inst(id);
-		auto msh_ptr = dynamic_pointer_cast<NewMeshDrawable>(draw_ptr);
-
 		/// compute adj
 		const auto& vertices = msh_ptr->_raw()->get_vertices();
 		const auto& faces = msh_ptr->_raw()->get_faces();
@@ -109,9 +106,11 @@ namespace ToothSpace {
 		ext->m_buffers[type].assign(vec.begin(), vec.end());
 		st_mesh_exts[id] = ext;
 
-		_cache_adj(id);
-
 		py::gil_scoped_release _release{};
+
+		_cache_adj(id, msh_ptr);
+		_cache_boundary(id, msh_ptr);
+
 		// change color ?
 		if (!heatmap_style.empty()) {
 		    switch_color_cache(id, "curvature_mean", heatmap_style);
@@ -127,7 +126,11 @@ namespace ToothSpace {
 	void MeshDrawableExtManager::set_mesh_cache(uint32_t id, const string& key, vector<float>& cache) {
 		if (st_mesh_exts.find(id) == st_mesh_exts.end()) {
 			st_mesh_exts[id] = make_shared<MeshDrawableExt>();
-			_cache_adj(id);
+			auto draw_ptr = SERVICE_INST->slot_get_drawable_inst(id);
+			auto msh_ptr = dynamic_pointer_cast<NewMeshDrawable>(draw_ptr);
+
+			_cache_adj(id, msh_ptr);
+			_cache_boundary(id, msh_ptr);
 		}
 		st_mesh_exts[id]->m_buffers[key].assign(cache.begin(), cache.end());
 	}
@@ -169,6 +172,34 @@ namespace ToothSpace {
 			if (style == _stl) continue;
 
 			switch_color_cache(_id, _type, style);
+		}
+	}
+
+	void MeshDrawableExtManager::_cache_boundary(uint32_t id, shared_ptr<NewMeshDrawable> msh_ptr) {
+		if (st_mesh_exts.find(id) == st_mesh_exts.end()) {
+			st_mesh_exts[id] = make_shared<MeshDrawableExt>();
+		}
+		auto& ext = st_mesh_exts[id];
+
+		py::gil_scoped_acquire _acquire{};
+
+		auto _py_pkg = py::module_::import(PY_PARAMETER_MODULE);
+
+		py::array py_verts, py_faces;
+		vector_to_numpy(msh_ptr->_raw()->vertices(), py_verts);
+		vector_to_numpy(msh_ptr->_raw()->faces(), py_faces);
+
+		auto res = _py_pkg.attr("get_mesh_boundary_cmd")(py_verts, py_faces).cast<py::tuple>();
+		auto _py_boundary_verts = res[0].cast<py::array_t<int>>().unchecked<1>();
+		
+		ext->boundary_length = res[1].cast<float>();
+
+		auto array_len = res[0].attr("shape").cast<py::tuple>()[0].cast<int>();
+
+		// copy boundary
+		ext->m_vert_boundary.clear();
+		for (auto ind = 0; ind < array_len; ++ind) {
+			ext->m_vert_boundary.emplace_back(_py_boundary_verts(ind));
 		}
 	}
 }

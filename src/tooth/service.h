@@ -46,6 +46,10 @@ namespace ToothSpace {
 
         void slot_set_mouse_tooltip(const std::string&);
 
+        void slot_set_interact_mode(int);
+
+        bool slot_remove_drawable(uint32_t);
+
         template <class Func, class ...Args>
         void notify(const std::string& addr, Args&& ...args) {
             auto _event = fundamental::ContextHub::getInstance()->getEventTable<Func>();

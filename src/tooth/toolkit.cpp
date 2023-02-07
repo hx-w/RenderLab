@@ -11,6 +11,7 @@
 #include <mesh.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <geom_ext/drawable.h>
+#include <line.hpp>
 
 #include <thread>
 
@@ -136,6 +137,11 @@ namespace ToothSpace {
 				nd_states[NodeId_2]["Remesh V"] = _ctx[node_2.c_str()]["Remesh V"].cast<int>();
 				nd_states[NodeId_2]["Weights"] = _ctx[node_2.c_str()]["Weights"].cast<string>();
 			}
+			{
+				auto node_3 = to_string(NodeId_3);
+				nd_states[NodeId_3]["Remesh U"] = _ctx[node_3.c_str()]["Remesh U"].cast<int>();
+				nd_states[NodeId_3]["Remesh V"] = _ctx[node_3.c_str()]["Remesh V"].cast<int>();
+			}
 
 
 			/// [TODO] init context params
@@ -184,6 +190,12 @@ namespace ToothSpace {
 				cfg_dict[node_2.c_str()]["Remesh U"] = any_cast<int>(nd_states[NodeId_2]["Remesh U"]);
 				cfg_dict[node_2.c_str()]["Remesh V"] = any_cast<int>(nd_states[NodeId_2]["Remesh V"]);
 				cfg_dict[node_2.c_str()]["Weights"] = any_cast<string>(nd_states[NodeId_2]["Weights"]);
+			}
+			{
+				auto node_3 = to_string(NodeId_3);
+				cfg_dict[node_3.c_str()] = py::dict{};
+				cfg_dict[node_3.c_str()]["Remesh U"] = any_cast<int>(nd_states[NodeId_3]["Remesh U"]);
+				cfg_dict[node_3.c_str()]["Remesh V"] = any_cast<int>(nd_states[NodeId_3]["Remesh V"]);
 			}
 			/// [TODO] Other nodes
 
@@ -378,6 +390,142 @@ namespace ToothSpace {
 		/// [TODO]
 	}
 
+	void _hover_vertex_handler(uint32_t draw_id, uint32_t vertex_id) {
+		// info shown case
+		static pair<uint32_t, uint32_t> st_last_hover_picked(-1, -1);
+		// recover
+		if (st_last_hover_picked.first != uint32_t(-1)) {
+			auto& [last_draw_id, last_vert_id] = st_last_hover_picked;
+
+			auto last_draw_inst = SERVICE_INST->slot_get_drawable_inst(last_draw_id);
+			auto last_mesh_inst = dynamic_pointer_cast<NewMeshDrawable>(last_draw_inst);
+			auto& last_vertices = last_mesh_inst->_vertices();
+
+			auto& last_mesh_ext = MeshDrawableExtManager::get_mesh_ext(last_draw_id);
+			if (last_mesh_ext != nullptr) {
+				auto& last_vert_adj = last_mesh_ext->m_vert_adj;
+				last_vertices[last_vert_id].Color = last_vertices[last_vert_id].BufColor;
+				
+				for (auto& adj : last_vert_adj[last_vert_id]) {
+					last_vertices[adj].Color = last_vertices[adj].BufColor;
+				}
+				last_mesh_inst->get_ready();
+			}
+		}
+
+		st_last_hover_picked = make_pair(draw_id, vertex_id);
+		if (draw_id == -1) {
+			SERVICE_INST->slot_set_mouse_tooltip("");
+			return; // end hover pick ( release CONTROL )
+		}
+
+		// show tooltip
+		/// [TODO] only show curvature_mean
+		auto& mesh_ext = MeshDrawableExtManager::get_mesh_ext(draw_id);
+
+		// if has depth, show depth
+		if (mesh_ext == nullptr) {
+			SERVICE_INST->slot_set_mouse_tooltip("");
+			return;
+		}
+		if (mesh_ext->m_buffers.find("depth_GT") != mesh_ext->m_buffers.end()) {
+			auto str_v = to_string(mesh_ext->m_buffers["depth_GT"][vertex_id]);
+			SERVICE_INST->slot_set_mouse_tooltip(
+				"depth: " + str_v
+			);
+		}
+		else if (mesh_ext->m_buffers.find("curvature_mean") != mesh_ext->m_buffers.end()) {
+			auto str_v = to_string(mesh_ext->m_buffers["curvature_mean"][vertex_id]);
+			SERVICE_INST->slot_set_mouse_tooltip(
+				"curv(mean): " + str_v
+			);
+		}
+		else {
+			SERVICE_INST->slot_set_mouse_tooltip("");
+			return;
+		}
+
+		auto draw_inst = SERVICE_INST->slot_get_drawable_inst(draw_id);
+		auto mesh_inst = dynamic_pointer_cast<NewMeshDrawable>(draw_inst);
+		auto& adjs = mesh_ext->m_vert_adj[vertex_id];
+
+		auto& vertices = mesh_inst->_vertices();
+
+		auto change_color = [&](uint32_t vid, glm::vec3&& clr) {
+			vertices[vid].BufColor = vertices[vid].Color;
+			vertices[vid].Color = clr;
+		};
+		// change adjs color to red
+
+		change_color(vertex_id, glm::vec3(1.f, 0.5f, 0.f));
+		for (auto& adj : adjs) {
+			change_color(adj, glm::vec3(1.f, 0.f, 0.f));
+		}
+
+		mesh_inst->get_ready();
+	}
+
+	void _pick_vertex_handler(uint32_t draw_id, uint32_t vertex_id) {
+		auto draw_inst = SERVICE_INST->slot_get_drawable_inst(draw_id);
+		auto mesh_inst = dynamic_pointer_cast<NewMeshDrawable>(draw_inst);
+		auto& ext = MeshDrawableExtManager::get_mesh_ext(draw_id);
+
+		auto& bnd_verts = ext->m_vert_boundary;
+		auto iter = find(bnd_verts.begin(), bnd_verts.end(), vertex_id);
+		if (iter == bnd_verts.end() || ext->boundary_length < 1e-6) {
+			// not a boundary vertex
+			/// [Notify]
+			SERVICE_INST->slot_add_log("warn", "not a boundary vertex");
+			return;
+		}
+		
+		// the index of picked vertex in boundary verts
+		int pivot = iter - bnd_verts.begin(); 
+		auto bnd_len = ext->boundary_length;
+
+		// divide into 4 pieces
+		auto piece_len = bnd_len / 4.f;
+		auto bnd_size = bnd_verts.size();
+
+		// clear legacy corner arrows
+		for (auto id : ext->m_boundary_corners) {
+			SERVICE_INST->slot_remove_drawable(id);
+		}
+		ext->m_boundary_corners.clear();
+		vector<uint32_t> corners;
+
+		// set four corners
+		auto& vertices = mesh_inst->_vertices();
+		float summer = 0.f; // sum mer
+		for (auto i = 0; i < bnd_size; ++i) {
+			if (i == 0) {
+				corners.emplace_back(bnd_verts[(pivot + i) % bnd_size]);
+				continue;
+			}
+
+			auto ratio_old = floorf(summer / piece_len);
+			summer += glm::distance(
+				vertices[bnd_verts[(pivot + i - 1) % bnd_size]].Position,
+				vertices[bnd_verts[(pivot + i) % bnd_size]].Position
+			);
+			auto ratio_new = floorf(summer / piece_len);
+			
+			if (ratio_old != ratio_new) {
+				corners.emplace_back(bnd_verts[(pivot + i) % bnd_size]);
+				if (corners.size() == 4) break; // full
+			}
+		}
+
+		// draw arrows for corner
+		for (auto cor_ind : corners) {
+			// normal direction
+			auto ray = geometry::Ray(vertices[cor_ind].Position, vertices[cor_ind].Normal);
+			auto id = SERVICE_INST->slot_show_arrow(ray, 0.5f, glm::vec3(1.f, 0.f, 0.f));
+			ext->m_boundary_corners.emplace_back(id);
+		}
+
+	}
+
 	void action_node_1(shared_ptr<ToothPack> tpack, const string& style) {
 		auto& meshes_rec = tpack->get_meshes();
 		auto& basedir = tpack->get_basedir();
@@ -434,9 +582,15 @@ namespace ToothSpace {
 	}
 
 	void action_node_2(shared_ptr<ToothPack> tpack) {
+		// change interact mode
+		auto mode = (1 << 1) | (1 << 3); // ClickPointPick | HoverVertexPick
+		SERVICE_INST->slot_set_interact_mode(mode);
 	}
 
 	void action_node_3(shared_ptr<ToothPack> tpack) {
+		// change interact mode
+		auto mode = 1 << 2; // ClickVertexPick
+		SERVICE_INST->slot_set_interact_mode(mode);
 	}
 
 	void action_node_4(shared_ptr<ToothPack> tpack) {

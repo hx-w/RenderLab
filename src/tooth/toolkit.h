@@ -22,8 +22,9 @@ namespace ToothSpace {
 #define PY_PALETTE_MODULE    "scripts.py_mesh_palette"
 #define PY_NURBS_MODULE      "scripts.py_nurbs_toolkit"
 #define PY_TOOTHDEPTH_MODULE "scripts.py_tooth_depth"
+#define PY_PARAMETER_MODULE  "scripts.py_parameter_remesh"
 
-#define PY_REQUIREMENTS "trimesh", "toml", "matplotlib", "rtree"
+#define PY_REQUIREMENTS "trimesh", "toml", "matplotlib", "rtree", "numpy_indexed"
 
 	/// call py scripts: 'scripts/py_env_checker.py'
 	bool init_workenv(std::string& /* status */);
@@ -77,6 +78,10 @@ namespace ToothSpace {
 		std::shared_ptr<ToothPack>,
 		std::vector<float>& /* depth value for face1 [out] */
 	);
+
+	void _hover_vertex_handler(uint32_t, uint32_t);
+
+	void _pick_vertex_handler(uint32_t, uint32_t);
 
 	/**
 	 * Active stage for Nodes.

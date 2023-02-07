@@ -58,8 +58,8 @@ namespace ToothSpace {
             SignalPolicy::Async, "render/picked_points",
             bind(&Workspace::pick_points_handler, m_workspace.get(),
                 ::placeholders::_1, ::placeholders::_2, ::placeholders::_3));
-        m_autobus->subscribe<void(uint32_t, uint32_t)>(SignalPolicy::Async, "render/picked_vertex",
-            bind(&Workspace::pick_vertex_handler, m_workspace.get(), ::placeholders::_1, ::placeholders::_2, true));
+        m_autobus->subscribe<void(uint32_t, uint32_t, bool)>(SignalPolicy::Async, "render/picked_vertex",
+            bind(&Workspace::pick_vertex_handler, m_workspace.get(), ::placeholders::_1, ::placeholders::_2, ::placeholders::_3));
         m_autobus->subscribe<void(vector<vector<geometry::Point3f>>&, const std::pair<int, int>&)>(SignalPolicy::Sync, "GUI/send_nurbs_points_pack",
             bind(&Workspace::compute_nurbs_reverse, m_workspace.get(), ::placeholders::_1, ::placeholders::_2));
 
@@ -137,4 +137,14 @@ namespace ToothSpace {
         auto _service = ContextHub::getInstance()->getServiceTable<uint32_t()>();
         return _service->sync_invoke("GUI/get_current_flow_id");
     }
+
+    void ToothService::slot_set_interact_mode(int mode) {
+        auto _service = ContextHub::getInstance()->getServiceTable<void(int)>();
+        _service->async_invoke("render/set_interact_mode", mode);
+    }
+
+	bool ToothService::slot_remove_drawable(uint32_t drawable_id) {
+		auto _service = ContextHub::getInstance()->getServiceTable<bool(uint32_t)>();
+		return _service->sync_invoke("render/remove_drawable", drawable_id);
+	}
 }

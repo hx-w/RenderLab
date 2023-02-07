@@ -106,10 +106,10 @@ namespace RenderSpace {
         realY = ypos;
 
         /// hover pick
-        if ((interact_mode & HoverPickMode) && key_down_GTRL) {
+        if ((interact_mode & HoverPickVertexMode) && key_down_GTRL) {
 			glm::vec3 direction(0.0);
 			pickingRay(glm::vec2(realX, realY), direction);
-			m_context->ctx_pick_vertex(cameraPos, direction);
+			m_context->ctx_pick_vertex(cameraPos, direction, true);
         }
 
         if (!leftMousePressed)
@@ -179,12 +179,16 @@ namespace RenderSpace {
             switch(button) {
 			case GLFW_MOUSE_BUTTON_LEFT:
                 leftMousePressed = false;
-                if ((interact_mode & ClickPickMode) && key_down_GTRL) {
+                if ((interact_mode & ClickPickPointMode) && key_down_GTRL) {
                     glm::vec3 direction(0.0);
                     pickingRay(glm::vec2(realX, realY), direction);
-                    /// [TODO] picking ray notify
                     m_context->ctx_pick_points(cameraPos, direction, false);
                 }
+				if ((interact_mode & ClickPickVertexMode) && key_down_GTRL) {
+					glm::vec3 direction(0.0);
+					pickingRay(glm::vec2(realX, realY), direction);
+                    m_context->ctx_pick_vertex(cameraPos, direction, false);
+				}
 				break;
 			case GLFW_MOUSE_BUTTON_MIDDLE:
 				break;

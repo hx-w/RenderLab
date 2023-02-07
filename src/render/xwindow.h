@@ -14,13 +14,9 @@ namespace RenderSpace {
     typedef std::pair<glm::vec3, glm::vec3> AABB; // min, max
     enum InteractMode {
         DefaultMode = 1 << 0,
-        ClickPickMode = 1 << 1,
-        HoverPickMode = 1 << 2
-    };
-
-    enum PickType {
-        PickPoints = 1 << 0,
-        PickVertex = 1 << 1
+        ClickPickPointMode = 1 << 1,
+        ClickPickVertexMode = 1 << 2,
+        HoverPickVertexMode = 1 << 3
     };
 
     class RenderService;
@@ -89,8 +85,7 @@ namespace RenderSpace {
 
     private:
         std::map<int, time_t> m_key_last_active; // for click, only record GLFW_PRESS
-        int interact_mode = ClickPickMode | HoverPickMode;
-        int pick_type = PickPoints | PickVertex;
+        int interact_mode = DefaultMode;
 
         bool key_down_GTRL = false;
 

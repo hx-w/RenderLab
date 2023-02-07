@@ -166,83 +166,12 @@ namespace ToothSpace {
 	}
 
 	void Workspace::pick_vertex_handler(uint32_t draw_id, uint32_t vertex_id, bool hover) {
-		if (!hover) {
-			// remesh case
-			return;
-		}
-
-		// info shown case
-		static pair<uint32_t, uint32_t> st_last_hover_picked(-1, -1);
-		// recover
-		if (st_last_hover_picked.first != uint32_t(-1)) {
-			auto& [last_draw_id, last_vert_id] = st_last_hover_picked;
-
-			auto last_draw_inst = SERVICE_INST->slot_get_drawable_inst(last_draw_id);
-			auto last_mesh_inst = dynamic_pointer_cast<NewMeshDrawable>(last_draw_inst);
-			auto& last_vertices = last_mesh_inst->_vertices();
-
-			auto& last_mesh_ext = MeshDrawableExtManager::get_mesh_ext(last_draw_id);
-			if (last_mesh_ext != nullptr) {
-				auto& last_vert_adj = last_mesh_ext->m_vert_adj;
-				last_vertices[last_vert_id].Color = last_vertices[last_vert_id].BufColor;
-				
-				for (auto& adj : last_vert_adj[last_vert_id]) {
-					last_vertices[adj].Color = last_vertices[adj].BufColor;
-				}
-				last_mesh_inst->get_ready();
-			}
-		}
-
-		st_last_hover_picked = make_pair(draw_id, vertex_id);
-		if (draw_id == -1) {
-			SERVICE_INST->slot_set_mouse_tooltip("");
-			return; // end hover pick ( release CONTROL )
-		}
-
-		// show tooltip
-		/// [TODO] only show curvature_mean
-		auto& mesh_ext = MeshDrawableExtManager::get_mesh_ext(draw_id);
-
-		// if has depth, show depth
-		if (mesh_ext == nullptr) {
-			SERVICE_INST->slot_set_mouse_tooltip("");
-			return;
-		}
-		if (mesh_ext->m_buffers.find("depth_GT") != mesh_ext->m_buffers.end()) {
-			auto str_v = to_string(mesh_ext->m_buffers["depth_GT"][vertex_id]);
-			SERVICE_INST->slot_set_mouse_tooltip(
-				"depth: " + str_v
-			);
-		}
-		else if (mesh_ext->m_buffers.find("curvature_mean") != mesh_ext->m_buffers.end()) {
-			auto str_v = to_string(mesh_ext->m_buffers["curvature_mean"][vertex_id]);
-			SERVICE_INST->slot_set_mouse_tooltip(
-				"curv(mean): " + str_v
-			);
+		if (hover) {
+			_hover_vertex_handler(draw_id, vertex_id);
 		}
 		else {
-			SERVICE_INST->slot_set_mouse_tooltip("");
-			return;
+			_pick_vertex_handler(draw_id, vertex_id);
 		}
-
-		auto draw_inst = SERVICE_INST->slot_get_drawable_inst(draw_id);
-		auto mesh_inst = dynamic_pointer_cast<NewMeshDrawable>(draw_inst);
-		auto& adjs = mesh_ext->m_vert_adj[vertex_id];
-
-		auto& vertices = mesh_inst->_vertices();
-
-		auto change_color = [&](uint32_t vid, glm::vec3&& clr) {
-			vertices[vid].BufColor = vertices[vid].Color;
-			vertices[vid].Color = clr;
-		};
-		// change adjs color to red
-
-		change_color(vertex_id, glm::vec3(1.f, 0.5f, 0.f));
-		for (auto& adj : adjs) {
-			change_color(adj, glm::vec3(1.f, 0.f, 0.f));
-		}
-
-		mesh_inst->get_ready();
 	}
 
 	void Workspace::compute_nurbs_reverse(vector<vector<geometry::Point3f>>& points_pack, const pair<int, int>& sample_rate) {

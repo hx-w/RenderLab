@@ -63,7 +63,8 @@ namespace RenderSpace {
         /// pick from container
         void ctx_pick_points(const geometry::Vector3f&, const geometry::Vector3f&, bool);
 
-        void ctx_pick_vertex(const geometry::Vector3f&, const geometry::Vector3f&);
+        // hover = true, click = false
+        void ctx_pick_vertex(const geometry::Vector3f&, const geometry::Vector3f&, bool);
 
         void ctx_update_transform_mat(const glm::mat4&);
 

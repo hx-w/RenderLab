@@ -25,7 +25,7 @@ namespace ToothSpace {
         ~ToothService();
 
     public:
-        void slot_add_log(std::string&&, const std::string&);
+        void slot_add_log(const std::string&, const std::string&);
         void slot_add_notice(const std::string&, const std::string&);
         void slot_open_workflow(std::shared_ptr<WorkflowContext>);
         void slot_add_tooth_pack(std::shared_ptr<ToothPack>);

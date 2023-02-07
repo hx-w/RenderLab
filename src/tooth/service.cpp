@@ -28,13 +28,13 @@ namespace ToothSpace {
     }
 
     void ToothService::_subscribe() {
-        m_autobus->subscribe<void()>(SignalPolicy::Sync, "render/render_setup",
+        m_autobus->subscribe<void()>(SignalPolicy::Async, "render/render_setup",
             bind(&Workspace::init_workspace, m_workspace.get()));
-        m_autobus->subscribe<void(const string&)>(SignalPolicy::Sync, "GUI/filepath_selected",
+        m_autobus->subscribe<void(const string&)>(SignalPolicy::Async, "GUI/filepath_selected",
             bind(&Workspace::fetch_filepath, m_workspace.get(), ::placeholders::_1, false));
-        m_autobus->subscribe<void(const string&)>(SignalPolicy::Sync, "render/filepath_dropin",
+        m_autobus->subscribe<void(const string&)>(SignalPolicy::Async, "render/filepath_dropin",
             bind(&Workspace::fetch_filepath, m_workspace.get(), ::placeholders::_1, false));
-        m_autobus->subscribe<void(const string&, int)>(SignalPolicy::Sync, "GUI/modal_confirm_feedback",
+        m_autobus->subscribe<void(const string&, int)>(SignalPolicy::Async, "GUI/modal_confirm_feedback",
             [this](const string& name, int res) {
                 const string prefix = "Force to load the project?##";
                 if (name._Starts_with(prefix)) { // filter just asked
@@ -48,45 +48,45 @@ namespace ToothSpace {
                     }
                 }
             });
-        m_autobus->subscribe<void(int, int /* status */)>(SignalPolicy::Sync, "GUI/confirm_workflow",
+        m_autobus->subscribe<void(int, int /* status */)>(SignalPolicy::Async, "GUI/confirm_workflow",
             bind(&Workspace::confirm_workflow, m_workspace.get(), ::placeholders::_1, ::placeholders::_2));
     
-        m_autobus->subscribe<void(int, int)>(SignalPolicy::Sync, "GUI/active_workflow_stage",
+        m_autobus->subscribe<void(int, int)>(SignalPolicy::Async, "GUI/active_workflow_stage",
             bind(&Workspace::active_stage, m_workspace.get(), ::placeholders::_1, ::placeholders::_2));
 
         m_autobus->subscribe<void(vector<uint32_t>&, vector<geometry::Point3f>&, vector<geometry::Vector3f>&)>(
-            SignalPolicy::Sync, "render/picked_points",
+            SignalPolicy::Async, "render/picked_points",
             bind(&Workspace::pick_points_handler, m_workspace.get(),
                 ::placeholders::_1, ::placeholders::_2, ::placeholders::_3));
-        m_autobus->subscribe<void(uint32_t, uint32_t)>(SignalPolicy::Sync, "render/picked_vertex",
+        m_autobus->subscribe<void(uint32_t, uint32_t)>(SignalPolicy::Async, "render/picked_vertex",
             bind(&Workspace::pick_vertex_handler, m_workspace.get(), ::placeholders::_1, ::placeholders::_2));
         m_autobus->subscribe<void(vector<vector<geometry::Point3f>>&, const std::pair<int, int>&)>(SignalPolicy::Sync, "GUI/send_nurbs_points_pack",
             bind(&Workspace::compute_nurbs_reverse, m_workspace.get(), ::placeholders::_1, ::placeholders::_2));
 
-        m_autobus->subscribe<void(const vector<uint32_t>&)>(SignalPolicy::Sync, "GUI/generate_depth",
+        m_autobus->subscribe<void(const vector<uint32_t>&)>(SignalPolicy::Async, "GUI/generate_depth",
             bind(&Workspace::generate_depth, m_workspace.get(), ::placeholders::_1));
-        m_autobus->subscribe<void(const string&)>(SignalPolicy::Sync, "GUI/set_heatmap_style",
+        m_autobus->subscribe<void(const string&)>(SignalPolicy::Async, "GUI/set_heatmap_style",
             bind(&Workspace::set_heatmap_style, m_workspace.get(), ::placeholders::_1));
     }
 
-    void ToothService::slot_add_log(string&& type, const string& msg) {
-        auto _service = ContextHub::getInstance()->getServiceTable<void(string&&, const string&)>();
-        _service->sync_invoke("GUI/add_log", forward<string&&>(type), msg);
+    void ToothService::slot_add_log(const string& type, const string& msg) {
+        auto _service = ContextHub::getInstance()->getServiceTable<void(const string&, const string&)>();
+        _service->async_invoke("GUI/add_log", type, msg);
     }
 
     void ToothService::slot_add_notice(const string& name, const string& notice) {
         auto _service = ContextHub::getInstance()->getServiceTable<void(const string&, const string&)>();
-        _service->sync_invoke("GUI/add_notice", name, notice);
+        _service->async_invoke("GUI/add_notice", name, notice);
     }
 
     void ToothService::slot_open_workflow(WkflowCtxPtr ptr_params) {
         auto _service = ContextHub::getInstance()->getServiceTable<void(WkflowCtxPtr)>();
-        _service->sync_invoke("GUI/open_workflow", ptr_params);
+        _service->async_invoke("GUI/open_workflow", ptr_params);
     }
 
     void ToothService::slot_add_tooth_pack(shared_ptr<ToothPack> tpack_ptr) {
         auto _service = ContextHub::getInstance()->getServiceTable<void(shared_ptr<ToothPack>)>();
-        _service->sync_invoke("GUI/add_tooth_pack", tpack_ptr);
+        _service->async_invoke("GUI/add_tooth_pack", tpack_ptr);
     }
 
     uint32_t ToothService::slot_load_mesh(const string& meshpath) {
@@ -120,7 +120,7 @@ namespace ToothSpace {
 
     void ToothService::slot_update_transform(const glm::mat4& transf) {
         auto _service = ContextHub::getInstance()->getServiceTable<void(const glm::mat4&)>();
-        _service->sync_invoke("render/update_transform_mat", transf);
+        _service->async_invoke("render/update_transform_mat", transf);
     }
 
     shared_ptr<DrawableBase> ToothService::slot_get_drawable_inst(uint32_t draw_id) {
@@ -130,7 +130,7 @@ namespace ToothSpace {
 
     void ToothService::slot_set_mouse_tooltip(const string& tooltip) {
         auto _service = ContextHub::getInstance()->getServiceTable<void(const string&)>();
-        _service->sync_invoke("GUI/set_mouse_tooltip", tooltip);
+        _service->async_invoke("GUI/set_mouse_tooltip", tooltip);
     }
 
     uint32_t ToothService::slot_get_current_flow_id() {

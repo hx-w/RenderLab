@@ -84,8 +84,8 @@ namespace RenderSpace {
         std::cout << "[INFO] thread " << tname << " created" << std::endl;
     }
 
-    void RenderService::slot_add_log(string&& type, const string& msg) {
-        auto _service = ContextHub::getInstance()->getServiceTable<void(string&&, const string&)>();
-        _service->sync_invoke("GUI/add_log", forward<string&&>(type), msg);
+    void RenderService::slot_add_log(const string& type, const string& msg) {
+        auto _service = ContextHub::getInstance()->getServiceTable<void(const string&, const string&)>();
+        _service->async_invoke("GUI/add_log", type, msg);
     }
 }

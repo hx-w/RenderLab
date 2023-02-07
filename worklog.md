@@ -18,4 +18,8 @@
 
 - [x] python中`sys.executable`为当前python可执行文件的路径，如果通过pybind11调用`f'{sys.executable} -m pip install {pkg}'`会导致窗口不断复制
 
+## 2023/02/07
+
+- [x] 修复ThreadPool中的逻辑问题
+- [x] 全局python环境，并且释放GIL，在计算线程中获取并运行
 

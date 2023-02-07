@@ -29,9 +29,9 @@ namespace fundamental {
             unique_lock<mutex> lk(m_mutex);
             m_conVar.wait(lk, [this]() { return m_done || !m_taskQueue.empty(); });
             task = m_taskQueue.pop();
-        }
-        if (task) {
-            (*task)();
+			if (task) {
+				(*task)();
+			}
         }
     }
 

@@ -57,10 +57,10 @@ struct ProjectInst {
 		auto& ctx = tpack->get_context();
 		if (ctx->stage_curr < 0 ||
 			ctx->stage_curr >= ctx->node_order.size() ||
-			static_cast<int>(ctx->node_order[ctx->stage_curr]) < static_cast<int>(NodeId_2)) {
+			static_cast<int>(ctx->node_order[ctx->stage_curr]) < static_cast<int>(NodeId_2) ||
+			static_cast<int>(ctx->node_order[ctx->stage_curr]) == static_cast<int>(NodeId_3)) {
 			return;
 		}
-
 		auto max_row = any_cast<int>(ctx->node_states[NodeId_2]["Samples U"]);
 		auto max_col = any_cast<int>(ctx->node_states[NodeId_2]["Samples V"]);
 		if (picked_nurbs_points.empty()) {

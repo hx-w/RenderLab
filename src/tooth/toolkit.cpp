@@ -24,7 +24,8 @@ namespace py = pybind11;
 using AABB = pair<float, float>;
 
 namespace ToothSpace {
-	py::scoped_interpreter guard{};
+	py::scoped_interpreter py_guard{};
+	py::gil_scoped_release py_release{};
 
 	template<class T>
 	void vector_to_numpy(vector<glm::vec<3, T>>& vec, py::array& res) {
@@ -43,12 +44,12 @@ namespace ToothSpace {
 	bool init_workenv(string& status) {
 		/// init in this thread
 		try {
+			py::gil_scoped_acquire _acquire{};
 			auto _py_pkg = py::module_::import(PY_INITENV_MODULE);
 			auto reqs = py::make_tuple(PY_REQUIREMENTS);
 			_py_pkg.attr("make_requirements_installed")(
 				reqs, "https://pypi.tuna.tsinghua.edu.cn/simple"
 			);
-
 			status = "package loaded";
 			return true;
 		}
@@ -60,13 +61,16 @@ namespace ToothSpace {
 
 	int preprocess_tooth_path(const string& path, bool force, string& status) {
 		try {
-			//py::scoped_interpreter guard{};
+			py::gil_scoped_acquire _acquire{};
 			// check path is folder, and folder's elements valid
 			auto _py_os = py::module_::import("os");
 			if (!_py_os.attr("path").attr("isdir")(path).cast<bool>()) {
 				status = "project target must be a directory";
 				return 0;
 			}
+
+			auto x = py::module_::import("sys");
+			py::print(x.attr("path"));
 
 			// work with py script
 			auto _py_pkg = py::module_::import(PY_LOADPROJ_MODULE);
@@ -94,7 +98,7 @@ namespace ToothSpace {
 		auto& context = tpack->get_context();
 		auto& path = tpack->get_basedir();
 		try {
-			//py::scoped_interpreter guard{};
+			py::gil_scoped_acquire py_acquire{};
 			// load files names
 			auto _py_os = py::module_::import("os");
 			auto _py_toml = py::module_::import("toml");
@@ -146,7 +150,7 @@ namespace ToothSpace {
 		auto& path = tpack->get_basedir();
 
 		try {
-			//py::scoped_interpreter guard{};
+			py::gil_scoped_acquire py_acquire{};
 			// load files names
 			auto _py_os = py::module_::import("os");
 			auto _py_toml = py::module_::import("toml");
@@ -197,7 +201,7 @@ namespace ToothSpace {
 	}
 
 	void load_meshes_to_renderer(ToothPack* tpack) {
-		//py::scoped_interpreter guard{};
+		py::gil_scoped_acquire py_acquire{};
 		auto _py_os = py::module_::import("os");
 		auto& meshes = tpack->get_meshes();
 		auto& basedir = tpack->get_basedir();
@@ -268,6 +272,7 @@ namespace ToothSpace {
 		vector<geometry::Point3f>& control_points,
 		vector<float>& knots
 	) {
+		py::gil_scoped_acquire py_acquire{};
 		control_points.clear();
 		knots.clear();
 
@@ -303,6 +308,7 @@ namespace ToothSpace {
 		shared_ptr<ToothPack> tpack,
 		vector<float>& depth
 	) {
+		py::gil_scoped_acquire py_acquire{};
 		auto id_to_mesh = [](uint32_t id) -> shared_ptr<NewMeshDrawable> {
 			auto draw_inst = SERVICE_INST->slot_get_drawable_inst(id);
 			return dynamic_pointer_cast<NewMeshDrawable>(draw_inst);
@@ -342,8 +348,6 @@ namespace ToothSpace {
 			_py_args_1, _py_args_2
 		);
 
-		py::print(_py_depth);
-
 		auto _unchecked = _py_depth.cast<py::array_t<double>>().unchecked<1>();
 		auto vsize = depth.size();
 		for (auto ind = 0; ind < vsize; ++ind) {
@@ -356,6 +360,7 @@ namespace ToothSpace {
 		shared_ptr<ToothPack> tpack,
 		vector<float>& depth
 	) {
+		py::gil_scoped_acquire py_acquire{};
 		auto id_to_mesh = [](uint32_t id) -> shared_ptr<NewMeshDrawable> {
 			auto draw_inst = SERVICE_INST->slot_get_drawable_inst(id);
 			return dynamic_pointer_cast<NewMeshDrawable>(draw_inst);

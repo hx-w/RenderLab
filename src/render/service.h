@@ -35,7 +35,7 @@ namespace RenderSpace {
 
     public:
         /// [Slots]
-        void slot_add_log(std::string&&, const std::string&);
+        void slot_add_log(const std::string&, const std::string&);
 
     private:
         void start_thread(std::string tname, std::function<void()>&& func);

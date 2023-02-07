@@ -7,7 +7,6 @@ workspace at ${PROJECT_SOURCE_DIR}
 @author CarOL
 '''
 
-import sys
 import subprocess
 from importlib.util import find_spec
 
@@ -27,6 +26,6 @@ def make_requirements_installed(reqs: list, mirror: str = None) -> int:
 
 if __name__ == '__main__':
     make_requirements_installed(
-        ['trimesh', 'toml', 'tqdm'],
+        ['trimesh', 'toml', 'tqdm', 'rtree'],
         'https://pypi.tuna.tsinghua.edu.cn/simple'
     )

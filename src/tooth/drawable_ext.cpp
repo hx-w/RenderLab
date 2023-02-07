@@ -70,6 +70,7 @@ namespace ToothSpace {
 		const string& type,
 		const string& heatmap_style
 	) {
+		py::gil_scoped_acquire _acquire{};
 		static auto support_type = { "curvature_mean", "curvature_gaussian" };
 
 		if (draw_ptr == nullptr || draw_ptr->_type() != GeomTypeMesh) return;
@@ -110,6 +111,7 @@ namespace ToothSpace {
 
 		_cache_adj(id);
 
+		py::gil_scoped_release _release{};
 		// change color ?
 		if (!heatmap_style.empty()) {
 		    switch_color_cache(id, "curvature_mean", heatmap_style);
@@ -131,6 +133,7 @@ namespace ToothSpace {
 	}
 
 	void MeshDrawableExtManager::switch_color_cache(uint32_t id, const string& type, const string& style) {
+		py::gil_scoped_acquire _acquire{};
 		if (st_mesh_exts.find(id) == st_mesh_exts.end()) return;
 		if (st_mesh_exts[id]->m_buffers.find(type) == st_mesh_exts[id]->m_buffers.end()) return;
 

@@ -20,8 +20,9 @@ namespace ToothSpace {
 		
 		// for parameter remesh
 		std::vector<uint32_t> m_vert_boundary;
-		std::vector<uint32_t> m_boundary_corners; // pick one vertex, generate three ( record draw_id )
+		std::vector<std::pair<uint32_t, uint32_t>> m_boundary_corners; // { draw_id: vertex_id }
 		float boundary_length = 0.f;
+		bool m_corner_order = true; // default order
 	};
 
 	class MeshDrawableExtManager {

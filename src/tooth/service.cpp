@@ -7,6 +7,7 @@
 #include "workflow.h"
 #include "wkflow_context.h"
 #include "tooth_pack.h"
+#include "toolkit.h"
 #include <geom_ext/drawable.h>
 #include <mesh.h>
 
@@ -59,6 +60,8 @@ namespace ToothSpace {
             bind(&Workspace::pick_points_handler, m_workspace.get(),
                 ::placeholders::_1, ::placeholders::_2, ::placeholders::_3));
         m_autobus->subscribe<void(uint32_t, uint32_t, bool)>(SignalPolicy::Async, "render/picked_vertex",
+            bind(&Workspace::pick_vertex_handler, m_workspace.get(), ::placeholders::_1, ::placeholders::_2, ::placeholders::_3));
+        m_autobus->subscribe<void(uint32_t, uint32_t, bool)>(SignalPolicy::Async, "GUI/picked_vertex",
             bind(&Workspace::pick_vertex_handler, m_workspace.get(), ::placeholders::_1, ::placeholders::_2, ::placeholders::_3));
         m_autobus->subscribe<void(vector<vector<geometry::Point3f>>&, const std::pair<int, int>&)>(SignalPolicy::Sync, "GUI/send_nurbs_points_pack",
             bind(&Workspace::compute_nurbs_reverse, m_workspace.get(), ::placeholders::_1, ::placeholders::_2));

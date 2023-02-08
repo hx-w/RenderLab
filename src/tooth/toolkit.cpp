@@ -488,30 +488,46 @@ namespace ToothSpace {
 		auto bnd_size = bnd_verts.size();
 
 		// clear legacy corner arrows
-		for (auto id : ext->m_boundary_corners) {
-			SERVICE_INST->slot_remove_drawable(id);
+		for (auto& _pair: ext->m_boundary_corners) {
+			auto [draw_id, vertex_id] = _pair;
+			SERVICE_INST->slot_remove_drawable(draw_id);
 		}
 		ext->m_boundary_corners.clear();
 		vector<uint32_t> corners;
 
 		// set four corners
+		auto order = ext->m_corner_order;
 		auto& vertices = mesh_inst->_vertices();
 		float summer = 0.f; // sum mer
 		for (auto i = 0; i < bnd_size; ++i) {
 			if (i == 0) {
-				corners.emplace_back(bnd_verts[(pivot + i) % bnd_size]);
+				corners.emplace_back(bnd_verts[pivot % bnd_size]);
 				continue;
 			}
 
 			auto ratio_old = floorf(summer / piece_len);
-			summer += glm::distance(
-				vertices[bnd_verts[(pivot + i - 1) % bnd_size]].Position,
-				vertices[bnd_verts[(pivot + i) % bnd_size]].Position
-			);
+			if (order) {
+				summer += glm::distance(
+					vertices[bnd_verts[(pivot + i - 1) % bnd_size]].Position,
+					vertices[bnd_verts[(pivot + i) % bnd_size]].Position
+				);
+			}
+			else {
+				summer += glm::distance(
+					vertices[bnd_verts[(pivot - i + 1 + bnd_size) % bnd_size]].Position,
+					vertices[bnd_verts[(pivot - i + bnd_size) % bnd_size]].Position
+				);
+			}
+
 			auto ratio_new = floorf(summer / piece_len);
 			
 			if (ratio_old != ratio_new) {
-				corners.emplace_back(bnd_verts[(pivot + i) % bnd_size]);
+				if (order) {
+					corners.emplace_back(bnd_verts[(pivot + i) % bnd_size]);
+				}
+				else {
+					corners.emplace_back(bnd_verts[(pivot - i + bnd_size) % bnd_size]);
+				}
 				if (corners.size() == 4) break; // full
 			}
 		}
@@ -521,9 +537,11 @@ namespace ToothSpace {
 			// normal direction
 			auto ray = geometry::Ray(vertices[cor_ind].Position, vertices[cor_ind].Normal);
 			auto id = SERVICE_INST->slot_show_arrow(ray, 0.5f, glm::vec3(1.f, 0.f, 0.f));
-			ext->m_boundary_corners.emplace_back(id);
+			ext->m_boundary_corners.emplace_back(make_pair(id, cor_ind));
 		}
 
+		// register to project panel only if pivot picked
+		SERVICE_INST->notify<void(uint32_t, shared_ptr<MeshDrawableExt>)>("/register_mesh_ext", draw_id, ext);
 	}
 
 	void action_node_1(shared_ptr<ToothPack> tpack, const string& style) {

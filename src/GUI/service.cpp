@@ -11,7 +11,6 @@
 #include <functional>
 #include <communication/ContextHub.h>
 #include <wkflow_context.h>
-//#include <tooth_pack.h>
 
 namespace RenderSpace {
 	class RenderWindowWidget;
@@ -19,6 +18,7 @@ namespace RenderSpace {
 
 namespace ToothSpace {
 	class ToothPack;
+	class MeshDrawableExt;
 }
 
 using namespace std;
@@ -59,6 +59,8 @@ namespace GUISpace {
 			bind(&GUISpace::ProjectPanel::register_mesh, ::placeholders::_1, ::placeholders::_2));
 		m_autobus->subscribe<void(int, int)>(SignalPolicy::Async, "render/window_resized",
 			bind(&GUISpace::Zmo::set_big_window_size, ::placeholders::_1, ::placeholders::_2));
+		m_autobus->subscribe<void(uint32_t, shared_ptr<ToothSpace::MeshDrawableExt>)>(SignalPolicy::Async, "tooth/register_mesh_ext",
+			bind(&GUISpace::ProjectPanel::register_parameter_mesh_ext, ::placeholders::_1, ::placeholders::_2));
 	}
 
 	void GUIService::_register_all() {

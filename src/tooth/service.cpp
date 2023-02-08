@@ -21,6 +21,7 @@ namespace ToothSpace {
           m_autobus(make_unique<AutoBus>()),
           m_workspace(make_unique<Workspace>()) {
         _subscribe();
+        _register_all();
     }
 
     ToothService::~ToothService() {
@@ -70,6 +71,11 @@ namespace ToothSpace {
             bind(&Workspace::generate_depth, m_workspace.get(), ::placeholders::_1));
         m_autobus->subscribe<void(const string&)>(SignalPolicy::Async, "GUI/set_heatmap_style",
             bind(&Workspace::set_heatmap_style, m_workspace.get(), ::placeholders::_1));
+        m_autobus->subscribe<void(uint32_t)>(SignalPolicy::Async, "GUI/compute_parameter_remesh",
+            bind(&Workspace::compute_parameter_remesh, m_workspace.get(), ::placeholders::_1));
+    }
+
+    void ToothService::_register_all() {
     }
 
     void ToothService::slot_add_log(const string& type, const string& msg) {
@@ -112,11 +118,11 @@ namespace ToothSpace {
         return _service->sync_invoke("render/add_geometry", geom_ptr, props, 1);
     }
 
-    uint32_t ToothService::slot_add_mesh(geometry::Mesh& mesh) {
+    uint32_t ToothService::slot_add_mesh(geometry::Mesh& mesh, map<string, any> props) {
         auto geom_ptr = make_shared<geometry::Mesh>(mesh);
-        auto props = map<string, any>{
-            {"color", geometry::Vector3f(0.5f)}
-        };
+        if (props.find("color") == props.end()) {
+            props["color"] = geometry::Vector3f(0.5f);
+        }
         auto _service = ContextHub::getInstance()->getServiceTable<uint32_t(shared_ptr<geometry::GeometryBase>, map<string, any>&, int)>();
         return _service->sync_invoke("render/add_geometry", geom_ptr, props, 2);
     }

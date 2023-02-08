@@ -44,6 +44,9 @@ namespace ToothSpace {
 		/// compute nurbs reverse by recieved points
 		void compute_nurbs_reverse(std::vector<std::vector<geometry::Point3f>>&, const std::pair<int, int>&);
 
+		/// compute parameter remesh
+		void compute_parameter_remesh(uint32_t /* msh_id */);
+
 		/// generate depth from recieved selected meshes id
 		void generate_depth(const std::vector<uint32_t>&);
 
@@ -60,7 +63,7 @@ namespace ToothSpace {
 		// stacked tooth packs
 		std::vector<std::shared_ptr<ToothPack>> _tooth_packs;
 
-		std::string _heatmap_style = "jet";
+		std::string _heatmap_style = "YlGnBu";
 
 		std::once_flag _inited;
 	};

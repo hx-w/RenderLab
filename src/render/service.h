@@ -37,6 +37,8 @@ namespace RenderSpace {
         /// [Slots]
         void slot_add_log(const std::string&, const std::string&);
 
+        void slot_set_mouse_tooltip(const std::string&);
+
     private:
         void start_thread(std::string tname, std::function<void()>&& func);
         void _register_all();

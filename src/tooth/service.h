@@ -2,6 +2,7 @@
 #define TOOTH_SERVICE_H
 
 #include <any>
+#include <map>
 #include <string>
 #include <memory>
 #include <communication/AutoBus.hpp>
@@ -35,7 +36,7 @@ namespace ToothSpace {
         // to renderer
         uint32_t slot_show_arrow(geometry::Ray&, float /* length */, geometry::Vector3f&& /* color */);
 
-        uint32_t slot_add_mesh(geometry::Mesh&);
+        uint32_t slot_add_mesh(geometry::Mesh&, std::map<std::string, std::any> ={});
 
         uint32_t slot_get_current_flow_id();
 
@@ -58,6 +59,7 @@ namespace ToothSpace {
 
     private:
         void _subscribe();
+        void _register_all();
 
     private:
         std::string m_symbol = "tooth"; // 名称

@@ -76,8 +76,10 @@ namespace RenderSpace {
             key_down_GTRL = true;
         }
         if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_RELEASE) {
-            if (key_down_GTRL)
-                m_context->ctx_notify<void(uint32_t, uint32_t)>("/picked_vertex", -1, -1);
+            if (key_down_GTRL) {
+                m_context->ctx_notify<void(uint32_t, uint32_t, bool)>("/picked_vertex", -1, -1, true);
+                //m_context->service()->slot_set_mouse_tooltip("");
+            }
             key_down_GTRL = false;
         }
     }

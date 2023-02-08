@@ -70,6 +70,9 @@ namespace RenderSpace {
         if (geom_type == GeomTypeMesh) {
 			auto geom_mesh = dynamic_pointer_cast<Mesh>(geom);
 			auto drawable_mesh = make_shared<NewMeshDrawable>(*geom_mesh, clr);
+            if (props.find("topo_shape") != props.end()) {
+                drawable_mesh->topo_shape = any_cast<pair<int, int>>(props["topo_shape"]);
+            }
 			drawable_id = post_setup(drawable_mesh);
         }
         else if (geom_type == GeomTypeArrow) {
@@ -87,6 +90,7 @@ namespace RenderSpace {
         else if (geom_type == GeomTypePoint) {
             
         }
+
 		m_service->slot_add_log("info", "Add drawable object with id " + to_string(drawable_id));
         return drawable_id;
     }

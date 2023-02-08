@@ -315,6 +315,64 @@ namespace ToothSpace {
 		}
 	}
 
+	void _compute_parameter_remesh(uint32_t uns_id, uint32_t& str_id, uint32_t& param_id, int U, int V) {
+		py::gil_scoped_acquire py_acquire{};
+
+		auto draw_inst = SERVICE_INST->slot_get_drawable_inst(uns_id);
+		if (draw_inst->_type() != GeomTypeMesh) return;
+		auto msh = dynamic_pointer_cast<NewMeshDrawable>(draw_inst);
+
+		auto& ext = MeshDrawableExtManager::get_mesh_ext(uns_id);
+		if (ext->boundary_length < 1e-6 || ext->m_boundary_corners.empty()) {
+			return; // not a open mesh OR not select pivot
+		}
+
+		auto _py_pkg = py::module_::import(PY_PARAMETER_MODULE);
+
+		py::array _verts, _faces;
+		vector_to_numpy(msh->_raw()->get_vertices(), _verts);
+		vector_to_numpy(msh->_raw()->get_faces(), _faces);
+
+		auto res = _py_pkg.attr("parameter_remesh_cmd")(
+			_verts, _faces, U, V, ext->m_boundary_corners[0].second, ext->m_corner_order
+		).cast<py::tuple>();
+		
+		auto str_verts_num = res[0].attr("shape").cast<py::tuple>()[0].cast<int>();
+		auto str_faces_num = res[1].attr("shape").cast<py::tuple>()[0].cast<int>();
+		auto param_verts_num = res[2].attr("shape").cast<py::tuple>()[0].cast<int>();
+		auto param_faces_num = res[3].attr("shape").cast<py::tuple>()[0].cast<int>();
+
+		auto build_mesh_from_py = [](
+			py::detail::tuple_accessor& verts,
+			py::detail::tuple_accessor& faces,
+			int num_v, int num_f
+		) -> geometry::Mesh {
+			auto _verts = verts.cast<py::array_t<double>>().unchecked<2>();
+			auto _faces = faces.cast<py::array_t<long long int, py::array::c_style | py::array::forcecast>>().unchecked<2>();
+
+			vector<geometry::Point3f> m_vertices(num_v);
+			vector<geometry::Vector3u> m_faces(num_f);
+
+			for (auto i = 0; i < num_v; ++i) {
+				m_vertices[i] = geometry::Point3f(_verts(i, 0), _verts(i, 1), _verts(i, 2));
+			}
+
+			for (auto i = 0; i < num_f; ++i) {
+				m_faces[i] = geometry::Vector3u(uint32_t(_faces(i, 0)), uint32_t(_faces(i, 1)), uint32_t(_faces(i, 2)));
+			}
+			
+			return geometry::Mesh(m_vertices, m_faces);
+		};
+
+		auto str_msh = build_mesh_from_py(res[0], res[1], str_verts_num, str_faces_num);
+		auto param_msh = build_mesh_from_py(
+			res[2], res[3], param_verts_num, param_faces_num
+		);
+
+		str_id = SERVICE_INST->slot_add_mesh(str_msh, {{"topo_shape", pair<int, int>(U, V)}});
+		param_id = SERVICE_INST->slot_add_mesh(param_msh);
+	}
+
 	void compute_tooth_depth_GT(
 		const vector<uint32_t>& mshes_id,
 		shared_ptr<ToothPack> tpack,
@@ -394,24 +452,24 @@ namespace ToothSpace {
 		// info shown case
 		static pair<uint32_t, uint32_t> st_last_hover_picked(-1, -1);
 		// recover
-		if (st_last_hover_picked.first != uint32_t(-1)) {
-			auto& [last_draw_id, last_vert_id] = st_last_hover_picked;
+		//if (st_last_hover_picked.first != uint32_t(-1)) {
+		//	auto& [last_draw_id, last_vert_id] = st_last_hover_picked;
 
-			auto last_draw_inst = SERVICE_INST->slot_get_drawable_inst(last_draw_id);
-			auto last_mesh_inst = dynamic_pointer_cast<NewMeshDrawable>(last_draw_inst);
-			auto& last_vertices = last_mesh_inst->_vertices();
+		//	auto last_draw_inst = SERVICE_INST->slot_get_drawable_inst(last_draw_id);
+		//	auto last_mesh_inst = dynamic_pointer_cast<NewMeshDrawable>(last_draw_inst);
+		//	auto& last_vertices = last_mesh_inst->_vertices();
 
-			auto& last_mesh_ext = MeshDrawableExtManager::get_mesh_ext(last_draw_id);
-			if (last_mesh_ext != nullptr) {
-				auto& last_vert_adj = last_mesh_ext->m_vert_adj;
-				last_vertices[last_vert_id].Color = last_vertices[last_vert_id].BufColor;
-				
-				for (auto& adj : last_vert_adj[last_vert_id]) {
-					last_vertices[adj].Color = last_vertices[adj].BufColor;
-				}
-				last_mesh_inst->get_ready();
-			}
-		}
+		//	auto& last_mesh_ext = MeshDrawableExtManager::get_mesh_ext(last_draw_id);
+		//	if (last_mesh_ext != nullptr) {
+		//		auto& last_vert_adj = last_mesh_ext->m_vert_adj;
+		//		//last_vertices[last_vert_id].Color = last_vertices[last_vert_id].BufColor;
+		//		
+		//		//for (auto& adj : last_vert_adj[last_vert_id]) {
+		//		//	last_vertices[adj].Color = last_vertices[adj].BufColor;
+		//		//}
+		//		//last_mesh_inst->get_ready();
+		//	}
+		//}
 
 		st_last_hover_picked = make_pair(draw_id, vertex_id);
 		if (draw_id == -1) {
@@ -445,30 +503,31 @@ namespace ToothSpace {
 			return;
 		}
 
-		auto draw_inst = SERVICE_INST->slot_get_drawable_inst(draw_id);
-		auto mesh_inst = dynamic_pointer_cast<NewMeshDrawable>(draw_inst);
-		auto& adjs = mesh_ext->m_vert_adj[vertex_id];
+		//auto draw_inst = SERVICE_INST->slot_get_drawable_inst(draw_id);
+		//auto mesh_inst = dynamic_pointer_cast<NewMeshDrawable>(draw_inst);
+		//auto& adjs = mesh_ext->m_vert_adj[vertex_id];
 
-		auto& vertices = mesh_inst->_vertices();
+		//auto& vertices = mesh_inst->_vertices();
 
-		auto change_color = [&](uint32_t vid, glm::vec3&& clr) {
-			vertices[vid].BufColor = vertices[vid].Color;
-			vertices[vid].Color = clr;
-		};
+		//auto change_color = [&](uint32_t vid, glm::vec3&& clr) {
+		//	vertices[vid].BufColor = vertices[vid].Color;
+		//	vertices[vid].Color = clr;
+		//};
 		// change adjs color to red
 
-		change_color(vertex_id, glm::vec3(1.f, 0.5f, 0.f));
-		for (auto& adj : adjs) {
-			change_color(adj, glm::vec3(1.f, 0.f, 0.f));
-		}
+		//change_color(vertex_id, glm::vec3(1.f, 0.5f, 0.f));
+		//for (auto& adj : adjs) {
+		//	change_color(adj, glm::vec3(1.f, 0.f, 0.f));
+		//}
 
-		mesh_inst->get_ready();
+		//mesh_inst->get_ready();
 	}
 
 	void _pick_vertex_handler(uint32_t draw_id, uint32_t vertex_id) {
 		auto draw_inst = SERVICE_INST->slot_get_drawable_inst(draw_id);
 		auto mesh_inst = dynamic_pointer_cast<NewMeshDrawable>(draw_inst);
 		auto& ext = MeshDrawableExtManager::get_mesh_ext(draw_id);
+		if (ext == nullptr) return;
 
 		auto& bnd_verts = ext->m_vert_boundary;
 		auto iter = find(bnd_verts.begin(), bnd_verts.end(), vertex_id);
@@ -612,6 +671,8 @@ namespace ToothSpace {
 	}
 
 	void action_node_4(shared_ptr<ToothPack> tpack) {
+		auto mode = (1 << 2) | (1 << 3); // ClickVertexPick
+		SERVICE_INST->slot_set_interact_mode(mode);
 	}
 
 	void action_node_5(shared_ptr<ToothPack> tpack) {

@@ -14,6 +14,7 @@
 #include "wkflow_context.h"
 #include <geom_types.h>
 
+
 namespace ToothSpace {
 	class ToothPack;
 
@@ -24,7 +25,7 @@ namespace ToothSpace {
 #define PY_TOOTHDEPTH_MODULE "scripts.py_tooth_depth"
 #define PY_PARAMETER_MODULE  "scripts.py_parameter_remesh"
 
-#define PY_REQUIREMENTS "trimesh", "toml", "matplotlib", "rtree", "numpy_indexed"
+#define PY_REQUIREMENTS "trimesh", "toml", "matplotlib", "rtree", "numpy_indexed", "tqdm", "scipy"
 
 	/// call py scripts: 'scripts/py_env_checker.py'
 	bool init_workenv(std::string& /* status */);
@@ -65,6 +66,14 @@ namespace ToothSpace {
 		std::vector<geometry::Point3f>& /* points */,
 		std::vector<geometry::Point3f>& /* control_points [out] */,
 		std::vector<float>& /* knots [out] */
+	);
+
+	void _compute_parameter_remesh(
+		uint32_t /* uns_msh [in] */,
+		uint32_t& /* str_msh [out] */,
+		uint32_t& /* param_msh [out]*/,
+		int /* U */, 
+		int /* V */
 	);
 
 	void compute_tooth_depth_GT(

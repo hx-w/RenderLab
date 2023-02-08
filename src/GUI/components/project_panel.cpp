@@ -98,7 +98,7 @@ struct ProjectInst {
 		if (ctx->stage_curr < 0 ||
 			ctx->stage_curr >= ctx->node_order.size() ||
 			static_cast<int>(ctx->node_order[ctx->stage_curr]) < static_cast<int>(NodeId_2) ||
-			static_cast<int>(ctx->node_order[ctx->stage_curr]) == static_cast<int>(NodeId_3)) {
+			find(ctx->node_order.begin(), ctx->node_order.end(), NodeId_3) != ctx->node_order.end()) {
 			return;
 		}
 		auto max_row = any_cast<int>(ctx->node_states[NodeId_2]["Samples U"]);
@@ -415,7 +415,8 @@ void mesh_property_render(ProjectInst& proj, const string& msh_name, uint32_t ms
 	}
 	/// P03 parameter remesh
 	{
-		if (proj.meshes_ext.find(msh_id) != proj.meshes_ext.end()) {
+		if (proj.meshes_ext.find(msh_id) != proj.meshes_ext.end() &&
+			!proj.meshes_ext[msh_id]->m_boundary_corners.empty()) {
 			ImGui::Spacing();
 			auto& order = proj.meshes_ext[msh_id]->m_corner_order;
 			auto fir = proj.meshes_ext[msh_id]->m_boundary_corners[0].second;
@@ -425,7 +426,7 @@ void mesh_property_render(ProjectInst& proj, const string& msh_name, uint32_t ms
 			ImGui::SameLine();
 			ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(3.f / 7.0f, 0.6f, 0.6f));
 			if (ImGui::Button(imgui_name("parameter remesh", str_msh_id).c_str())) {
-				clog << "remesh!" << endl;
+				SERVICE_INST->notify<void(uint32_t)>("/compute_parameter_remesh", msh_id);
 			}
 			ImGui::PopStyleColor();
 		}

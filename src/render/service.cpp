@@ -88,4 +88,9 @@ namespace RenderSpace {
         auto _service = ContextHub::getInstance()->getServiceTable<void(const string&, const string&)>();
         _service->async_invoke("GUI/add_log", type, msg);
     }
+
+    void RenderService::slot_set_mouse_tooltip(const string& tooltip) {
+        auto _service = ContextHub::getInstance()->getServiceTable<void(const string&)>();
+        _service->async_invoke("GUI/set_mouse_tooltip", tooltip);
+    }
 }

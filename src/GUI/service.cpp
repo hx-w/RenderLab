@@ -42,9 +42,9 @@ namespace GUISpace {
 			bind(&GUISpace::ImGuiViewer::setup));
 		m_autobus->subscribe<void(shared_ptr<RenderWindowWidget>)>(SignalPolicy::Sync, "render/pre_redraw",
 			bind(&GUISpace::ImGuiViewer::update, placeholders::_1));
-		m_autobus->subscribe<void()>(SignalPolicy::Async, "render/render_destroy",
+		m_autobus->subscribe<void()>(SignalPolicy::Sync, "render/render_destroy",
 			bind(&GUISpace::ImGuiViewer::destroy));
-		m_autobus->subscribe<void(int)>(SignalPolicy::Async, "render/keyboard_clicked",
+		m_autobus->subscribe<void(int)>(SignalPolicy::Sync, "render/keyboard_clicked",
 			[this](int key) {
 				if (key == 72  /* GLFW_KEY_H */) GUISpace::ImGuiViewer::change_visibility();
 				if (key == 261 /* GLFW_KEY_DELETE */ || 

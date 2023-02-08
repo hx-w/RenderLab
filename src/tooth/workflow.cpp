@@ -267,10 +267,7 @@ namespace ToothSpace {
 
 			auto mesh = geometry::Mesh(vertices, faces);
 
-			auto mesh_id = SERVICE_INST->slot_add_mesh(mesh);
-
-			// add topo shape
-			SERVICE_INST->slot_set_drawable_property(mesh_id, "topo_shape", sample_rate);
+			auto mesh_id = SERVICE_INST->slot_add_mesh(mesh, { {"topo_shape", sample_rate} });
 
 			// show in proj panel
 			SERVICE_INST->notify<void(const string&, uint32_t)>("/register_mesh_to_current_proj", string("remeshed(nurbs)-") + to_string(mesh_id) + ".obj", mesh_id);
@@ -284,6 +281,43 @@ namespace ToothSpace {
 		else {
 			// nurbs not valid
 			SERVICE_INST->slot_add_log("error", "nurbs surface is invalid");
+		}
+	}
+
+	void Workspace::compute_parameter_remesh(uint32_t draw_id) {
+		uint32_t param_id = 0, remesh_id = 0;
+	
+		auto flow_id = SERVICE_INST->slot_get_current_flow_id();
+		auto tpack = _find_tpack(flow_id);
+
+		auto& nd_order = tpack->get_context()->node_order;
+		// nurbs case
+		if (find(nd_order.begin(), nd_order.end(), NodeId_3) != nd_order.end()) {
+			auto U = any_cast<int>(tpack->get_context()->node_states[NodeId_3]["Remesh U"]);
+			auto V = any_cast<int>(tpack->get_context()->node_states[NodeId_3]["Remesh V"]);
+			_compute_parameter_remesh(draw_id, remesh_id, param_id, U, V);
+	
+			SERVICE_INST->notify<void(const string&, uint32_t)>(
+				"/register_mesh_to_current_proj",
+				string("remeshed(param)-") + to_string(remesh_id) + ".obj", remesh_id
+			);
+			SERVICE_INST->notify<void(const string&, uint32_t)>(
+				"/register_mesh_to_current_proj",
+				string("param_domain-") + to_string(remesh_id) + ".obj", param_id
+			);
+
+			// clear picked
+			auto& ext = MeshDrawableExtManager::get_mesh_ext(draw_id);
+			ext->boundary_length = 0.f;
+			for (auto& _p : ext->m_boundary_corners) {
+				SERVICE_INST->slot_remove_drawable(_p.first);
+			}
+			ext->m_boundary_corners.clear();
+
+			/// current state NodeId_3
+			/// go next state
+			auto flow_id = SERVICE_INST->slot_get_current_flow_id();
+			SERVICE_INST->notify<void(uint32_t)>("/finish_current_stage", flow_id);
 		}
 	}
 
@@ -308,6 +342,8 @@ namespace ToothSpace {
 		/// [DEBUG] change color
 		MeshDrawableExtManager::set_mesh_cache(mshes_id[0], "depth_GT", depth);
 		MeshDrawableExtManager::switch_color_cache(mshes_id[0], "depth_GT", _heatmap_style);
+
+		SERVICE_INST->notify<void(uint32_t)>("/finish_current_stage", flow_id);
 	}
 
 	void Workspace::set_heatmap_style(const string& _stl) {

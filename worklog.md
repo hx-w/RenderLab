@@ -23,3 +23,6 @@
 - [x] 修复ThreadPool中的逻辑问题
 - [x] 全局python环境，并且释放GIL，在计算线程中获取并运行
 
+# 2023/02/08
+
+- [x] pybind11中从python获取的numpy数据，通过`.cast<py::array_t<T>>().unchecked<Dim>()`可以转换为c++对象，需要注意的是，python中的`float`需要使用`T=double`进行转换，`int`对应`T=long long int`

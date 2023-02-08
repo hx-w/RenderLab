@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 #include <atomic>
+#include <mutex>
 #include <vector>
 #include <geom_types.h>
 
@@ -14,6 +15,8 @@ namespace ToothSpace {
 		Workspace();
 	
 	public:
+		void init_workspace();
+
 		/// STEP-1
 		void fetch_filepath(const std::string& /* filepath */, bool = false);
 
@@ -35,14 +38,19 @@ namespace ToothSpace {
 		);
 
 		/// handle picked vertex
-		void pick_vertex_handler(uint32_t, uint32_t);
+		void pick_vertex_handler(uint32_t, uint32_t, bool /* hover pick */ = true);
 
 
 		/// compute nurbs reverse by recieved points
 		void compute_nurbs_reverse(std::vector<std::vector<geometry::Point3f>>&, const std::pair<int, int>&);
 
+		/// compute parameter remesh
+		void compute_parameter_remesh(uint32_t /* msh_id */);
+
 		/// generate depth from recieved selected meshes id
 		void generate_depth(const std::vector<uint32_t>&);
+
+		void set_heatmap_style(const std::string&);
 
 	private:
 		int _gen_wkflow_id();
@@ -54,6 +62,10 @@ namespace ToothSpace {
 
 		// stacked tooth packs
 		std::vector<std::shared_ptr<ToothPack>> _tooth_packs;
+
+		std::string _heatmap_style = "YlGnBu";
+
+		std::once_flag _inited;
 	};
 }
 

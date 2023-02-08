@@ -11,7 +11,6 @@
 #include <functional>
 #include <communication/ContextHub.h>
 #include <wkflow_context.h>
-//#include <tooth_pack.h>
 
 namespace RenderSpace {
 	class RenderWindowWidget;
@@ -19,6 +18,7 @@ namespace RenderSpace {
 
 namespace ToothSpace {
 	class ToothPack;
+	class MeshDrawableExt;
 }
 
 using namespace std;
@@ -38,7 +38,7 @@ namespace GUISpace {
 	}
 
 	void GUIService::_subscribe_all() {
-		m_autobus->subscribe<void()>(SignalPolicy::Sync, "render/render_setup",
+		m_autobus->subscribe<void()>(SignalPolicy::Async, "render/render_setup",
 			bind(&GUISpace::ImGuiViewer::setup));
 		m_autobus->subscribe<void(shared_ptr<RenderWindowWidget>)>(SignalPolicy::Sync, "render/pre_redraw",
 			bind(&GUISpace::ImGuiViewer::update, placeholders::_1));
@@ -51,18 +51,22 @@ namespace GUISpace {
 					key == 259 /* GLFW_KEY_BACKSPACE */)
 					GUISpace::NodeFlowManager::delete_selected_links();
 			});
-		m_autobus->subscribe<void(uint32_t)>(SignalPolicy::Sync, "tooth/finish_current_stage",
+		m_autobus->subscribe<void(uint32_t)>(SignalPolicy::Async, "tooth/finish_current_stage",
 			bind(&GUISpace::ProjectPanel::next_workflow_stage, ::placeholders::_1));
-		m_autobus->subscribe<void(uint32_t, glm::vec3&)>(SignalPolicy::Sync, "tooth/add_nurbs_point_record",
+		m_autobus->subscribe<void(uint32_t, glm::vec3&)>(SignalPolicy::Async, "tooth/add_nurbs_point_record",
 			bind(&GUISpace::ProjectPanel::add_picked_nurbs_points, ::placeholders::_1, ::placeholders::_2));
-		m_autobus->subscribe<void(const string&, uint32_t)>(SignalPolicy::Sync, "tooth/register_mesh_to_current_proj",
+		m_autobus->subscribe<void(const string&, uint32_t)>(SignalPolicy::Async, "tooth/register_mesh_to_current_proj",
 			bind(&GUISpace::ProjectPanel::register_mesh, ::placeholders::_1, ::placeholders::_2));
+		m_autobus->subscribe<void(int, int)>(SignalPolicy::Async, "render/window_resized",
+			bind(&GUISpace::Zmo::set_big_window_size, ::placeholders::_1, ::placeholders::_2));
+		m_autobus->subscribe<void(uint32_t, shared_ptr<ToothSpace::MeshDrawableExt>)>(SignalPolicy::Async, "tooth/register_mesh_ext",
+			bind(&GUISpace::ProjectPanel::register_parameter_mesh_ext, ::placeholders::_1, ::placeholders::_2));
 	}
 
 	void GUIService::_register_all() {
-		m_autobus->registerMethod<void(string&&, const string&)>(
+		m_autobus->registerMethod<void(const string&, const string&)>(
 			m_symbol + "/add_log",
-			[this](string&& type, const string& msg) {
+			[this](const string& type, const string& msg) {
 				LOG_LEVEL log_type = LOG_INFO;
 				if (type == "info") log_type = LOG_INFO;
 				else if (type == "error") log_type = LOG_ERROR;

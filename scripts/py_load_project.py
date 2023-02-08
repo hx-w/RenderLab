@@ -116,6 +116,10 @@ def update_config(project_path: str, target_files: List[str], force: bool = Fals
                         'Remesh U': 100,
                         'Remesh V': 100,
                         'Weights': 'auto'
+                    },
+                    '128': {
+                        'Remesh U': 100,
+                        'Remesh V': 100,
                     }
                 }
             }

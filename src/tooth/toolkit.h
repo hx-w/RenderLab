@@ -14,6 +14,7 @@
 #include "wkflow_context.h"
 #include <geom_types.h>
 
+
 namespace ToothSpace {
 	class ToothPack;
 
@@ -22,8 +23,9 @@ namespace ToothSpace {
 #define PY_PALETTE_MODULE    "scripts.py_mesh_palette"
 #define PY_NURBS_MODULE      "scripts.py_nurbs_toolkit"
 #define PY_TOOTHDEPTH_MODULE "scripts.py_tooth_depth"
+#define PY_PARAMETER_MODULE  "scripts.py_parameter_remesh"
 
-#define PY_REQUIREMENTS ("trimesh", "toml", "matplotlib")
+#define PY_REQUIREMENTS "trimesh", "toml", "matplotlib", "rtree", "numpy_indexed", "tqdm", "scipy"
 
 	/// call py scripts: 'scripts/py_env_checker.py'
 	bool init_workenv(std::string& /* status */);
@@ -66,6 +68,14 @@ namespace ToothSpace {
 		std::vector<float>& /* knots [out] */
 	);
 
+	void _compute_parameter_remesh(
+		uint32_t /* uns_msh [in] */,
+		uint32_t& /* str_msh [out] */,
+		uint32_t& /* param_msh [out]*/,
+		int /* U */, 
+		int /* V */
+	);
+
 	void compute_tooth_depth_GT(
 		const std::vector<uint32_t>& /* meshes_id */,
 		std::shared_ptr<ToothPack>,
@@ -78,13 +88,17 @@ namespace ToothSpace {
 		std::vector<float>& /* depth value for face1 [out] */
 	);
 
+	void _hover_vertex_handler(uint32_t, uint32_t);
+
+	void _pick_vertex_handler(uint32_t, uint32_t);
+
 	/**
 	 * Active stage for Nodes.
 	 * called in workspace, invoked from GUI actions
 	 */
 
 	/// [preprocess]
-	void action_node_1(std::shared_ptr<ToothPack> /* tpack */);
+	void action_node_1(std::shared_ptr<ToothPack> /* tpack */, const std::string& /* heatmap style */);
 
 	/// [pmtr_nurbs]
 	void action_node_2(std::shared_ptr<ToothPack> /* tpack */);

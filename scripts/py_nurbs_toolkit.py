@@ -21,7 +21,7 @@ def compute_knots(points: np.ndarray, k: int = 3) -> np.ndarray:
     sum_chord = np.sum(chord)
 
     knots = np.zeros(n + k + 3)
-    knots[-k - 1:] = 1
+    knots[-k - 1:] = 1.0
     knots[k: n + k - 1] = np.cumsum(chord) / sum_chord
     knots = np.roll(knots, 1)
     knots[0] = 0.0

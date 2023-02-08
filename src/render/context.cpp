@@ -70,6 +70,9 @@ namespace RenderSpace {
         if (geom_type == GeomTypeMesh) {
 			auto geom_mesh = dynamic_pointer_cast<Mesh>(geom);
 			auto drawable_mesh = make_shared<NewMeshDrawable>(*geom_mesh, clr);
+            if (props.find("topo_shape") != props.end()) {
+                drawable_mesh->topo_shape = any_cast<pair<int, int>>(props["topo_shape"]);
+            }
 			drawable_id = post_setup(drawable_mesh);
         }
         else if (geom_type == GeomTypeArrow) {
@@ -87,6 +90,7 @@ namespace RenderSpace {
         else if (geom_type == GeomTypePoint) {
             
         }
+
 		m_service->slot_add_log("info", "Add drawable object with id " + to_string(drawable_id));
         return drawable_id;
     }
@@ -128,19 +132,19 @@ namespace RenderSpace {
         }
     }
 
-    void RenderContext::ctx_pick_vertex(const Vector3f& origin, const Vector3f& direction) {
+    void RenderContext::ctx_pick_vertex(const Vector3f& origin, const Vector3f& direction, bool is_hover) {
         Ray pick_ray(origin, direction);
         DrawableID draw_id = -1;
         uint32_t vertex_id = -1;
         
         auto success = m_container->pickcmd(
-            Ray(origin, direction), draw_id, vertex_id, m_window->gizmo.getTransform(), 1e-1
+            Ray(origin, direction), draw_id, vertex_id, m_window->gizmo.getTransform(), 6e-2
         );
 
         if (success) {
             /// [Notify] render/picked_vertex
-            ctx_notify<void(DrawableID, uint32_t)>(
-                "/picked_vertex", draw_id, vertex_id
+            ctx_notify<void(DrawableID, uint32_t, bool)>(
+                "/picked_vertex", draw_id, vertex_id, is_hover
             );
         }
     }

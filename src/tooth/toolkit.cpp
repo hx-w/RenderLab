@@ -8,10 +8,12 @@
 #include <vector>
 #include <pybind11/embed.h>
 #include <pybind11/numpy.h>
-#include <pybind11/stl.h>
 #include <mesh.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <geom_ext/drawable.h>
+#include <line.hpp>
+
+#include <thread>
 
 
 using namespace std;
@@ -20,11 +22,12 @@ namespace py = pybind11;
 
 #define SERVICE_INST ToothEngine::get_instance()->get_service()
 
-py::scoped_interpreter guard{};
-
 using AABB = pair<float, float>;
 
 namespace ToothSpace {
+	py::scoped_interpreter py_guard{};
+	py::gil_scoped_release py_release{};
+
 	template<class T>
 	void vector_to_numpy(vector<glm::vec<3, T>>& vec, py::array& res) {
 		const auto shape_1 = vec.size();
@@ -42,8 +45,7 @@ namespace ToothSpace {
 	bool init_workenv(string& status) {
 		/// init in this thread
 		try {
-			// init interpreter for current thread
-			py::scoped_interpreter guard{};
+			py::gil_scoped_acquire _acquire{};
 			auto _py_pkg = py::module_::import(PY_INITENV_MODULE);
 			auto reqs = py::make_tuple(PY_REQUIREMENTS);
 			_py_pkg.attr("make_requirements_installed")(
@@ -60,13 +62,16 @@ namespace ToothSpace {
 
 	int preprocess_tooth_path(const string& path, bool force, string& status) {
 		try {
-			//py::scoped_interpreter guard{};
+			py::gil_scoped_acquire _acquire{};
 			// check path is folder, and folder's elements valid
 			auto _py_os = py::module_::import("os");
 			if (!_py_os.attr("path").attr("isdir")(path).cast<bool>()) {
 				status = "project target must be a directory";
 				return 0;
 			}
+
+			auto x = py::module_::import("sys");
+			py::print(x.attr("path"));
 
 			// work with py script
 			auto _py_pkg = py::module_::import(PY_LOADPROJ_MODULE);
@@ -94,7 +99,7 @@ namespace ToothSpace {
 		auto& context = tpack->get_context();
 		auto& path = tpack->get_basedir();
 		try {
-			//py::scoped_interpreter guard{};
+			py::gil_scoped_acquire py_acquire{};
 			// load files names
 			auto _py_os = py::module_::import("os");
 			auto _py_toml = py::module_::import("toml");
@@ -132,6 +137,11 @@ namespace ToothSpace {
 				nd_states[NodeId_2]["Remesh V"] = _ctx[node_2.c_str()]["Remesh V"].cast<int>();
 				nd_states[NodeId_2]["Weights"] = _ctx[node_2.c_str()]["Weights"].cast<string>();
 			}
+			{
+				auto node_3 = to_string(NodeId_3);
+				nd_states[NodeId_3]["Remesh U"] = _ctx[node_3.c_str()]["Remesh U"].cast<int>();
+				nd_states[NodeId_3]["Remesh V"] = _ctx[node_3.c_str()]["Remesh V"].cast<int>();
+			}
 
 
 			/// [TODO] init context params
@@ -146,7 +156,7 @@ namespace ToothSpace {
 		auto& path = tpack->get_basedir();
 
 		try {
-			//py::scoped_interpreter guard{};
+			py::gil_scoped_acquire py_acquire{};
 			// load files names
 			auto _py_os = py::module_::import("os");
 			auto _py_toml = py::module_::import("toml");
@@ -181,6 +191,12 @@ namespace ToothSpace {
 				cfg_dict[node_2.c_str()]["Remesh V"] = any_cast<int>(nd_states[NodeId_2]["Remesh V"]);
 				cfg_dict[node_2.c_str()]["Weights"] = any_cast<string>(nd_states[NodeId_2]["Weights"]);
 			}
+			{
+				auto node_3 = to_string(NodeId_3);
+				cfg_dict[node_3.c_str()] = py::dict{};
+				cfg_dict[node_3.c_str()]["Remesh U"] = any_cast<int>(nd_states[NodeId_3]["Remesh U"]);
+				cfg_dict[node_3.c_str()]["Remesh V"] = any_cast<int>(nd_states[NodeId_3]["Remesh V"]);
+			}
 			/// [TODO] Other nodes
 
 
@@ -197,7 +213,7 @@ namespace ToothSpace {
 	}
 
 	void load_meshes_to_renderer(ToothPack* tpack) {
-		//py::scoped_interpreter guard{};
+		py::gil_scoped_acquire py_acquire{};
 		auto _py_os = py::module_::import("os");
 		auto& meshes = tpack->get_meshes();
 		auto& basedir = tpack->get_basedir();
@@ -268,6 +284,7 @@ namespace ToothSpace {
 		vector<geometry::Point3f>& control_points,
 		vector<float>& knots
 	) {
+		py::gil_scoped_acquire py_acquire{};
 		control_points.clear();
 		knots.clear();
 
@@ -278,13 +295,17 @@ namespace ToothSpace {
 
 		auto k = 3;
 		auto ret = _py_pkg.attr("compute_nurbs_reverse")(py_points, k).cast<py::tuple>();
-		auto py_knots = ret[0].cast<py::array_t<float>>().unchecked<1>();
-		auto py_ctrl_pnts = ret[1].cast<py::array_t<float>>().unchecked<2>();
+		auto py_knots = ret[0].cast<py::array_t<double>>().unchecked<1>();
+		auto py_ctrl_pnts = ret[1].cast<py::array_t<double>>().unchecked<2>();
 
 		auto n = points.size();
 
 		for (auto ind = 0; ind < n + k + 3; ++ind) {
-			knots.emplace_back(py_knots(ind));
+			// ensure knots asc
+			auto v = py_knots(ind);
+			if (ind < n + k + 2 && v > py_knots(ind + 1))
+				v = py_knots(ind + 1);
+			knots.emplace_back(v);
 		}
 
 		for (auto row = 0; row < n + 2; ++row) {
@@ -294,11 +315,70 @@ namespace ToothSpace {
 		}
 	}
 
+	void _compute_parameter_remesh(uint32_t uns_id, uint32_t& str_id, uint32_t& param_id, int U, int V) {
+		py::gil_scoped_acquire py_acquire{};
+
+		auto draw_inst = SERVICE_INST->slot_get_drawable_inst(uns_id);
+		if (draw_inst->_type() != GeomTypeMesh) return;
+		auto msh = dynamic_pointer_cast<NewMeshDrawable>(draw_inst);
+
+		auto& ext = MeshDrawableExtManager::get_mesh_ext(uns_id);
+		if (ext->boundary_length < 1e-6 || ext->m_boundary_corners.empty()) {
+			return; // not a open mesh OR not select pivot
+		}
+
+		auto _py_pkg = py::module_::import(PY_PARAMETER_MODULE);
+
+		py::array _verts, _faces;
+		vector_to_numpy(msh->_raw()->get_vertices(), _verts);
+		vector_to_numpy(msh->_raw()->get_faces(), _faces);
+
+		auto res = _py_pkg.attr("parameter_remesh_cmd")(
+			_verts, _faces, U, V, ext->m_boundary_corners[0].second, ext->m_corner_order
+		).cast<py::tuple>();
+		
+		auto str_verts_num = res[0].attr("shape").cast<py::tuple>()[0].cast<int>();
+		auto str_faces_num = res[1].attr("shape").cast<py::tuple>()[0].cast<int>();
+		auto param_verts_num = res[2].attr("shape").cast<py::tuple>()[0].cast<int>();
+		auto param_faces_num = res[3].attr("shape").cast<py::tuple>()[0].cast<int>();
+
+		auto build_mesh_from_py = [](
+			py::detail::tuple_accessor& verts,
+			py::detail::tuple_accessor& faces,
+			int num_v, int num_f
+		) -> geometry::Mesh {
+			auto _verts = verts.cast<py::array_t<double>>().unchecked<2>();
+			auto _faces = faces.cast<py::array_t<long long int, py::array::c_style | py::array::forcecast>>().unchecked<2>();
+
+			vector<geometry::Point3f> m_vertices(num_v);
+			vector<geometry::Vector3u> m_faces(num_f);
+
+			for (auto i = 0; i < num_v; ++i) {
+				m_vertices[i] = geometry::Point3f(_verts(i, 0), _verts(i, 1), _verts(i, 2));
+			}
+
+			for (auto i = 0; i < num_f; ++i) {
+				m_faces[i] = geometry::Vector3u(uint32_t(_faces(i, 0)), uint32_t(_faces(i, 1)), uint32_t(_faces(i, 2)));
+			}
+			
+			return geometry::Mesh(m_vertices, m_faces);
+		};
+
+		auto str_msh = build_mesh_from_py(res[0], res[1], str_verts_num, str_faces_num);
+		auto param_msh = build_mesh_from_py(
+			res[2], res[3], param_verts_num, param_faces_num
+		);
+
+		str_id = SERVICE_INST->slot_add_mesh(str_msh, {{"topo_shape", pair<int, int>(U, V)}});
+		param_id = SERVICE_INST->slot_add_mesh(param_msh);
+	}
+
 	void compute_tooth_depth_GT(
 		const vector<uint32_t>& mshes_id,
 		shared_ptr<ToothPack> tpack,
 		vector<float>& depth
 	) {
+		py::gil_scoped_acquire py_acquire{};
 		auto id_to_mesh = [](uint32_t id) -> shared_ptr<NewMeshDrawable> {
 			auto draw_inst = SERVICE_INST->slot_get_drawable_inst(id);
 			return dynamic_pointer_cast<NewMeshDrawable>(draw_inst);
@@ -338,8 +418,6 @@ namespace ToothSpace {
 			_py_args_1, _py_args_2
 		);
 
-		py::print(_py_depth);
-
 		auto _unchecked = _py_depth.cast<py::array_t<double>>().unchecked<1>();
 		auto vsize = depth.size();
 		for (auto ind = 0; ind < vsize; ++ind) {
@@ -352,6 +430,7 @@ namespace ToothSpace {
 		shared_ptr<ToothPack> tpack,
 		vector<float>& depth
 	) {
+		py::gil_scoped_acquire py_acquire{};
 		auto id_to_mesh = [](uint32_t id) -> shared_ptr<NewMeshDrawable> {
 			auto draw_inst = SERVICE_INST->slot_get_drawable_inst(id);
 			return dynamic_pointer_cast<NewMeshDrawable>(draw_inst);
@@ -369,7 +448,162 @@ namespace ToothSpace {
 		/// [TODO]
 	}
 
-	void action_node_1(shared_ptr<ToothPack> tpack) {
+	void _hover_vertex_handler(uint32_t draw_id, uint32_t vertex_id) {
+		// info shown case
+		static pair<uint32_t, uint32_t> st_last_hover_picked(-1, -1);
+		// recover
+		//if (st_last_hover_picked.first != uint32_t(-1)) {
+		//	auto& [last_draw_id, last_vert_id] = st_last_hover_picked;
+
+		//	auto last_draw_inst = SERVICE_INST->slot_get_drawable_inst(last_draw_id);
+		//	auto last_mesh_inst = dynamic_pointer_cast<NewMeshDrawable>(last_draw_inst);
+		//	auto& last_vertices = last_mesh_inst->_vertices();
+
+		//	auto& last_mesh_ext = MeshDrawableExtManager::get_mesh_ext(last_draw_id);
+		//	if (last_mesh_ext != nullptr) {
+		//		auto& last_vert_adj = last_mesh_ext->m_vert_adj;
+		//		//last_vertices[last_vert_id].Color = last_vertices[last_vert_id].BufColor;
+		//		
+		//		//for (auto& adj : last_vert_adj[last_vert_id]) {
+		//		//	last_vertices[adj].Color = last_vertices[adj].BufColor;
+		//		//}
+		//		//last_mesh_inst->get_ready();
+		//	}
+		//}
+
+		st_last_hover_picked = make_pair(draw_id, vertex_id);
+		if (draw_id == -1) {
+			SERVICE_INST->slot_set_mouse_tooltip("");
+			return; // end hover pick ( release CONTROL )
+		}
+
+		// show tooltip
+		/// [TODO] only show curvature_mean
+		auto& mesh_ext = MeshDrawableExtManager::get_mesh_ext(draw_id);
+
+		// if has depth, show depth
+		if (mesh_ext == nullptr) {
+			SERVICE_INST->slot_set_mouse_tooltip("");
+			return;
+		}
+		if (mesh_ext->m_buffers.find("depth_GT") != mesh_ext->m_buffers.end()) {
+			auto str_v = to_string(mesh_ext->m_buffers["depth_GT"][vertex_id]);
+			SERVICE_INST->slot_set_mouse_tooltip(
+				"depth: " + str_v
+			);
+		}
+		else if (mesh_ext->m_buffers.find("curvature_mean") != mesh_ext->m_buffers.end()) {
+			auto str_v = to_string(mesh_ext->m_buffers["curvature_mean"][vertex_id]);
+			SERVICE_INST->slot_set_mouse_tooltip(
+				"curv(mean): " + str_v
+			);
+		}
+		else {
+			SERVICE_INST->slot_set_mouse_tooltip("");
+			return;
+		}
+
+		//auto draw_inst = SERVICE_INST->slot_get_drawable_inst(draw_id);
+		//auto mesh_inst = dynamic_pointer_cast<NewMeshDrawable>(draw_inst);
+		//auto& adjs = mesh_ext->m_vert_adj[vertex_id];
+
+		//auto& vertices = mesh_inst->_vertices();
+
+		//auto change_color = [&](uint32_t vid, glm::vec3&& clr) {
+		//	vertices[vid].BufColor = vertices[vid].Color;
+		//	vertices[vid].Color = clr;
+		//};
+		// change adjs color to red
+
+		//change_color(vertex_id, glm::vec3(1.f, 0.5f, 0.f));
+		//for (auto& adj : adjs) {
+		//	change_color(adj, glm::vec3(1.f, 0.f, 0.f));
+		//}
+
+		//mesh_inst->get_ready();
+	}
+
+	void _pick_vertex_handler(uint32_t draw_id, uint32_t vertex_id) {
+		auto draw_inst = SERVICE_INST->slot_get_drawable_inst(draw_id);
+		auto mesh_inst = dynamic_pointer_cast<NewMeshDrawable>(draw_inst);
+		auto& ext = MeshDrawableExtManager::get_mesh_ext(draw_id);
+		if (ext == nullptr) return;
+
+		auto& bnd_verts = ext->m_vert_boundary;
+		auto iter = find(bnd_verts.begin(), bnd_verts.end(), vertex_id);
+		if (iter == bnd_verts.end() || ext->boundary_length < 1e-6) {
+			// not a boundary vertex
+			/// [Notify]
+			SERVICE_INST->slot_add_log("warn", "not a boundary vertex");
+			return;
+		}
+		
+		// the index of picked vertex in boundary verts
+		int pivot = iter - bnd_verts.begin(); 
+		auto bnd_len = ext->boundary_length;
+
+		// divide into 4 pieces
+		auto piece_len = bnd_len / 4.f;
+		auto bnd_size = bnd_verts.size();
+
+		// clear legacy corner arrows
+		for (auto& _pair: ext->m_boundary_corners) {
+			auto [draw_id, vertex_id] = _pair;
+			SERVICE_INST->slot_remove_drawable(draw_id);
+		}
+		ext->m_boundary_corners.clear();
+		vector<uint32_t> corners;
+
+		// set four corners
+		auto order = ext->m_corner_order;
+		auto& vertices = mesh_inst->_vertices();
+		float summer = 0.f; // sum mer
+		for (auto i = 0; i < bnd_size; ++i) {
+			if (i == 0) {
+				corners.emplace_back(bnd_verts[pivot % bnd_size]);
+				continue;
+			}
+
+			auto ratio_old = floorf(summer / piece_len);
+			if (order) {
+				summer += glm::distance(
+					vertices[bnd_verts[(pivot + i - 1) % bnd_size]].Position,
+					vertices[bnd_verts[(pivot + i) % bnd_size]].Position
+				);
+			}
+			else {
+				summer += glm::distance(
+					vertices[bnd_verts[(pivot - i + 1 + bnd_size) % bnd_size]].Position,
+					vertices[bnd_verts[(pivot - i + bnd_size) % bnd_size]].Position
+				);
+			}
+
+			auto ratio_new = floorf(summer / piece_len);
+			
+			if (ratio_old != ratio_new) {
+				if (order) {
+					corners.emplace_back(bnd_verts[(pivot + i) % bnd_size]);
+				}
+				else {
+					corners.emplace_back(bnd_verts[(pivot - i + bnd_size) % bnd_size]);
+				}
+				if (corners.size() == 4) break; // full
+			}
+		}
+
+		// draw arrows for corner
+		for (auto cor_ind : corners) {
+			// normal direction
+			auto ray = geometry::Ray(vertices[cor_ind].Position, vertices[cor_ind].Normal);
+			auto id = SERVICE_INST->slot_show_arrow(ray, 0.5f, glm::vec3(1.f, 0.f, 0.f));
+			ext->m_boundary_corners.emplace_back(make_pair(id, cor_ind));
+		}
+
+		// register to project panel only if pivot picked
+		SERVICE_INST->notify<void(uint32_t, shared_ptr<MeshDrawableExt>)>("/register_mesh_ext", draw_id, ext);
+	}
+
+	void action_node_1(shared_ptr<ToothPack> tpack, const string& style) {
 		auto& meshes_rec = tpack->get_meshes();
 		auto& basedir = tpack->get_basedir();
 		auto& ctx = tpack->get_context();
@@ -415,7 +649,7 @@ namespace ToothSpace {
 		auto showed = false;
 		for (auto& [_, msh_id] : meshes_rec) {
 			if (!showed)
-				show_mesh_curvature(msh_id, "mean", "viridis");
+				show_mesh_curvature(msh_id, "mean", style);
 			else
 				show_mesh_curvature(msh_id, "mean");
 			showed = true;
@@ -425,12 +659,20 @@ namespace ToothSpace {
 	}
 
 	void action_node_2(shared_ptr<ToothPack> tpack) {
+		// change interact mode
+		auto mode = (1 << 1) | (1 << 3); // ClickPointPick | HoverVertexPick
+		SERVICE_INST->slot_set_interact_mode(mode);
 	}
 
 	void action_node_3(shared_ptr<ToothPack> tpack) {
+		// change interact mode
+		auto mode = 1 << 2; // ClickVertexPick
+		SERVICE_INST->slot_set_interact_mode(mode);
 	}
 
 	void action_node_4(shared_ptr<ToothPack> tpack) {
+		auto mode = (1 << 2) | (1 << 3); // ClickVertexPick
+		SERVICE_INST->slot_set_interact_mode(mode);
 	}
 
 	void action_node_5(shared_ptr<ToothPack> tpack) {

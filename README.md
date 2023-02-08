@@ -8,7 +8,7 @@ This is about **Topology** and **Rendering**
 
 ## Screenshot
 
-![screenshot](docs/img/screenshot-1.jpg)
+![screenshot](docs/img/screenshot-1.png)
 
 ## Introduction
 
@@ -22,5 +22,5 @@ This is about **Topology** and **Rendering**
 TODO
 
 ## Dependency
-- [**glm**](https://github.com/g-truc/glm) linear math libary.
-- [**Dear ImGui**](https://github.com/ocornut/imgui) light weight GUI module
+
+see [**dependency.cmake**]("./cmake/dependency.cmake")

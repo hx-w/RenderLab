@@ -31,12 +31,16 @@ using namespace RenderSpace;
 
 namespace ToothSpace {
 	Workspace::Workspace() {
-		TOOLKIT_EXEC(init_workenv, "init workspace", )
 		atomic_init(&_curr_wkflow_id, 1);
 	}
 
+	void Workspace::init_workspace() {
+		call_once(_inited, []() {
+			TOOLKIT_EXEC(init_workenv, "init workspace", )
+		});
+	}
+
 	void Workspace::fetch_filepath(const string& filepath, bool force) {
-		cout << filepath.c_str() << endl;
 		TOOLKIT_EXEC(preprocess_tooth_path, "project load", filepath, force,)
 		if (_code == 2) {
 			SERVICE_INST->slot_add_notice(
@@ -107,7 +111,7 @@ namespace ToothSpace {
 		switch (node) {
 		case NodeId_1:
 			// preprocess
-			action_node_1(tpack);
+			action_node_1(tpack, _heatmap_style);
 			break;
 		case NodeId_2:
 			/// pick mode change
@@ -143,90 +147,31 @@ namespace ToothSpace {
 		vector<geometry::Vector3f>& picked_nmls
 	) {
 		/// handler 
-		
-		// [DEBUG] show arrow
-		auto picked_num = picked_ids.size();
-		for (auto i = 0; i < picked_num; ++i) {
-			auto ray = geometry::Ray(picked_pnts[i], picked_nmls[i]);
-			auto arrow_id = SERVICE_INST->slot_show_arrow(ray, 0.5f, geometry::Vector3f(0.1f, 0.1f, 0.1f));
-			SERVICE_INST->notify<void(uint32_t, geometry::Point3f&)>(
-				"/add_nurbs_point_record", arrow_id, picked_pnts[i]
-			);
+		auto flow_id = SERVICE_INST->slot_get_current_flow_id();
+		auto tpack = _find_tpack(flow_id);
+
+		auto& nd_order = tpack->get_context()->node_order;
+		// nurbs case
+		if (find(nd_order.begin(), nd_order.end(), NodeId_2) != nd_order.end()) {
+			// [DEBUG] show arrow
+			auto picked_num = picked_ids.size();
+			for (auto i = 0; i < picked_num; ++i) {
+				auto ray = geometry::Ray(picked_pnts[i], picked_nmls[i]);
+				auto arrow_id = SERVICE_INST->slot_show_arrow(ray, 0.5f, geometry::Vector3f(0.1f, 0.1f, 0.1f));
+				SERVICE_INST->notify<void(uint32_t, geometry::Point3f&)>(
+					"/add_nurbs_point_record", arrow_id, picked_pnts[i]
+				);
+			}
 		}
 	}
 
-	void Workspace::pick_vertex_handler(uint32_t draw_id, uint32_t vertex_id) {
-		static pair<uint32_t, uint32_t> st_last_hover_picked(-1, -1);
-		// recover
-		if (st_last_hover_picked.first != uint32_t(-1)) {
-			auto& [last_draw_id, last_vert_id] = st_last_hover_picked;
-
-			auto last_draw_inst = SERVICE_INST->slot_get_drawable_inst(last_draw_id);
-			auto last_mesh_inst = dynamic_pointer_cast<NewMeshDrawable>(last_draw_inst);
-			auto& last_vertices = last_mesh_inst->_vertices();
-
-			auto& last_mesh_ext = MeshDrawableExtManager::get_mesh_ext(last_draw_id);
-			if (last_mesh_ext != nullptr) {
-				auto& last_vert_adj = last_mesh_ext->m_vert_adj;
-				last_vertices[last_vert_id].Color = last_vertices[last_vert_id].BufColor;
-				
-				for (auto& adj : last_vert_adj[last_vert_id]) {
-					last_vertices[adj].Color = last_vertices[adj].BufColor;
-				}
-				last_mesh_inst->get_ready();
-			}
-		}
-
-		st_last_hover_picked = make_pair(draw_id, vertex_id);
-		if (draw_id == -1) {
-			SERVICE_INST->slot_set_mouse_tooltip("");
-			return; // end hover pick ( release CONTROL )
-		}
-
-		// show tooltip
-		/// [TODO] only show curvature_mean
-		auto& mesh_ext = MeshDrawableExtManager::get_mesh_ext(draw_id);
-
-		// if has depth, show depth
-		if (mesh_ext == nullptr) {
-			SERVICE_INST->slot_set_mouse_tooltip("");
-			return;
-		}
-		if (mesh_ext->m_buffers.find("depth_GT") != mesh_ext->m_buffers.end()) {
-			auto str_v = to_string(mesh_ext->m_buffers["depth_GT"][vertex_id]);
-			SERVICE_INST->slot_set_mouse_tooltip(
-				"depth: " + str_v
-			);
-		}
-		else if (mesh_ext->m_buffers.find("curvature_mean") != mesh_ext->m_buffers.end()) {
-			auto str_v = to_string(mesh_ext->m_buffers["curvature_mean"][vertex_id]);
-			SERVICE_INST->slot_set_mouse_tooltip(
-				"curv(mean): " + str_v
-			);
+	void Workspace::pick_vertex_handler(uint32_t draw_id, uint32_t vertex_id, bool hover) {
+		if (hover) {
+			_hover_vertex_handler(draw_id, vertex_id);
 		}
 		else {
-			SERVICE_INST->slot_set_mouse_tooltip("");
-			return;
+			_pick_vertex_handler(draw_id, vertex_id);
 		}
-
-		auto draw_inst = SERVICE_INST->slot_get_drawable_inst(draw_id);
-		auto mesh_inst = dynamic_pointer_cast<NewMeshDrawable>(draw_inst);
-		auto& adjs = mesh_ext->m_vert_adj[vertex_id];
-
-		auto& vertices = mesh_inst->_vertices();
-
-		auto change_color = [&](uint32_t vid, glm::vec3&& clr) {
-			vertices[vid].BufColor = vertices[vid].Color;
-			vertices[vid].Color = clr;
-		};
-		// change adjs color to red
-
-		change_color(vertex_id, glm::vec3(1.f, 0.5f, 0.f));
-		for (auto& adj : adjs) {
-			change_color(adj, glm::vec3(1.f, 0.f, 0.f));
-		}
-
-		mesh_inst->get_ready();
 	}
 
 	void Workspace::compute_nurbs_reverse(vector<vector<geometry::Point3f>>& points_pack, const pair<int, int>& sample_rate) {
@@ -322,13 +267,10 @@ namespace ToothSpace {
 
 			auto mesh = geometry::Mesh(vertices, faces);
 
-			auto mesh_id = SERVICE_INST->slot_add_mesh(mesh);
-
-			// add topo shape
-			SERVICE_INST->slot_set_drawable_property(mesh_id, "topo_shape", sample_rate);
+			auto mesh_id = SERVICE_INST->slot_add_mesh(mesh, { {"topo_shape", sample_rate} });
 
 			// show in proj panel
-			SERVICE_INST->notify<void(const string&, uint32_t)>("/register_mesh_to_current_proj", string("remeshed(nurbs) - ") + to_string(mesh_id), mesh_id);
+			SERVICE_INST->notify<void(const string&, uint32_t)>("/register_mesh_to_current_proj", string("remeshed(nurbs)-") + to_string(mesh_id) + ".obj", mesh_id);
 
 
 			/// current state NodeId_2
@@ -339,6 +281,43 @@ namespace ToothSpace {
 		else {
 			// nurbs not valid
 			SERVICE_INST->slot_add_log("error", "nurbs surface is invalid");
+		}
+	}
+
+	void Workspace::compute_parameter_remesh(uint32_t draw_id) {
+		uint32_t param_id = 0, remesh_id = 0;
+	
+		auto flow_id = SERVICE_INST->slot_get_current_flow_id();
+		auto tpack = _find_tpack(flow_id);
+
+		auto& nd_order = tpack->get_context()->node_order;
+		// nurbs case
+		if (find(nd_order.begin(), nd_order.end(), NodeId_3) != nd_order.end()) {
+			auto U = any_cast<int>(tpack->get_context()->node_states[NodeId_3]["Remesh U"]);
+			auto V = any_cast<int>(tpack->get_context()->node_states[NodeId_3]["Remesh V"]);
+			_compute_parameter_remesh(draw_id, remesh_id, param_id, U, V);
+	
+			SERVICE_INST->notify<void(const string&, uint32_t)>(
+				"/register_mesh_to_current_proj",
+				string("remeshed(param)-") + to_string(remesh_id) + ".obj", remesh_id
+			);
+			SERVICE_INST->notify<void(const string&, uint32_t)>(
+				"/register_mesh_to_current_proj",
+				string("param_domain-") + to_string(remesh_id) + ".obj", param_id
+			);
+
+			// clear picked
+			auto& ext = MeshDrawableExtManager::get_mesh_ext(draw_id);
+			ext->boundary_length = 0.f;
+			for (auto& _p : ext->m_boundary_corners) {
+				SERVICE_INST->slot_remove_drawable(_p.first);
+			}
+			ext->m_boundary_corners.clear();
+
+			/// current state NodeId_3
+			/// go next state
+			auto flow_id = SERVICE_INST->slot_get_current_flow_id();
+			SERVICE_INST->notify<void(uint32_t)>("/finish_current_stage", flow_id);
 		}
 	}
 
@@ -362,7 +341,15 @@ namespace ToothSpace {
 
 		/// [DEBUG] change color
 		MeshDrawableExtManager::set_mesh_cache(mshes_id[0], "depth_GT", depth);
-		MeshDrawableExtManager::switch_color_cache(mshes_id[0], "depth_GT", "viridis");
+		MeshDrawableExtManager::switch_color_cache(mshes_id[0], "depth_GT", _heatmap_style);
 
+		SERVICE_INST->notify<void(uint32_t)>("/finish_current_stage", flow_id);
+	}
+
+	void Workspace::set_heatmap_style(const string& _stl) {
+		_heatmap_style = _stl;
+
+		// change exist
+		MeshDrawableExtManager::set_main_color(_stl);
 	}
 }

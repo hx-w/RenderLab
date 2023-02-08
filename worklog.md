@@ -12,3 +12,17 @@
 - [x] `toolkit.cpp`中全局有一个py解释器，第一次调用py的时候又创建了一个解释器，这样居然能解决问题。
 - [x] `CMakeLists.txt`中的`target_compile_definitions(${target} XXX -DDEFINE)`默认会置`#define DEFINE 1`，如果单纯只想定义一个空白宏，需要在`-DDEFINE`后面加`=`
 
+## 2023/02/03
+
+`0.7.0-prerelease`
+
+- [x] python中`sys.executable`为当前python可执行文件的路径，如果通过pybind11调用`f'{sys.executable} -m pip install {pkg}'`会导致窗口不断复制
+
+## 2023/02/07
+
+- [x] 修复ThreadPool中的逻辑问题
+- [x] 全局python环境，并且释放GIL，在计算线程中获取并运行
+
+# 2023/02/08
+
+- [x] pybind11中从python获取的numpy数据，通过`.cast<py::array_t<T>>().unchecked<Dim>()`可以转换为c++对象，需要注意的是，python中的`float`需要使用`T=double`进行转换，`int`对应`T=long long int`

@@ -18,6 +18,8 @@ namespace ToothSpace {
 
 	static map<uint32_t, shared_ptr<MeshDrawableExt>> st_mesh_exts;
 
+	static map<uint32_t, pair<string /* type */, string /* style */>> st_visible_buffer; // each mesh has one visible buffer
+
 
 	/// @date 2023.01.25
 	/// use 1-dim cpp array to restore vector,
@@ -36,13 +38,10 @@ namespace ToothSpace {
 		delete[] raw_vec;
 	}
 
-	void MeshDrawableExtManager::_cache_adj(uint32_t id) {
+	void MeshDrawableExtManager::_cache_adj(uint32_t id, shared_ptr<NewMeshDrawable> msh_ptr) {
 		if (st_mesh_exts.find(id) == st_mesh_exts.end()) {
 			st_mesh_exts[id] = make_shared<MeshDrawableExt>();
 		}
-		auto draw_ptr = SERVICE_INST->slot_get_drawable_inst(id);
-		auto msh_ptr = dynamic_pointer_cast<NewMeshDrawable>(draw_ptr);
-
 		/// compute adj
 		const auto& vertices = msh_ptr->_raw()->get_vertices();
 		const auto& faces = msh_ptr->_raw()->get_faces();
@@ -68,6 +67,7 @@ namespace ToothSpace {
 		const string& type,
 		const string& heatmap_style
 	) {
+		py::gil_scoped_acquire _acquire{};
 		static auto support_type = { "curvature_mean", "curvature_gaussian" };
 
 		if (draw_ptr == nullptr || draw_ptr->_type() != GeomTypeMesh) return;
@@ -94,23 +94,7 @@ namespace ToothSpace {
 			py_verts, py_faces, (type == "curvature_mean" ? "mean" : "gaussian")
 		);
 
-		// change color ?
-		if (heatmap_style.length() > 0) {
-			auto py_clr = _py_pkg.attr("py_mesh_palette")(py_curv, "viridis");
-			/// convert numpy.ndarray to py::array_t<T>, and uncheck it
-			auto clrs = py_clr.cast<py::array_t<float>>().unchecked<2>();
-
-			auto vert_size = msh_ptr->_raw()->vertices().size();
-
-			auto& vert_prims = msh_ptr->_vertices();
-
-			for (auto ind = 0; ind < vert_size; ++ind) {
-				vert_prims[ind].Color = glm::vec3(clrs(ind, 0), clrs(ind, 1), clrs(ind, 2));
-			}
-			msh_ptr->get_ready();
-		}
-
-		auto _curv = py_curv.cast<py::array_t<float>>().unchecked<1>();
+		auto _curv = py_curv.cast<py::array_t<double>>().unchecked<1>();
 
 		auto vec = vector<float>(msh_ptr->_vertices().size());
 		
@@ -122,7 +106,15 @@ namespace ToothSpace {
 		ext->m_buffers[type].assign(vec.begin(), vec.end());
 		st_mesh_exts[id] = ext;
 
-		_cache_adj(id);
+		py::gil_scoped_release _release{};
+
+		_cache_adj(id, msh_ptr);
+		_cache_boundary(id, msh_ptr);
+
+		// change color ?
+		if (!heatmap_style.empty()) {
+		    switch_color_cache(id, "curvature_mean", heatmap_style);
+		}
 	}
 
 	shared_ptr<MeshDrawableExt>
@@ -134,12 +126,17 @@ namespace ToothSpace {
 	void MeshDrawableExtManager::set_mesh_cache(uint32_t id, const string& key, vector<float>& cache) {
 		if (st_mesh_exts.find(id) == st_mesh_exts.end()) {
 			st_mesh_exts[id] = make_shared<MeshDrawableExt>();
-			_cache_adj(id);
+			auto draw_ptr = SERVICE_INST->slot_get_drawable_inst(id);
+			auto msh_ptr = dynamic_pointer_cast<NewMeshDrawable>(draw_ptr);
+
+			_cache_adj(id, msh_ptr);
+			_cache_boundary(id, msh_ptr);
 		}
 		st_mesh_exts[id]->m_buffers[key].assign(cache.begin(), cache.end());
 	}
 
 	void MeshDrawableExtManager::switch_color_cache(uint32_t id, const string& type, const string& style) {
+		py::gil_scoped_acquire _acquire{};
 		if (st_mesh_exts.find(id) == st_mesh_exts.end()) return;
 		if (st_mesh_exts[id]->m_buffers.find(type) == st_mesh_exts[id]->m_buffers.end()) return;
 
@@ -164,5 +161,45 @@ namespace ToothSpace {
 			vert_prims[ind].Color = glm::vec3(clrs(ind, 0), clrs(ind, 1), clrs(ind, 2));
 		}
 		msh_ptr->get_ready();
+
+		st_visible_buffer[id] = make_pair(type, style);
+	}
+
+	void MeshDrawableExtManager::set_main_color(const string& style) {
+		// change all visible buffer to style
+		for (auto& [_id, _pair] : st_visible_buffer) {
+			auto& [_type, _stl] = _pair;
+			if (style == _stl) continue;
+
+			switch_color_cache(_id, _type, style);
+		}
+	}
+
+	void MeshDrawableExtManager::_cache_boundary(uint32_t id, shared_ptr<NewMeshDrawable> msh_ptr) {
+		if (st_mesh_exts.find(id) == st_mesh_exts.end()) {
+			st_mesh_exts[id] = make_shared<MeshDrawableExt>();
+		}
+		auto& ext = st_mesh_exts[id];
+
+		py::gil_scoped_acquire _acquire{};
+
+		auto _py_pkg = py::module_::import(PY_PARAMETER_MODULE);
+
+		py::array py_verts, py_faces;
+		vector_to_numpy(msh_ptr->_raw()->vertices(), py_verts);
+		vector_to_numpy(msh_ptr->_raw()->faces(), py_faces);
+
+		auto res = _py_pkg.attr("get_mesh_boundary_cmd")(py_verts, py_faces).cast<py::tuple>();
+		auto _py_boundary_verts = res[0].cast<py::array_t<int>>().unchecked<1>();
+		
+		ext->boundary_length = res[1].cast<float>();
+
+		auto array_len = res[0].attr("shape").cast<py::tuple>()[0].cast<int>();
+
+		// copy boundary
+		ext->m_vert_boundary.clear();
+		for (auto ind = 0; ind < array_len; ++ind) {
+			ext->m_vert_boundary.emplace_back(_py_boundary_verts(ind));
+		}
 	}
 }

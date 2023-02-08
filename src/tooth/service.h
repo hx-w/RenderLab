@@ -2,6 +2,7 @@
 #define TOOTH_SERVICE_H
 
 #include <any>
+#include <map>
 #include <string>
 #include <memory>
 #include <communication/AutoBus.hpp>
@@ -25,7 +26,7 @@ namespace ToothSpace {
         ~ToothService();
 
     public:
-        void slot_add_log(std::string&&, const std::string&);
+        void slot_add_log(const std::string&, const std::string&);
         void slot_add_notice(const std::string&, const std::string&);
         void slot_open_workflow(std::shared_ptr<WorkflowContext>);
         void slot_add_tooth_pack(std::shared_ptr<ToothPack>);
@@ -35,7 +36,7 @@ namespace ToothSpace {
         // to renderer
         uint32_t slot_show_arrow(geometry::Ray&, float /* length */, geometry::Vector3f&& /* color */);
 
-        uint32_t slot_add_mesh(geometry::Mesh&);
+        uint32_t slot_add_mesh(geometry::Mesh&, std::map<std::string, std::any> ={});
 
         uint32_t slot_get_current_flow_id();
 
@@ -46,6 +47,10 @@ namespace ToothSpace {
 
         void slot_set_mouse_tooltip(const std::string&);
 
+        void slot_set_interact_mode(int);
+
+        bool slot_remove_drawable(uint32_t);
+
         template <class Func, class ...Args>
         void notify(const std::string& addr, Args&& ...args) {
             auto _event = fundamental::ContextHub::getInstance()->getEventTable<Func>();
@@ -54,6 +59,7 @@ namespace ToothSpace {
 
     private:
         void _subscribe();
+        void _register_all();
 
     private:
         std::string m_symbol = "tooth"; // 名称

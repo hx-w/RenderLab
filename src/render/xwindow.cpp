@@ -76,8 +76,10 @@ namespace RenderSpace {
             key_down_GTRL = true;
         }
         if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_RELEASE) {
-            if (key_down_GTRL)
-                m_context->ctx_notify<void(uint32_t, uint32_t)>("/picked_vertex", -1, -1);
+            if (key_down_GTRL) {
+                m_context->ctx_notify<void(uint32_t, uint32_t, bool)>("/picked_vertex", -1, -1, true);
+                //m_context->service()->slot_set_mouse_tooltip("");
+            }
             key_down_GTRL = false;
         }
     }
@@ -90,7 +92,7 @@ namespace RenderSpace {
         m_scr_width = width;
         m_scr_height = height;
         glViewport(0, 0, m_scr_width, m_scr_height);
-        /// [TODO] window resize notify
+        m_context->ctx_notify<void(int, int)>("/window_resized", width, height);
 
         gizmo.viewportSize(width, height);
         gizmo.setDollyScale(1.0f / (width > height ? height : width));
@@ -106,10 +108,10 @@ namespace RenderSpace {
         realY = ypos;
 
         /// hover pick
-        if ((interact_mode & HoverPickMode) && key_down_GTRL) {
+        if ((interact_mode & HoverPickVertexMode) && key_down_GTRL) {
 			glm::vec3 direction(0.0);
 			pickingRay(glm::vec2(realX, realY), direction);
-			m_context->ctx_pick_vertex(cameraPos, direction);
+			m_context->ctx_pick_vertex(cameraPos, direction, true);
         }
 
         if (!leftMousePressed)
@@ -179,12 +181,16 @@ namespace RenderSpace {
             switch(button) {
 			case GLFW_MOUSE_BUTTON_LEFT:
                 leftMousePressed = false;
-                if ((interact_mode & ClickPickMode) && key_down_GTRL) {
+                if ((interact_mode & ClickPickPointMode) && key_down_GTRL) {
                     glm::vec3 direction(0.0);
                     pickingRay(glm::vec2(realX, realY), direction);
-                    /// [TODO] picking ray notify
                     m_context->ctx_pick_points(cameraPos, direction, false);
                 }
+				if ((interact_mode & ClickPickVertexMode) && key_down_GTRL) {
+					glm::vec3 direction(0.0);
+					pickingRay(glm::vec2(realX, realY), direction);
+                    m_context->ctx_pick_vertex(cameraPos, direction, false);
+				}
 				break;
 			case GLFW_MOUSE_BUTTON_MIDDLE:
 				break;

@@ -3,13 +3,13 @@
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
-#include "./mesh/elements.h"
 
 #include "renderer.h"
 #include "context.h"
 #include "service.h"
 #include "container.h"
 #include "xwindow.h"
+#include "shader.h"
 
 #include <imGuIZMOquat.h>
 
@@ -27,6 +27,7 @@ namespace RenderSpace {
 		);
 		m_context->window()->m_scr_height = _height;
 		m_context->window()->m_scr_width = _width;
+        m_context->ctx_notify<void(int, int)>("/window_resized", _width, _height);
 		setup_post();
 	}
 

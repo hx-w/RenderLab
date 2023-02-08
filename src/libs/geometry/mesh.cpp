@@ -1,7 +1,6 @@
 #include <iostream>
 #include <fstream>
 #include <functional>
-#include <fstream>
 #include <sstream>
 
 #include "mesh.h"
@@ -10,7 +9,7 @@ using namespace std;
 
 namespace geometry {
 
-    Mesh Mesh::load_obj(const std::string& filename, int& status) {
+    Mesh Mesh::load_obj(const string& filename, int& status) {
         std::ifstream file(filename);
         if (!file.is_open()) {
             std::cerr << "Error: cannot open file " << filename << std::endl;
@@ -52,6 +51,35 @@ namespace geometry {
 
         file.close();
         return Mesh(vertices, faces);
+    }
+
+    void Mesh::save_obj(const string& filename, Mesh& msh, int& status) {
+        std::ofstream file(filename);
+        if (!file.is_open()) {
+            std::cerr << "Error: cannot open file " << filename << std::endl;
+            status = 0;
+            return;
+        }
+
+        status = 0;
+
+        try {
+            const auto& verts = msh.vertices();
+            const auto& faces = msh.faces();
+
+            for (auto& v : verts) {
+                file << "v " << v.x << " " << v.y << " " << v.z << endl;
+            }
+            for (auto& f : faces) {
+                file << "f " << f.x + 1 << " " << f.y + 1 << " " << f.z + 1 << endl;
+            }
+            status = 1;
+        }
+        catch (exception& e) {
+            clog << "save mesh err: " << e.what() << endl;
+        }
+
+        file.close();
     }
 
     uint32_t Mesh::hash() const {

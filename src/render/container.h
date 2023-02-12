@@ -12,7 +12,7 @@
 #include <geom_types.h>
 
 namespace RenderSpace {
-    // !!!important 前向声明 只能用作指针定义
+    // !!!important 前锟斤拷锟斤拷锟斤拷 只锟斤拷锟斤拷锟斤拷指锟诫定锟斤拷
     class Shader;
     class DrawableBase;
 
@@ -53,7 +53,7 @@ namespace RenderSpace {
         bool pickcmd(
             geometry::Ray&&,
             std::vector<DrawableID>&, std::vector<geometry::Vector3f>&, std::vector<geometry::Vector3f>&,
-            glm::mat4&,
+            const glm::mat4&,
             bool = false
         );
 
@@ -61,7 +61,7 @@ namespace RenderSpace {
         bool pickcmd(
             geometry::Ray&&,
             DrawableID& /* drawable id */, uint32_t& /* vertices id */,
-            glm::mat4&,
+            const glm::mat4&,
             float /* threhold */ = 1e-3
         );
 

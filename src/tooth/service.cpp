@@ -39,7 +39,9 @@ namespace ToothSpace {
         m_autobus->subscribe<void(const string&, int)>(SignalPolicy::Async, "GUI/modal_confirm_feedback",
             [this](const string& name, int res) {
                 const string prefix = "Force to load the project?##";
-                if (name._Starts_with(prefix)) { // filter just asked
+                // start with prefix
+                if (name.compare(0, prefix.size(), prefix) == 0) {
+//                if (name._Starts_with(prefix)) { // filter just asked
                     // substr the backword
                     auto filepath = name.substr(prefix.length());
                     if (res) {

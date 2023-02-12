@@ -30,3 +30,5 @@ target_include_directories(XRENDER PRIVATE ${INFRASTRUCTURE_INCLUDE_DIRS} ${GEOM
 target_include_directories(XRENDER PRIVATE ${imguizmo_SOURCE_DIR}/imGuIZMO.quat)
 target_include_directories(XGUI PRIVATE ${INFRASTRUCTURE_INCLUDE_DIRS} ${GEOMETRY_INCLUDE_DIRS})
 target_include_directories(XGUI PRIVATE ${imnodes_SOURCE_DIR} ${imguizmo_SOURCE_DIR}/imGuIZMO.quat)
+
+target_link_libraries(GEOMETRY PRIVATE glm pybind11::embed)

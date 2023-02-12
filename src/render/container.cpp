@@ -120,7 +120,7 @@ namespace RenderSpace {
         Ray&& pick_ray,
         vector<DrawableID>& picked_ids,
         vector<Vector3f>& picked_points, vector<Vector3f>& picked_normals,
-        glm::mat4& transf,
+        const glm::mat4& transf,
         bool multi
     ) {
         picked_ids.clear(); picked_points.clear(); picked_normals.clear();
@@ -182,7 +182,7 @@ namespace RenderSpace {
 
     /// pick vertex indices
     bool RenderContainer::pickcmd(
-        Ray&& pick_ray, DrawableID& draw_id, uint32_t& vert_id, glm::mat4& transf, float thred
+        Ray&& pick_ray, DrawableID& draw_id, uint32_t& vert_id, const glm::mat4& transf, float thred
     ) {
         auto inv_transf = glm::inverse(transf);
         auto n_ori = glm::vec3(inv_transf * glm::vec4(pick_ray.get_origin(), 1.0f));

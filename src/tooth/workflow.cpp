@@ -21,12 +21,12 @@ using namespace RenderSpace;
 #define TOOLKIT_EXEC(func, prefix, ...) \
 			string log_msg = ""; \
 			auto _code = static_cast<int>(func(__VA_ARGS__ log_msg)); \
-			switch (_code) { \
-			case 0: SERVICE_INST->slot_add_log("error", prefix##" error, " + log_msg); break; \
-			case 1: SERVICE_INST->slot_add_log("info", prefix##" successfully, " + log_msg); break; \
-			case 2: SERVICE_INST->slot_add_log("warn", prefix##" suspended, " + log_msg); break; \
-			default: break; \
-			}
+			switch (_code) {                     \
+			case 0: SERVICE_INST->slot_add_log("error", prefix" error, " + log_msg); break; \
+			case 1: SERVICE_INST->slot_add_log("info", prefix" successfully, " + log_msg); break; \
+			case 2: SERVICE_INST->slot_add_log("warn", prefix" suspended, " + log_msg); break;    \
+			default: break;                      \
+            }
 
 
 namespace ToothSpace {
@@ -307,7 +307,7 @@ namespace ToothSpace {
 			);
 
 			// clear picked
-			auto& ext = MeshDrawableExtManager::get_mesh_ext(draw_id);
+			auto ext = MeshDrawableExtManager::get_mesh_ext(draw_id);
 			ext->boundary_length = 0.f;
 			for (auto& _p : ext->m_boundary_corners) {
 				SERVICE_INST->slot_remove_drawable(_p.first);

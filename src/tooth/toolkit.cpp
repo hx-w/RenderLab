@@ -92,6 +92,7 @@ namespace ToothSpace {
 		catch (exception& e) {
 			cout << e.what() << endl;
 		}
+        return 0;
 	}
 
 	void get_tooth_pack_cache(ToothPack* tpack) {
@@ -322,7 +323,7 @@ namespace ToothSpace {
 		if (draw_inst->_type() != GeomTypeMesh) return;
 		auto msh = dynamic_pointer_cast<NewMeshDrawable>(draw_inst);
 
-		auto& ext = MeshDrawableExtManager::get_mesh_ext(uns_id);
+		auto ext = MeshDrawableExtManager::get_mesh_ext(uns_id);
 		if (ext->boundary_length < 1e-6 || ext->m_boundary_corners.empty()) {
 			return; // not a open mesh OR not select pivot
 		}
@@ -330,8 +331,8 @@ namespace ToothSpace {
 		auto _py_pkg = py::module_::import(PY_PARAMETER_MODULE);
 
 		py::array _verts, _faces;
-		vector_to_numpy(msh->_raw()->get_vertices(), _verts);
-		vector_to_numpy(msh->_raw()->get_faces(), _faces);
+		vector_to_numpy(msh->_raw()->vertices(), _verts);
+		vector_to_numpy(msh->_raw()->faces(), _faces);
 
 		auto res = _py_pkg.attr("parameter_remesh_cmd")(
 			_verts, _faces, U, V, ext->m_boundary_corners[0].second, ext->m_corner_order
@@ -343,8 +344,8 @@ namespace ToothSpace {
 		auto param_faces_num = res[3].attr("shape").cast<py::tuple>()[0].cast<int>();
 
 		auto build_mesh_from_py = [](
-			py::detail::tuple_accessor& verts,
-			py::detail::tuple_accessor& faces,
+			py::detail::tuple_accessor verts,
+			py::detail::tuple_accessor faces,
 			int num_v, int num_f
 		) -> geometry::Mesh {
 			auto _verts = verts.cast<py::array_t<double>>().unchecked<2>();
@@ -406,8 +407,8 @@ namespace ToothSpace {
 		auto _py_args_1 = py::list{};
 		for (auto msh : mshes) {
 			py::array verts, faces;
-			vector_to_numpy(msh->_raw()->get_vertices(), verts);
-			vector_to_numpy(msh->_raw()->get_faces(), faces);
+			vector_to_numpy(msh->_raw()->vertices(), verts);
+			vector_to_numpy(msh->_raw()->faces(), faces);
 
 			_py_args_1.append(verts);
 			_py_args_1.append(faces);
@@ -479,7 +480,7 @@ namespace ToothSpace {
 
 		// show tooltip
 		/// [TODO] only show curvature_mean
-		auto& mesh_ext = MeshDrawableExtManager::get_mesh_ext(draw_id);
+		auto mesh_ext = MeshDrawableExtManager::get_mesh_ext(draw_id);
 
 		// if has depth, show depth
 		if (mesh_ext == nullptr) {
@@ -526,7 +527,7 @@ namespace ToothSpace {
 	void _pick_vertex_handler(uint32_t draw_id, uint32_t vertex_id) {
 		auto draw_inst = SERVICE_INST->slot_get_drawable_inst(draw_id);
 		auto mesh_inst = dynamic_pointer_cast<NewMeshDrawable>(draw_inst);
-		auto& ext = MeshDrawableExtManager::get_mesh_ext(draw_id);
+		auto ext = MeshDrawableExtManager::get_mesh_ext(draw_id);
 		if (ext == nullptr) return;
 
 		auto& bnd_verts = ext->m_vert_boundary;

@@ -25,7 +25,7 @@ namespace ToothSpace {
 #define PY_TOOTHDEPTH_MODULE "scripts.py_tooth_depth"
 #define PY_PARAMETER_MODULE  "scripts.py_parameter_remesh"
 
-#define PY_REQUIREMENTS "trimesh", "toml", "matplotlib", "rtree", "numpy_indexed", "tqdm", "scipy"
+#define PY_REQUIREMENTS "trimesh", "toml", "matplotlib", "rtree", "numpy_indexed", "tqdm", "scipy", "networkx"
 
 	/// call py scripts: 'scripts/py_env_checker.py'
 	bool init_workenv(std::string& /* status */);

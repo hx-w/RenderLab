@@ -10,6 +10,8 @@
 #include <communication/ContextHub.h>
 #include <geom_types.h>
 
+#include "service.h"
+
 namespace geometry {
     class GeometryBase;
 }

@@ -44,8 +44,9 @@ namespace RenderSpace {
             break;
         case 2:
             m_service->slot_add_log("info", "Load mesh from file " + filename);
-        }                                      
-        return ctx_add_drawable(make_shared<Mesh>(geom_mesh), Props{});
+        }
+        auto non_props = Props{};
+        return ctx_add_drawable(make_shared<Mesh>(geom_mesh), non_props);
     }
 
     DrawableID RenderContext::ctx_add_drawable(shared_ptr<GeometryBase> geom, Props& props, int type) {

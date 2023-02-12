@@ -30,9 +30,9 @@
 #define SUBNODE(node_id, inc) (node_id + inc)
 
 #define SHOWNODE(node_id, title, deft_color, active_color, hover_color, ...) \
-    ImNodes::PushColorStyle(ImNodesCol_TitleBar, IM_COL32##active_color); \
-    ImNodes::PushColorStyle(ImNodesCol_TitleBarSelected, IM_COL32##active_color); \
-    ImNodes::PushColorStyle(ImNodesCol_TitleBarHovered, IM_COL32##active_color); \
+    ImNodes::PushColorStyle(ImNodesCol_TitleBar, IM_COL32 active_color); \
+    ImNodes::PushColorStyle(ImNodesCol_TitleBarSelected, IM_COL32 active_color); \
+    ImNodes::PushColorStyle(ImNodesCol_TitleBarHovered, IM_COL32 active_color); \
     ImNodes::BeginNode(node_id); \
     ImNodes::BeginNodeTitleBar(); \
     ImGui::TextUnformatted(title); \
@@ -424,7 +424,7 @@ void NodeFlowManager::open_workflow(WkflowCtxPtr wkflow_ctx) {
     for (const auto& ndflow : st_nodeflows) {
         if (ndflow->get_flow_id() == wkflow_ctx->flow_id) {
             /// [TODO] there must be a error
-            assert(0, "Should not open a nodeflow while it is opened");
+            assert(0 && "Should not open a nodeflow while it is opened");
         }
     }
 
@@ -465,7 +465,7 @@ void NodeFlowManager::active(int flow_id) {
 	// find ctx_ptr
 	for (auto& ndflow : st_nodeflows) {
 		if (ndflow->get_flow_id() == flow_id) {
-			auto& wkflow_ctx = ndflow->get_wkflow_context();
+			auto wkflow_ctx = ndflow->get_wkflow_context();
 			// check valid (topological sort)
 			auto status = static_cast<int>(NodeFlowManager::check_valiation(flow_id, wkflow_ctx->node_order));
 			

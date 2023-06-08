@@ -28,6 +28,11 @@ namespace ToothSpace {
 	py::scoped_interpreter py_guard{};
 	py::gil_scoped_release py_release{};
 
+	static glm::vec3 RGBA[] = {
+		glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f),
+		glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f),
+	};
+
 	template<class T>
 	void vector_to_numpy(vector<glm::vec<3, T>>& vec, py::array& res) {
 		const auto shape_1 = vec.size();
@@ -593,10 +598,11 @@ namespace ToothSpace {
 		}
 
 		// draw arrows for corner
-		for (auto cor_ind : corners) {
+		for (auto idx = 0; idx < corners.size(); ++idx) {
+			auto cor_ind = corners[idx];
 			// normal direction
 			auto ray = geometry::Ray(vertices[cor_ind].Position, vertices[cor_ind].Normal);
-			auto id = SERVICE_INST->slot_show_arrow(ray, 0.5f, glm::vec3(1.f, 0.f, 0.f));
+			auto id = SERVICE_INST->slot_show_arrow(ray, 0.5f, move(RGBA[idx]));
 			ext->m_boundary_corners.emplace_back(make_pair(id, cor_ind));
 		}
 

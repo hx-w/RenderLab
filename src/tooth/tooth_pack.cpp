@@ -1,5 +1,6 @@
 #include "tooth_pack.h"
 #include "toolkit.h"
+#include <algorithm>
 
 using namespace std;
 using namespace ToothSpace;
@@ -10,9 +11,9 @@ ToothPack::ToothPack(int wkflow_id, const string& filepath) {
 	auto _p2 = filepath.find_last_of('\\');
 	_p1 = (_p1 == string::npos ? 0 : _p1 + 1);
 	_p2 = (_p2 == string::npos ? 0 : _p2 + 1);
-	auto wkflow_name = filepath.substr(max(_p1, _p2));
+	auto wkflow_name = filepath.substr(std::max(_p1, _p2));
 
-	wkflow_ctx = make_shared<WorkflowContext>(
+	wkflow_ctx = std::make_shared<WorkflowContext>(
 		WorkflowContext(wkflow_id, wkflow_name)
 	);
 
